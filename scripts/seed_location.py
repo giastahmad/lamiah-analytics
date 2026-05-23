@@ -1,18 +1,25 @@
+import sys
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
 import pandas as pd
 import json
 import glob
-import os
 from config import SessionLocal
 from models import LocationDimension
 
+
+
 def seed_location_dimension():
-    data_provinsi = pd.read_json('data/provinsi.json', orient='index')
+    provinsi_path = os.path.join(BASE_DIR, 'data', 'provinsi.json')
+    data_provinsi = pd.read_json(provinsi_path, orient='index')
     data_provinsi = data_provinsi.reset_index()
     data_provinsi.columns = ['kode_provinsi', 'province']
     data_provinsi['kode_provinsi'] = data_provinsi['kode_provinsi'].astype('str')
     
     data_kota = []
-    files = glob.glob('data/kabupaten_kota/kab-*.json')
+    files = glob.glob(os.path.join(BASE_DIR, 'data', 'kabupaten_kota', 'kab-*.json'))
 
     for file in files:
         filename = os.path.basename(file)

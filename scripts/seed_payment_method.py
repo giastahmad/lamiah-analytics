@@ -1,10 +1,14 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import pandas as pd
 from config import SessionLocal
 from models import PaymentMethodDimension
 
 payment_methods = {
-    'payment_method_name' : ['COD', 'PAYLATER', 'E-WALLET', 'BANK_TRANSFER', 'CREDIT_CARD', 'STORE_BALANCE', 'OFFLINE_AGENT'],
-    'payment_method_category' : ['MANUAL', 'LEVERAGE', 'LIQUID', 'LIQUID', 'LEVERAGE', 'LIQUID', 'MANUAL']
+    'payment_method_name' : ['COD', 'PAYLATER', 'E-WALLET', 'BANK_TRANSFER', 'CREDIT_CARD', 'STORE_BALANCE', 'OFFLINE_AGENT', 'RETAIL_OUTLET'],
+    'payment_method_category' : ['MANUAL', 'LEVERAGE', 'LIQUID', 'LIQUID', 'LEVERAGE', 'LIQUID', 'MANUAL', 'MANUAL']
 }
 
 def seed_payment_method_dimension():

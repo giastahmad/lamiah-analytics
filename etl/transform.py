@@ -17,7 +17,8 @@ COLUMN_MAPPING = {
     "total_amount" : ["Total Pembayaran", "Total payment", "Order Amount"],
     "province" : ["Provinsi", "Province"],
     "city" : ["Kota/Kabupaten", "Regency and City", "City"],
-    "channel" : ["Purchase Channel"]
+    "channel" : ["Purchase Channel"],
+    "notes" : ["Catatan dari Pembeli", "Buyer Message"]
 }
 
 REQUIRED_COLUMNS_SHOPEE = [
@@ -33,7 +34,8 @@ REQUIRED_COLUMNS_SHOPEE = [
     "quantity",
     "total_amount",
     "province",
-    "city"
+    "city",
+    "notes"
 ]
 
 REQUIRED_COLUMNS_TOKOPEDIA = [
@@ -51,7 +53,8 @@ REQUIRED_COLUMNS_TOKOPEDIA = [
     "total_amount",
     "province",
     "city",
-    "channel"
+    "channel",
+    "notes"
 ]
 
 PAYMENT_METHOD = {
@@ -66,99 +69,110 @@ PAYMENT_METHOD = {
 }
 
 COLOR_MAPPING = {
-    "ROSEGOLD" : "ROSE GOLD",
-    "BLUSH PINK" : "BLUSH PINK",
-    "PINK" : "PINK",
-    "BURGUNDY" : "BURGUNDY",
-    "COKLATUA/COKSU(NOTE)" : "COKELAT TUA",
-    "COKELAT TUA" : "COKELAT TUA",
-    "COKLAT TUA" : "COKELAT TUA",
-    "COKSU/COKLATUA(NOTE)" : "COKELAT SUSU",
-    "COKSU/COKTU(NOTE)" : "COKELAT SUSU",
-    "COKSU DK" : "COKELAT SUSU",
-    "COKELAT SUSU" : "COKELAT SUSU",
-    "COKLAT SUSU" : "COKELAT SUSU",
-    "COKELAT" : "COKELAT",
-    "ABU-ABU MUDA" : "ABU-ABU",
-    "BIRUMUDA/DENIM(NOTE)" : "BIRU MUDA",
-    "BIRU MUDA" : "BIRU MUDA",
-    "DENIM/BIRUMUDA(NOTE)" : "DENIM",
-    "DENIM" : "DENIM",
-    "EMERALD BLUE" : "EMERALD BLUE",
-    "BIRU TUA" : "BIRU TUA",
-    "EMERALD" : "EMERALD",
-    "HIJAU BOTOL" : "HIJAU BOTOL",
-    "HIJAU" : "HIJAU",
-    "MAROON DK" : "MAROON",
-    "MAROON" : "MAROON",
-    "MERAH TUA" : "MERAH",
-    "DUSTY ROSE" : "DUSTYPINK",
-    "DUSTYPINK" : "DUSTYPINK",
-    "UNGU MUDA" : "LAVENDER",
-    "LAVENDER/LILAC(NOTE)" : "LAVENDER",
-    "LAVENDER/LILAC" : "LAVENDER",
-    "LILAC" : "LAVENDER",
-    "LAVENDER" : "LAVENDER",
-    "BROKEN WHITE" : "BROKEN WHITE",
-    "CREAM" : "BROKEN WHITE",
-    "SILVER DK" : "SILVER",
-    "SILVER" : "SILVER",
-    "PERAK" : "SILVER",
-    "HITAM" : "HITAM",
-    "PUTIH" : "PUTIH",
-    "TERRACOTTA" : "TERRACOTTA",
-    "ROSEGOL DK" : "ROSE GOLD",
-    "ROSE GOLD" : "ROSE GOLD",
-    "NAVY DK" : "NAVY",
-    "NAVY" : "NAVY",
-    "SAGE" : "SAGE",
-    "GOLD" : "GOLD",
-    "EMAS" : "GOLD",
-    "TOSCA" : "TOSCA",
+    "ABU-ABU MUDA": "ABU-ABU",
+    "BIRU MUDA": "BIRU MUDA",
+    "BIRUMUDA": "BIRU MUDA",
+    "BIRUMUDA/DENIM(NOTE)": "DENIM",
+    "BIRU TUA": "BIRU TUA",
+    "BLUSH PINK": "BLUSH PINK",
+    "BROKEN WHITE": "BROKEN WHITE",
+    "CREAM": "BROKEN WHITE",
+    "BURGUNDY": "BURGUNDY",
+    "COKELAT": "COKELAT",
+    "COKELAT SUSU": "COKELAT SUSU",
+    "COKLAT SUSU": "COKELAT SUSU",
+    "COKSU": "COKELAT SUSU",
+    "COKSU DK": "COKELAT SUSU",
+    "COKSU/COKLATUA(NOTE)": "COKELAT TUA",
+    "COKSU/COKTU(NOTE)": "COKELAT TUA",
+    "COKELAT TUA": "COKELAT TUA",
+    "COKLAT TUA": "COKELAT TUA",
+    "COKTU": "COKELAT TUA",
+    "COKLATUA/COKSU(NOTE)": "COKELAT TUA",
+    "DENIM": "DENIM",
+    "DENIM/BIRUMUDA(NOTE)": "DENIM",
+    "DUSTY ROSE": "DUSTYPINK",
+    "DUSTYPINK": "DUSTYPINK",
+    "EMERALD": "EMERALD",
+    "EMERALD BLUE": "EMERALD BLUE",
+    "EMAS": "GOLD",
+    "GOLD": "GOLD",
+    "HIJAU": "HIJAU",
+    "HIJAU BOTOL": "HIJAU BOTOL",
+    "HITAM": "HITAM",
+    "LAVENDER": "LAVENDER",
+    "LAVENDER/LILAC": "LAVENDER",
+    "LAVENDER/LILAC(NOTE)": "LAVENDER",
+    "LILAC": "LAVENDER",
+    "UNGU MUDA": "LAVENDER",
+    "MAROON": "MAROON",
+    "MAROON DK": "MAROON",
+    "MERAH TUA": "MERAH",
+    "NAVY": "NAVY",
+    "NAVY DK": "NAVY",
+    "PINK": "PINK",
+    "PUTIH": "PUTIH",
+    "ROSE GOLD": "ROSE GOLD",
+    "ROSEGOL DK": "ROSE GOLD",
+    "ROSEGOLD": "ROSE GOLD",
+    "SAGE": "SAGE",
+    "PERAK": "SILVER",
+    "SILVER": "SILVER",
+    "SILVER DK": "SILVER",
+    "TERRACOTTA": "TERRACOTTA",
+    "TOSCA": "TOSCA"
 }
 
 SKU_MAPPING = {
-    "AERA LONG DRESS" : "AERA LONG DRESS",
-    "AERA LD" : "AERA LONG DRESS",
-    "TL DOT" : "TL DOT",
-    "TL POLKADOT" : "TL DOT",
-    "DRESS POLKADOT" : "TL DOT",
-    "POLKADOT" : "TL DOT",
-    "AERA" : "AERA",
-    "AMEERA" : "AMEERA",
-    "AURORA" : "AURORA",
-    "CALLA" : "CALLA",
-    "DASPOL" : "DASPOL",
-    "DK" : "DK",
-    "DOT KERUT" : "DOT KERUT",
-    "HAWAI" : "HAWAI",
-    "JASMINE" : "JASMINE",
-    "LULU" : "LULU",
-    "ADEYYA MIDI" : "M ADHEYYA",
-    "M ADHEYYA" : "M ADHEYYA",
-    "ADEYYA" : "M ADHEYYA",
-    "M UNICORN" : "M UNICORN",
-    "MELLA" : "MELLA",
-    "NAMI" : "NAMI",
-    "NINA" : "NINA",
-    "RENDA SUSUN" : "RENDA SUSUN",
-    "RM" : "RM",
-    "RP" : "RP",
-    "SEQUIN" : "SEQUIN",
-    "SLAYER" : "SLAYER",
-    "VIVI" : "VIVI",
-    "ZZ" : "ZZ",
-    "TL K3" : "K3",
-    "K3" : "K3",
-    "PELANGI" : "PELANGI",
-    "CALLA" : "CALLA",
-    "ELENA" : "ELENA",
-    "BBRM" : "BBRM",
-    "STL" : "STL",
-    "BBV" : "VIVI"
+    "AERA": "AERA",
+    "AERA LD": "AERA LONG DRESS",
+    "AERA LONG DRESS": "AERA LONG DRESS",
+    "ALYA": "ALYA",
+    "AMEERA": "AMEERA",
+    "AURORA": "AURORA",
+    "RM": "AURORA",
+    "BBRM": "BBRM",
+    "BELLE DOT": "BELLE DOT",
+    "K3 POLKADOT": "BELLE DOT",
+    "CALLA": "CALLA",
+    "DASPOL": "DASPOL",
+    "DRESS POLKADOT": "DASPOL",
+    "DK": "DK",
+    "DOT KERUT": "DOT KERUT",
+    "ELENA": "KT",
+    "KT": "KT",
+    "HAWAI": "HAWAI",
+    "JASMINE": "JASMINE",
+    "K3": "K3",
+    "TL K3": "K3",
+    "LULU": "LULU",
+    "ADEYYA": "M ADHEYYA",
+    "ADEYYA MIDI": "M ADHEYYA",
+    "M ADHEYYA": "M ADHEYYA",
+    "M UNICORN": "M UNICORN",
+    "MELLA": "MELLA",
+    "MR2": "MR2",
+    "MV": "MV",
+    "NAMI": "NAMI",
+    "NINA": "NINA",
+    "PELANGI": "PELANGI",
+    "POLKADOT": "RP",
+    "RP": "RP",
+    "RENDA SUSUN": "RENDA SUSUN",
+    "SEQUIN": "SEQUIN",
+    "SLAYER": "SLAYER",
+    "SLAYER SML": "SLAYER SML",
+    "STL": "STL",
+    "TL DOT": "TL DOT",
+    "TL POLKADOT": "TL DOT",
+    "BBV": "VIVI",
+    "VIVI": "VIVI",
+    "ZZ": "ZZ"
 }
 
 MUSLIM = [
+    "ALYA",
+    "MR2",
     "JASMINE",
     "M UNICORN",
     "AMEERA",
@@ -255,24 +269,35 @@ def transform_shopee(df):
     
     df_standard = map_data_payment(df_standard)
     
+    df_standard['SKU'] = df_standard['SKU'].astype(str).str.upper()
+    df_standard['SKU'] = df_standard['SKU'].map(SKU_MAPPING)
+
     sorted_keys = sorted(SKU_MAPPING.keys(), key=len, reverse=True)
     pattern = '|'.join(map(re.escape, sorted_keys))
     missing_sku_mask = df_standard['SKU'].isna()
 
-    extracted_variant = df_standard.loc[missing_sku_mask, 'variant'].str.upper().str.extract(f'({pattern})', expand=False)
-    extracted_product = df_standard.loc[missing_sku_mask, 'product_name'].str.upper().str.extract(f'({pattern})', expand=False)
-    extracted_keys = extracted_variant.fillna(extracted_product)
-    df_standard.loc[missing_sku_mask, 'SKU'] = extracted_keys.map(SKU_MAPPING)
+    extracted_variant_sku = df_standard.loc[missing_sku_mask, 'variant'].str.upper().str.extract(f'({pattern})', expand=False)
+    extracted_product_sku = df_standard.loc[missing_sku_mask, 'product_name'].str.upper().str.extract(f'({pattern})', expand=False)
+    extracted_keys = extracted_variant_sku.fillna(extracted_product_sku)
     
+    df_standard.loc[missing_sku_mask, 'SKU'] = extracted_keys.map(SKU_MAPPING)
     df_standard['SKU'] = df_standard['SKU'].str.upper()
     
     color_keys = sorted(COLOR_MAPPING.keys(), key=len, reverse=True)
     regex_pattern = '|'.join(map(re.escape, color_keys))
-    extracted_variant = df_standard['variant'].str.upper().str.extract(f'({regex_pattern})', expand=False)
-    extracted_product = df_standard['product_name'].str.upper().str.extract(f'({regex_pattern})', expand=False)
-    extracted_color = extracted_variant.fillna(extracted_product)
+    
+    extracted_variant_color = df_standard['variant'].str.upper().str.extract(f'({regex_pattern})', expand=False)
+    extracted_product_color = df_standard['product_name'].str.upper().str.extract(f'({regex_pattern})', expand=False)
+    extracted_color_raw = extracted_variant_color.fillna(extracted_product_color)
 
-    df_standard['color'] = extracted_color.map(COLOR_MAPPING)
+    ambiguous_mask = extracted_color_raw.str.contains(r'/|NOTE', na=False, regex=True)
+
+    extracted_notes = df_standard.loc[ambiguous_mask, 'notes'].fillna('').astype(str).str.upper().str.extract(f'({regex_pattern})', expand=False)
+
+    final_extracted_color = extracted_color_raw.copy()
+    final_extracted_color.loc[ambiguous_mask] = extracted_notes.fillna(extracted_color_raw.loc[ambiguous_mask])
+
+    df_standard['color'] = final_extracted_color.map(COLOR_MAPPING)
     
     df_standard['size'] = df_standard['variant'].str.upper().apply(extract_size)
     
@@ -293,7 +318,7 @@ def transform_shopee(df):
     
     df_standard['is_muslim_fashion'] = df_standard['SKU'].isin(MUSLIM)
     
-    df_standard = df_standard.drop(columns=['variant','weight', 'line_total', 'price_after_discount', 'product_name'])
+    df_standard = df_standard.drop(columns=['variant','weight', 'line_total', 'price_after_discount', 'product_name', 'notes'])
     
     variant = ['SKU', 'color', 'size']
     df_standard.loc[df_standard[variant].isna().any(axis=1), 'is_muslim_fashion'] = False
@@ -331,11 +356,18 @@ def transform_tokopedia(df):
     
     color_keys = sorted(COLOR_MAPPING.keys(), key=len, reverse=True)
     regex_pattern = '|'.join(map(re.escape, color_keys))
-    extracted_variant = df_standard['variant'].str.upper().str.extract(f'({regex_pattern})', expand=False)
-    extracted_product = df_standard['product_name'].str.upper().str.extract(f'({regex_pattern})', expand=False)
-    extracted_color = extracted_variant.fillna(extracted_product)
+    
+    extracted_variant_color = df_standard['variant'].str.upper().str.extract(f'({regex_pattern})', expand=False)
+    extracted_product_color = df_standard['product_name'].str.upper().str.extract(f'({regex_pattern})', expand=False)
+    extracted_color_raw = extracted_variant_color.fillna(extracted_product_color)
 
-    df_standard['color'] = extracted_color.map(COLOR_MAPPING)
+    ambiguous_mask = extracted_color_raw.str.contains(r'/|NOTE', na=False, regex=True)
+    extracted_notes = df_standard.loc[ambiguous_mask, 'notes'].fillna('').astype(str).str.upper().str.extract(f'({regex_pattern})', expand=False)
+
+    final_extracted_color = extracted_color_raw.copy()
+    final_extracted_color.loc[ambiguous_mask] = extracted_notes.fillna(extracted_color_raw.loc[ambiguous_mask])
+
+    df_standard['color'] = final_extracted_color.map(COLOR_MAPPING)
     
     df_standard['size'] = df_standard['variant'].str.upper().apply(extract_size)
     
@@ -357,7 +389,7 @@ def transform_tokopedia(df):
     df_standard['province'] = df_standard['province'].str.upper()
     df_standard['city'] = df_standard['city'].str.upper()
     
-    df_standard = df_standard.drop(columns=['variant','weight', 'line_total', 'product_name','SKU_platform_disc', 'SKU_seller_disc'])
+    df_standard = df_standard.drop(columns=['variant','weight', 'line_total', 'product_name','SKU_platform_disc', 'SKU_seller_disc', 'notes'])
     
     variant = ['SKU', 'color', 'size']
 
