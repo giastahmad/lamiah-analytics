@@ -261,7 +261,11 @@ def transform_shopee(df):
     df_standard = map_columns(df)
     df_standard = df_standard[REQUIRED_COLUMNS_SHOPEE]
     
-    df_standard = df_standard[df_standard['status'].str.lower() == 'selesai']
+    df_standard['status'] = df_standard['status'].astype(str).str.upper().str.strip()
+    
+    if df_standard['status'] != 'SELESAI':
+        df_standard['status'] = 'BATAL'
+    
     df_standard['total_amount'] = pd.to_numeric(df_standard['total_amount'], errors='coerce').fillna(0)
     df_standard = df_standard[df_standard['total_amount'] > 0]
 
@@ -332,7 +336,11 @@ def transform_tokopedia(df):
     df_standard = map_columns(df)
     df_standard = df_standard[REQUIRED_COLUMNS_TOKOPEDIA]
     
-    df_standard = df_standard[df_standard['status'].str.lower() == 'selesai']
+    df_standard['status'] = df_standard['status'].astype(str).str.upper().str.strip()
+    
+    if df_standard['status'] != 'SELESAI':
+        df_standard['status'] = 'BATAL'
+        
     df_standard['total_amount'] = pd.to_numeric(df_standard['total_amount'], errors='coerce').fillna(0)
     df_standard = df_standard[df_standard['total_amount'] > 0]
     

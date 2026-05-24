@@ -54,6 +54,7 @@ class OrderFact(Base):
     platform_id = Column(Integer, ForeignKey('platform_dimension.platform_id'))
     payment_method_id = Column(Integer, ForeignKey('payment_method_dimension.payment_method_id'))
     location_id = Column(Integer, ForeignKey('location_dimension.location_id'))
+    status = Column(String(20), nullable=False)
     quantity = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
     discount = Column(Float, default=0.0)

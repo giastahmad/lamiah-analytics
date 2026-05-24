@@ -180,14 +180,14 @@ def load_data_warehouse(df_transformed):
     print("   4. Filtering columns for Order Fact...")
     fact_columns = [
         'order_key', 'date_id', 'payment_method_id', 'product_id',
-        'platform_id', 'location_id', 'quantity', 'price',
+        'platform_id', 'location_id', 'status', 'quantity', 'price',
         'discount', 'total_amount'
     ]
     df_order_fact = df[fact_columns].copy()
     
     print("   5. Combining duplicate items within the same order...")
     df_order_fact = df_order_fact.groupby(
-        ['order_key', 'date_id', 'payment_method_id', 'product_id', 'platform_id', 'location_id'],
+        ['order_key', 'date_id', 'payment_method_id', 'product_id', 'platform_id', 'location_id', 'status'],
         dropna=False,
         as_index=False
     ).agg({
