@@ -1,15 +1,22 @@
-{% extends 'base.html' %}
-
-{% block title %}Lamiah Analytics{% endblock %}
-
-{% block content %}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+{% extends 'base.html' %} {% block title %}Lamiah Analytics{% endblock %} {%
+block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+  rel="stylesheet"
+/>
 
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
-  body, * { font-family: 'DM Sans', sans-serif; }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  body,
+  * {
+    font-family: "DM Sans", sans-serif;
+  }
 
   /* ── Page wrapper ── */
   .page-wrapper {
@@ -19,22 +26,31 @@
     flex-direction: column;
     align-items: center;
   }
-
-  .page-header { text-align: center; margin-bottom: 40px; }
-
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
   .page-eyebrow {
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: #EA2F14; margin-bottom: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ea2f14;
+    margin-bottom: 10px;
   }
-
   .page-title {
-    font-family: 'Lora', serif;
-    font-size: 28px; font-weight: 600;
-    color: #111827; margin: 0 0 8px; line-height: 1.3;
+    font-family: "Lora", serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 8px;
+    line-height: 1.3;
   }
-
-  .page-sub { font-size: 13.5px; color: #9ca3af; margin: 0; }
+  .page-sub {
+    font-size: 13.5px;
+    color: #9ca3af;
+    margin: 0;
+  }
 
   .upload-card {
     background: #fff;
@@ -46,227 +62,477 @@
   }
 
   /* ── Field ── */
-  .field-group { margin-bottom: 28px; }
-
-  .field-label {
-    display: flex; align-items: center; gap: 7px;
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: #6b7280; margin-bottom: 10px;
+  .field-group {
+    margin-bottom: 28px;
   }
-
-  .field-label svg { color: #EA2F14; flex-shrink: 0; }
+  .field-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 10px;
+  }
+  .field-label svg {
+    color: #ea2f14;
+    flex-shrink: 0;
+  }
 
   .form-select {
     width: 100%;
-    border: 1.5px solid #e5e7eb; border-radius: 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
     padding: 13px 16px;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
-    color: #374151; background: #fafaf9;
-    outline: none; transition: border-color 0.15s, background 0.15s;
+    font-size: 14px;
+    font-family: "DM Sans", sans-serif;
+    color: #374151;
+    background: #fafaf9;
+    outline: none;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
-    padding-right: 42px; cursor: pointer;
+    padding-right: 42px;
+    cursor: pointer;
   }
-
-  .form-select:focus { border-color: #EA2F14; background-color: #fff; }
+  .form-select:focus {
+    border-color: #ea2f14;
+    background-color: #fff;
+  }
 
   /* ── Drop Zone ── */
   .drop-zone {
     position: relative;
-    border: 1.5px dashed #d1d5db; border-radius: 14px;
-    padding: 36px 20px; text-align: center;
-    background: #fafaf9; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 14px;
+    padding: 36px 20px;
+    text-align: center;
+    background: #fafaf9;
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background 0.2s;
     margin-bottom: 10px;
   }
+  .drop-zone:hover {
+    border-color: #fb9e3a;
+    background: #fffbf5;
+  }
+  .drop-zone.dragover {
+    border-color: #ea2f14;
+    background: #fff8f6;
+  }
+  .drop-zone.has-file {
+    border-style: solid;
+    border-color: #fb9e3a;
+    background: #fffbf5;
+  }
 
-  .drop-zone:hover           { border-color: #FB9E3A; background: #fffbf5; }
-  .drop-zone.dragover        { border-color: #EA2F14; background: #fff8f6; }
-  .drop-zone.has-file        { border-style: solid; border-color: #FB9E3A; background: #fffbf5; }
+  .drop-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 14px;
+    color: #d1d5db;
+    transition: color 0.2s;
+  }
+  .drop-zone:hover .drop-icon,
+  .drop-zone.has-file .drop-icon {
+    color: #fb9e3a;
+  }
+  .drop-zone.dragover .drop-icon {
+    color: #ea2f14;
+  }
 
-  .drop-icon { width: 44px; height: 44px; margin: 0 auto 14px; color: #d1d5db; transition: color 0.2s; }
-  .drop-zone:hover .drop-icon, .drop-zone.has-file .drop-icon { color: #FB9E3A; }
-  .drop-zone.dragover .drop-icon { color: #EA2F14; }
+  .drop-zone-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 5px;
+  }
+  .drop-zone-subtext {
+    font-size: 12px;
+    color: #9ca3af;
+  }
 
-  .drop-zone-text    { font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 5px; }
-  .drop-zone-subtext { font-size: 12px; color: #9ca3af; }
+  #fileInput {
+    display: none;
+  }
 
-  #fileInput { display: none; }
+  /* ── File Preview Multiple ── */
+  .file-list-container {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .file-list-container.visible {
+    display: flex;
+  }
+  .file-list-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  .file-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .file-list-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
 
-  /* ── File Preview ── */
   .file-preview {
-    display: none; align-items: center; gap: 12px;
-    background: #fff8f0; border: 1px solid #fde8cc;
-    border-radius: 10px; padding: 11px 14px; margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff8f0;
+    border: 1px solid #fde8cc;
+    border-radius: 10px;
+    padding: 11px 14px;
   }
-
-  .file-preview.visible { display: flex; }
-
   .file-preview-icon {
-    width: 32px; height: 32px; background: #EA2F14;
-    border-radius: 8px; display: flex; align-items: center;
-    justify-content: center; flex-shrink: 0; color: #fff;
+    width: 32px;
+    height: 32px;
+    background: #ea2f14;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
   }
-
-  .file-preview-info { flex: 1; min-width: 0; }
-
+  .file-preview-info {
+    flex: 1;
+    min-width: 0;
+  }
   .file-preview-name {
-    font-size: 13px; font-weight: 500; color: #111827;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 13px;
+    font-weight: 500;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-preview-size {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 1px;
   }
 
-  .file-preview-size { font-size: 11px; color: #9ca3af; margin-top: 1px; }
-
-  .file-preview-remove {
-    background: none; border: none; cursor: pointer;
-    padding: 4px; color: #9ca3af; transition: color 0.15s;
-    flex-shrink: 0; display: flex;
+  .remove-all-btn {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ea2f14;
+    padding: 4px 8px;
+    margin-top: 4px;
+    border-radius: 6px;
+    transition: background 0.15s;
   }
-
-  .file-preview-remove:hover { color: #EA2F14; }
+  .remove-all-btn:hover {
+    background: #fee2e2;
+  }
 
   /* ── Submit ── */
   .btn-submit {
-    width: 100%; background: #EA2F14; color: #fff;
-    border: none; padding: 15px; border-radius: 12px;
-    font-size: 14px; font-weight: 600;
-    font-family: 'DM Sans', sans-serif; cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px; letter-spacing: 0.01em;
+    width: 100%;
+    background: #ea2f14;
+    color: #fff;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: "DM Sans", sans-serif;
+    cursor: pointer;
+    transition:
+      background 0.2s,
+      transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.01em;
   }
-
-  .btn-submit:hover:not(:disabled) { background: #FB9E3A; }
-  .btn-submit:active:not(:disabled) { transform: scale(0.99); }
-  .btn-submit:disabled { background: #d1d5db; cursor: not-allowed; }
+  .btn-submit:hover:not(:disabled) {
+    background: #fb9e3a;
+  }
+  .btn-submit:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+  .btn-submit:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+  }
 
   /* ── Toast ── */
   .toast-container {
-    position: fixed; top: 24px; right: 24px;
-    width: 360px; z-index: 9999;
-    display: flex; flex-direction: column; gap: 10px;
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    width: 360px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
-
   .toast {
-    border-radius: 12px; padding: 0; overflow: hidden;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
     border: 1px solid transparent;
-    transform: translateX(400px); opacity: 0;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+    transform: translateX(400px);
+    opacity: 0;
+    transition:
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      opacity 0.25s ease;
+  }
+  .toast.show {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  .toast-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .toast-icon-wrap {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .toast-body {
+    flex: 1;
+  }
+  .toast-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    line-height: 1.3;
+  }
+  .toast-message {
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .toast-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    opacity: 0.5;
+    flex-shrink: 0;
+    display: flex;
+    transition: opacity 0.15s;
+  }
+  .toast-close:hover {
+    opacity: 1;
+  }
+  .toast-detail {
+    border-top: 1px solid;
+    padding: 10px 16px 14px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .toast-detail ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .toast-detail li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .toast-detail li:last-child {
+    margin-bottom: 0;
+  }
+  .toast-detail li svg {
+    flex-shrink: 0;
+    margin-top: 2px;
   }
 
-  .toast.show { transform: translateX(0); opacity: 1; }
+  .toast.toast-success {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+  }
+  .toast.toast-success .toast-icon-wrap {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+  .toast.toast-success .toast-title {
+    color: #15803d;
+  }
+  .toast.toast-success .toast-message {
+    color: #166534;
+  }
+  .toast.toast-success .toast-close {
+    color: #166534;
+  }
+  .toast.toast-success .toast-detail {
+    border-color: #bbf7d0;
+    color: #166534;
+  }
 
-  .toast-header { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; }
-  .toast-icon-wrap { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-  .toast-body { flex: 1; }
-  .toast-title { font-size: 13px; font-weight: 600; margin: 0 0 4px; line-height: 1.3; }
-  .toast-message { font-size: 12.5px; line-height: 1.5; margin: 0; }
-  .toast-close { background: none; border: none; cursor: pointer; padding: 2px; opacity: 0.5; flex-shrink: 0; display: flex; transition: opacity 0.15s; }
-  .toast-close:hover { opacity: 1; }
-  .toast-detail { border-top: 1px solid; padding: 10px 16px 14px; font-size: 12px; line-height: 1.6; }
-  .toast-detail ul { margin: 0; padding: 0; list-style: none; }
-  .toast-detail li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
-  .toast-detail li:last-child { margin-bottom: 0; }
-  .toast-detail li svg { flex-shrink: 0; margin-top: 2px; }
+  .toast.toast-warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+  }
+  .toast.toast-warning .toast-icon-wrap {
+    background: #fef3c7;
+    color: #d97706;
+  }
+  .toast.toast-warning .toast-title {
+    color: #92400e;
+  }
+  .toast.toast-warning .toast-message {
+    color: #78350f;
+  }
+  .toast.toast-warning .toast-close {
+    color: #78350f;
+  }
+  .toast.toast-warning .toast-detail {
+    border-color: #fde68a;
+    color: #78350f;
+  }
 
-  .toast.toast-success { background: #f0fdf4; border-color: #bbf7d0; }
-  .toast.toast-success .toast-icon-wrap { background: #dcfce7; color: #16a34a; }
-  .toast.toast-success .toast-title { color: #15803d; }
-  .toast.toast-success .toast-message { color: #166534; }
-  .toast.toast-success .toast-close { color: #166534; }
-  .toast.toast-success .toast-detail { border-color: #bbf7d0; color: #166534; }
-
-  .toast.toast-warning { background: #fffbeb; border-color: #fde68a; }
-  .toast.toast-warning .toast-icon-wrap { background: #fef3c7; color: #d97706; }
-  .toast.toast-warning .toast-title { color: #92400e; }
-  .toast.toast-warning .toast-message { color: #78350f; }
-  .toast.toast-warning .toast-close { color: #78350f; }
-  .toast.toast-warning .toast-detail { border-color: #fde68a; color: #78350f; }
-
-  .toast.toast-info { background: #eff6ff; border-color: #bfdbfe; }
-  .toast.toast-info .toast-icon-wrap { background: #dbeafe; color: #2563eb; }
-  .toast.toast-info .toast-title { color: #1e40af; }
-  .toast.toast-info .toast-message { color: #1e3a8a; }
-  .toast.toast-info .toast-close { color: #1e3a8a; }
-  .toast.toast-info .toast-detail { border-color: #bfdbfe; color: #1e3a8a; }
-
-  .toast.toast-error { background: #fef2f2; border-color: #fecaca; }
-  .toast.toast-error .toast-icon-wrap { background: #fee2e2; color: #dc2626; }
-  .toast.toast-error .toast-title { color: #991b1b; }
-  .toast.toast-error .toast-message { color: #7f1d1d; }
-  .toast.toast-error .toast-close { color: #7f1d1d; }
-  .toast.toast-error .toast-detail { border-color: #fecaca; color: #7f1d1d; }
+  .toast.toast-error {
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+  .toast.toast-error .toast-icon-wrap {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  .toast.toast-error .toast-title {
+    color: #991b1b;
+  }
+  .toast.toast-error .toast-message {
+    color: #7f1d1d;
+  }
+  .toast.toast-error .toast-close {
+    color: #7f1d1d;
+  }
+  .toast.toast-error .toast-detail {
+    border-color: #fecaca;
+    color: #7f1d1d;
+  }
 
   /* ── Progress ── */
-  .progress-bar-wrap { display: none; height: 3px; background: #e5e7eb; border-radius: 99px; overflow: hidden; margin-bottom: 16px; }
-  .progress-bar-wrap.visible { display: block; }
-  .progress-bar { height: 100%; width: 0%; background: #EA2F14; border-radius: 99px; transition: width 0.4s ease; }
-
-  /* ════════════════════
-     RESPONSIVE
-  ════════════════════ */
-
-  /* Small desktop (992–1199px) */
-  @media (max-width: 1199px) {
-    .upload-card { max-width: 640px; }
+  .progress-bar-wrap {
+    display: none;
+    height: 3px;
+    background: #e5e7eb;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .progress-bar-wrap.visible {
+    display: block;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #ea2f14;
+    border-radius: 99px;
+    transition: width 0.4s ease;
   }
 
-  /* Tablet (768–991px) */
+  /* ════════════════════ RESPONSIVE ════════════════════ */
   @media (max-width: 991px) {
-    .page-wrapper { padding: 36px 20px; }
-    .page-title { font-size: 24px; }
-    .upload-card { padding: 28px; max-width: 100%; }
-    .toast-container { width: 320px; }
+    .page-wrapper {
+      padding: 36px 20px;
+    }
+    .page-title {
+      font-size: 24px;
+    }
+    .upload-card {
+      padding: 28px;
+      max-width: 100%;
+    }
+    .toast-container {
+      width: 320px;
+    }
   }
-
-  /* Mobile (≤767px) */
   @media (max-width: 767px) {
-    .page-wrapper { padding: 28px 14px; }
-    .page-title { font-size: 22px; }
-    .page-sub { font-size: 12.5px; }
-    .upload-card { padding: 20px 16px; border-radius: 16px; }
-    .drop-zone { padding: 28px 16px; }
-    .toast-container { width: calc(100vw - 28px); right: 14px; top: 14px; }
-    .btn-submit { padding: 13px; font-size: 13.5px; }
-    .form-select { font-size: 13px; padding: 11px 14px; }
-  }
-
-  /* Small mobile (≤575px) */
-  @media (max-width: 575px) {
-    .page-wrapper { padding: 20px 10px; }
-    .page-title { font-size: 20px; }
-    .page-header { margin-bottom: 28px; }
-    .upload-card { padding: 16px 14px; border-radius: 14px; }
-    .field-group { margin-bottom: 20px; }
-    .drop-zone { padding: 24px 12px; }
-    .drop-icon { width: 36px; height: 36px; }
-    .drop-zone-text { font-size: 13px; }
-    .toast-container { width: calc(100vw - 20px); right: 10px; top: 10px; }
+    .page-wrapper {
+      padding: 28px 14px;
+    }
+    .page-title {
+      font-size: 22px;
+    }
+    .page-sub {
+      font-size: 12.5px;
+    }
+    .upload-card {
+      padding: 20px 16px;
+      border-radius: 16px;
+    }
+    .drop-zone {
+      padding: 28px 16px;
+    }
+    .toast-container {
+      width: calc(100vw - 28px);
+      right: 14px;
+      top: 14px;
+    }
   }
 </style>
 
 <div class="page-wrapper">
-
   <div class="page-header">
     <div class="page-eyebrow">Data Management</div>
     <h1 class="page-title">Upload Data Transaksi</h1>
-    <p class="page-sub">Impor laporan penjualan dari platform e-commerce (.xlsx / .csv)</p>
+    <p class="page-sub">
+      Impor laporan penjualan dari platform e-commerce secara massal (.xlsx /
+      .csv)
+    </p>
   </div>
 
   <div class="upload-card">
     <form id="uploadForm">
-      <!-- Platform -->
       <div class="field-group">
         <label class="field-label" for="platformSelect">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
           </svg>
           Platform
         </label>
-        <select id="platformSelect" name="platform" class="form-select" required>
+        <select
+          id="platformSelect"
+          name="platform"
+          class="form-select"
+          required
+        >
           <option value="" disabled selected>Pilih sumber data...</option>
           <option value="shopee">Shopee</option>
           <option value="tokopedia">Tokopedia</option>
@@ -274,193 +540,361 @@
         </select>
       </div>
 
-      <!-- Drop Zone -->
-      <div class="field-group" style="margin-bottom: 12px;">
+      <div class="field-group" style="margin-bottom: 12px">
         <label class="field-label">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14 2 14 8 20 8" />
           </svg>
           File Laporan
         </label>
-        <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Klik atau tarik file ke area ini">
-          <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
+        <div id="dropZone" class="drop-zone" role="button" tabindex="0">
+          <svg
+            class="drop-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          <div class="drop-zone-text">Klik atau tarik file ke sini</div>
-          <div class="drop-zone-subtext">Mendukung format .xlsx dan .csv</div>
-          <input type="file" id="fileInput" name="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" required>
+          <div class="drop-zone-text" id="dropZoneText">
+            Klik atau tarik file ke sini
+          </div>
+          <div class="drop-zone-subtext">
+            Mendukung multiple file upload (.xlsx, .csv)
+          </div>
+          <input
+            type="file"
+            id="fileInput"
+            name="files"
+            accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+            multiple
+            required
+          />
         </div>
       </div>
 
-      <!-- File Preview -->
-      <div id="filePreview" class="file-preview" style="margin-bottom: 24px;">
-        <div class="file-preview-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-          </svg>
-        </div>
-        <div class="file-preview-info">
-          <div class="file-preview-name" id="previewName"></div>
-          <div class="file-preview-size" id="previewSize"></div>
-        </div>
-        <button type="button" class="file-preview-remove" id="removeFile" aria-label="Hapus file">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
+      <div id="fileListContainer" class="file-list-container"></div>
 
-      <!-- Progress -->
       <div class="progress-bar-wrap" id="progressWrap">
         <div class="progress-bar" id="progressBar"></div>
       </div>
 
       <button type="submit" id="submitBtn" class="btn-submit">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="16 16 12 12 8 16" />
+          <line x1="12" y1="12" x2="12" y2="21" />
+          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
         </svg>
-        <span id="submitLabel">Mulai Upload</span>
+        <span id="submitLabel">Mulai Upload Batch</span>
       </button>
     </form>
   </div>
 </div>
 
-<!-- Toast Container -->
-<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+<div
+  class="toast-container"
+  id="toastContainer"
+  aria-live="polite"
+  aria-atomic="true"
+></div>
 
 <script>
-  const dropZone     = document.getElementById('dropZone');
-  const fileInput    = document.getElementById('fileInput');
-  const uploadForm   = document.getElementById('uploadForm');
-  const filePreview  = document.getElementById('filePreview');
-  const previewName  = document.getElementById('previewName');
-  const previewSize  = document.getElementById('previewSize');
-  const removeFile   = document.getElementById('removeFile');
-  const submitBtn    = document.getElementById('submitBtn');
-  const submitLabel  = document.getElementById('submitLabel');
-  const progressWrap = document.getElementById('progressWrap');
-  const progressBar  = document.getElementById('progressBar');
-  const toastContainer = document.getElementById('toastContainer');
+  const dropZone = document.getElementById("dropZone");
+  const fileInput = document.getElementById("fileInput");
+  const uploadForm = document.getElementById("uploadForm");
+  const fileListContainer = document.getElementById("fileListContainer");
+  const dropZoneText = document.getElementById("dropZoneText");
+  const submitBtn = document.getElementById("submitBtn");
+  const submitLabel = document.getElementById("submitLabel");
+  const progressWrap = document.getElementById("progressWrap");
+  const progressBar = document.getElementById("progressBar");
+  const toastContainer = document.getElementById("toastContainer");
 
   const urlParams = new URLSearchParams(window.location.search);
-  const apiKey    = urlParams.get('key');
+  const apiKey = urlParams.get("key");
 
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
-  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-  dropZone.addEventListener('dragleave', (e) => { if (!dropZone.contains(e.relatedTarget)) dropZone.classList.remove('dragover'); });
-  dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleFileSelected(); } });
-  fileInput.addEventListener('change', handleFileSelected);
-  removeFile.addEventListener('click', () => { fileInput.value = ''; filePreview.classList.remove('visible'); dropZone.classList.remove('has-file'); });
+  dropZone.addEventListener("click", () => fileInput.click());
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+  });
+  dropZone.addEventListener("dragleave", (e) => {
+    if (!dropZone.contains(e.relatedTarget))
+      dropZone.classList.remove("dragover");
+  });
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      handleFileSelected();
+    }
+  });
+  fileInput.addEventListener("change", handleFileSelected);
 
   function handleFileSelected() {
-    if (!fileInput.files.length) return;
-    const file = fileInput.files[0];
-    const ext  = file.name.split('.').pop().toLowerCase();
-    if (!['xlsx','csv'].includes(ext)) {
-      showToast('error', 'Format Tidak Didukung', `File "${file.name}" bukan format yang diterima.`, ['Hanya file .xlsx dan .csv yang diizinkan.']);
-      fileInput.value = ''; return;
+    fileListContainer.innerHTML = "";
+
+    if (!fileInput.files.length) {
+      fileListContainer.classList.remove("visible");
+      dropZone.classList.remove("has-file");
+      dropZoneText.textContent = "Klik atau tarik file ke sini";
+      return;
     }
-    previewName.textContent = file.name;
-    previewSize.textContent = file.size > 1024*1024 ? (file.size/(1024*1024)).toFixed(1)+' MB' : (file.size/1024).toFixed(1)+' KB';
-    filePreview.classList.add('visible');
-    dropZone.classList.add('has-file');
+
+    const invalidFiles = [];
+    for (let i = 0; i < fileInput.files.length; i++) {
+      const ext = fileInput.files[i].name.split(".").pop().toLowerCase();
+      if (!["xlsx", "csv"].includes(ext))
+        invalidFiles.push(fileInput.files[i].name);
+    }
+
+    if (invalidFiles.length > 0) {
+      showToast(
+        "error",
+        "Format Tidak Didukung",
+        "Beberapa file bukan format yang diterima.",
+        invalidFiles,
+      );
+      fileInput.value = "";
+      return;
+    }
+
+    // Render list
+    for (let i = 0; i < fileInput.files.length; i++) {
+      const file = fileInput.files[i];
+      const sizeStr =
+        file.size > 1024 * 1024
+          ? (file.size / (1024 * 1024)).toFixed(1) + " MB"
+          : (file.size / 1024).toFixed(1) + " KB";
+
+      const previewDiv = document.createElement("div");
+      previewDiv.className = "file-preview";
+      previewDiv.innerHTML = `
+            <div class="file-preview-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="file-preview-info">
+                <div class="file-preview-name">${file.name}</div>
+                <div class="file-preview-size">${sizeStr}</div>
+            </div>
+        `;
+      fileListContainer.appendChild(previewDiv);
+    }
+
+    // Button Hapus Semua
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "remove-all-btn";
+    clearBtn.textContent = "Hapus Semua File";
+    clearBtn.onclick = () => {
+      fileInput.value = "";
+      handleFileSelected();
+    };
+    fileListContainer.appendChild(clearBtn);
+
+    fileListContainer.classList.add("visible");
+    dropZone.classList.add("has-file");
+    dropZoneText.textContent = `${fileInput.files.length} file dipilih`;
   }
 
   let progressInterval;
-
   function startProgress() {
-    progressWrap.classList.add('visible');
-    progressBar.style.width = '0%';
+    progressWrap.classList.add("visible");
+    progressBar.style.width = "0%";
     let pct = 0;
-    progressInterval = setInterval(() => { pct = Math.min(pct + Math.random()*8, 85); progressBar.style.width = pct+'%'; }, 200);
+    progressInterval = setInterval(() => {
+      pct = Math.min(pct + Math.random() * 8, 85);
+      progressBar.style.width = pct + "%";
+    }, 200);
   }
-
   function finishProgress() {
     clearInterval(progressInterval);
-    progressBar.style.width = '100%';
-    setTimeout(() => { progressWrap.classList.remove('visible'); progressBar.style.width = '0%'; }, 600);
+    progressBar.style.width = "100%";
+    setTimeout(() => {
+      progressWrap.classList.remove("visible");
+      progressBar.style.width = "0%";
+    }, 600);
   }
 
   const ICONS = {
     success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
     warning: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    info:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-    error:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
-    dot:     `<svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor" opacity="0.6"/></svg>`,
+    info: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    error: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    dot: `<svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor" opacity="0.6"/></svg>`,
   };
 
   function showToast(type, title, message, details) {
-    const toast = document.createElement('div');
+    const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
-    const detailHtml = details && details.length ? `<div class="toast-detail"><ul>${details.map(d => `<li>${ICONS['dot']}<span>${d}</span></li>`).join('')}</ul></div>` : '';
-    toast.innerHTML = `<div class="toast-header"><div class="toast-icon-wrap">${ICONS[type]}</div><div class="toast-body"><p class="toast-title">${title}</p><p class="toast-message">${message}</p></div><button class="toast-close" aria-label="Tutup">${ICONS['error']}</button></div>${detailHtml}`;
+    const detailHtml =
+      details && details.length
+        ? `<div class="toast-detail"><ul>${details.map((d) => `<li>${ICONS["dot"]}<span>${d}</span></li>`).join("")}</ul></div>`
+        : "";
+    toast.innerHTML = `<div class="toast-header"><div class="toast-icon-wrap">${ICONS[type]}</div><div class="toast-body"><p class="toast-title">${title}</p><p class="toast-message">${message}</p></div><button class="toast-close">${ICONS["error"]}</button></div>${detailHtml}`;
     toastContainer.appendChild(toast);
-    requestAnimationFrame(() => { requestAnimationFrame(() => toast.classList.add('show')); });
-    toast.querySelector('.toast-close').addEventListener('click', () => dismissToast(toast));
-    const autoDismiss = type==='success' ? 7000 : type==='info' ? 10000 : 12000;
-    setTimeout(() => dismissToast(toast), autoDismiss);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => toast.classList.add("show"));
+    });
+    toast
+      .querySelector(".toast-close")
+      .addEventListener("click", () => dismissToast(toast));
+    setTimeout(() => dismissToast(toast), type === "success" ? 7000 : 10000);
   }
 
   function dismissToast(toast) {
-    toast.classList.remove('show');
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(400px)';
+    toast.classList.remove("show");
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(400px)";
     setTimeout(() => toast.remove(), 350);
   }
 
   function interpretResponse(result, platform) {
-    const code = result.code || '';
-    const msg  = result.message || '';
+    const code = result.code || "";
+    const msg = result.message || "";
     const detail = result.detail || {};
 
-    if (code === 'NO_NEW_DATA') { showToast('info', 'Data Sudah Tersimpan', 'Semua transaksi dalam file ini sudah ada di database.', [`${detail.duplicate_count || 'Seluruh'} baris dilewati karena sudah pernah diimpor.`, 'Tidak ada perubahan pada data warehouse.']); return; }
-    if (code === 'ABORT_HIGH_UNKNOWN') { const rp = detail.row_pct!=null?detail.row_pct.toFixed(2):'?'; const rev = detail.rev_pct!=null?detail.rev_pct.toFixed(2):'?'; showToast('warning','Upload Dibatalkan — SKU Tidak Dikenal Terlalu Tinggi','Proses dihentikan sebelum data masuk ke database.',[ `Volume UNKNOWN: ${rp}% (batas: 5%).`, `Revenue UNKNOWN: ${rev}% (batas: 3%).`, 'Periksa SKU_MAPPING di transform.py.', 'Coba upload ulang setelah mapping diperbarui.']); return; }
-    if (code === 'SUCCESS_WITH_WARNING') { showToast('success','Data Berhasil Diimpor (Ada Peringatan)',`${detail.rows_loaded||'?'} transaksi baru berhasil dimuat.`,[`${detail.row_pct!=null?detail.row_pct.toFixed(2):'?'}% transaksi mengandung SKU belum terpetakan.`,'Disarankan perbarui SKU_MAPPING di transform.py.']); return; }
-    if (code === 'SUCCESS' || (result.status===200 || msg.toLowerCase().includes('berhasil'))) {
-      const details = [];
-      if (detail.rows_loaded!=null) details.push(`${detail.rows_loaded} baris baru berhasil masuk.`);
-      if (detail.rows_skipped!=null && detail.rows_skipped>0) details.push(`${detail.rows_skipped} baris dilewati.`);
-      details.push(`Platform: ${platform.charAt(0).toUpperCase()+platform.slice(1)}.`);
-      showToast('success','Upload Berhasil', msg||'Semua data berhasil diproses.', details); return;
+    if (code === "NO_NEW_DATA") {
+      showToast(
+        "info",
+        "Data Sudah Tersimpan",
+        "Tidak ada data baru yang masuk ke database.",
+        [
+          `${detail.rows_skipped || "Seluruh"} baris dari semua file dilewati karena sudah ada.`,
+        ],
+      );
+      return;
     }
-    if (code === 'VALIDATION_ERROR' || code === 'FORMAT_ERROR') { showToast('error','Format File Tidak Sesuai', msg, [detail.hint||'Pastikan file adalah laporan resmi dari platform yang dipilih.']); return; }
-    showToast('error','Terjadi Kesalahan', msg||'Server mengalami error yang tidak diketahui.', detail.trace ? [detail.trace.substring(0,160)+'...'] : ['Cek log server untuk detail lebih lanjut.']);
+
+    if (code === "SUCCESS_WITH_WARNING") {
+      const warnDetails = [`${detail.rows_loaded} baris baru berhasil masuk.`];
+
+      if (detail.warnings && detail.warnings.length > 0) {
+        detail.warnings.forEach((w) => warnDetails.push(`Info: ${w}`));
+      }
+
+      if (detail.errors && detail.errors.length > 0) {
+        detail.errors.forEach((e) => warnDetails.push(`Gagal: ${e}`));
+      }
+
+      showToast("warning", "Upload Selesai dengan Catatan", msg, warnDetails);
+      return;
+    }
+
+    if (code === "SUCCESS") {
+      const details = [];
+      if (detail.rows_loaded > 0)
+        details.push(`${detail.rows_loaded} total baris baru diimpor.`);
+      if (detail.rows_skipped > 0)
+        details.push(`${detail.rows_skipped} baris dilewati (duplikat).`);
+      details.push(`Platform: ${platform.toUpperCase()}`);
+      showToast("success", "Upload Batch Berhasil", msg, details);
+      return;
+    }
+
+    showToast(
+      "error",
+      "Terjadi Kesalahan",
+      msg,
+      detail.errors
+        ? detail.errors
+        : ["Cek log server untuk detail lebih lanjut."],
+    );
   }
 
-  uploadForm.addEventListener('submit', async (e) => {
+  uploadForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const platform = document.getElementById('platformSelect').value;
-    if (!platform) { showToast('error','Platform Belum Dipilih','Pilih platform e-commerce sebelum mengupload file.'); return; }
-    if (!fileInput.files.length) { showToast('error','File Belum Dipilih','Pilih file laporan terlebih dahulu.'); return; }
+    const platform = document.getElementById("platformSelect").value;
+    if (!platform) {
+      showToast(
+        "error",
+        "Platform Belum Dipilih",
+        "Pilih platform e-commerce.",
+      );
+      return;
+    }
+    if (!fileInput.files.length) {
+      showToast(
+        "error",
+        "File Belum Dipilih",
+        "Pilih file laporan terlebih dahulu.",
+      );
+      return;
+    }
 
     const formData = new FormData();
-    formData.append('platform', platform);
-    formData.append('file', fileInput.files[0]);
+    formData.append("platform", platform);
+
+    for (let i = 0; i < fileInput.files.length; i++) {
+      formData.append("files", fileInput.files[i]);
+    }
 
     submitBtn.disabled = true;
-    submitLabel.textContent = 'Memproses...';
+    submitLabel.textContent = "Memproses Batch...";
     startProgress();
 
     try {
-      let fetchUrl = '/api/upload';
+      let fetchUrl = "/api/upload";
       if (apiKey) fetchUrl += `?key=${apiKey}`;
-      const response = await fetch(fetchUrl, { method: 'POST', body: formData, headers: { 'X-API-KEY': apiKey||'' } });
+      const response = await fetch(fetchUrl, {
+        method: "POST",
+        body: formData,
+        headers: { "X-API-KEY": apiKey || "" },
+      });
       finishProgress();
+
       let result = {};
-      try { result = await response.json(); } catch (_) { result = { message: 'Respons server tidak dapat dibaca.' }; }
-      if (response.ok) { interpretResponse(result, platform); uploadForm.reset(); filePreview.classList.remove('visible'); dropZone.classList.remove('has-file'); }
-      else if (response.status===401) { showToast('error','Akses Ditolak','URL atau API key tidak valid. Hubungi administrator.'); }
-      else { interpretResponse(result, platform); }
+      try {
+        result = await response.json();
+      } catch (_) {
+        result = { message: "Respons server gagal dibaca." };
+      }
+
+      if (response.ok) {
+        interpretResponse(result, platform);
+        uploadForm.reset();
+        handleFileSelected();
+      } else {
+        interpretResponse(result, platform);
+      }
     } catch (err) {
       finishProgress();
-      showToast('error','Koneksi Terputus','Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', ['Pastikan server backend sedang berjalan.', err.message||''].filter(Boolean));
+      showToast(
+        "error",
+        "Koneksi Terputus",
+        "Tidak dapat terhubung ke server.",
+        [err.message],
+      );
     } finally {
       submitBtn.disabled = false;
-      submitLabel.textContent = 'Mulai Upload';
+      submitLabel.textContent = "Mulai Upload Batch";
     }
   });
 </script>

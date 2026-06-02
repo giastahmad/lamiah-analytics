@@ -75,10 +75,12 @@ COLOR_MAPPING = {
     "BIRUMUDA/DENIM(NOTE)": "DENIM",
     "BIRU TUA": "BIRU TUA",
     "BLUSH PINK": "BLUSH PINK",
+    "BUTTER": "BUTTER",
     "BROKEN WHITE": "BROKEN WHITE",
     "CREAM": "BROKEN WHITE",
     "BURGUNDY": "BURGUNDY",
     "COKELAT": "COKELAT",
+    "COKLAT": "COKELAT",
     "COKELAT SUSU": "COKELAT SUSU",
     "COKLAT SUSU": "COKELAT SUSU",
     "COKSU": "COKELAT SUSU",
@@ -215,28 +217,19 @@ def map_data_payment(df):
   return df
 
 def extract_size(val):
-  if pd.isna(val) or not isinstance(val, str):
+    if pd.isna(val) or not isinstance(val, str):
         return None
 
-  match = re.search(r'(\d+)(?:\s*-\s*(\d+))?', val)
-
-  if match:
-    num1 = int(match.group(1))
-    num2 = match.group(2)
-
-    if num2:
-      num2 = int(num2)
-
-      if num1 % 2 != 0:
-        return f"{num1}-{num2} Tahun"
-      else:
-        return f"{num2}-{num2+1} Tahun"
-    else:
-      if num1 % 2 == 0:
-        return f"{num1-1}-{num1} Tahun"
-      else:
-        return f"{num1}-{num1+1} Tahun"
-  else:
+    match = re.search(r'\d+', val)
+    
+    if match:
+        num = int(match.group(0))
+            
+        if num % 2 != 0:
+            return f"{num}-{num+1} Tahun"
+        else:
+            return f"{num-1}-{num} Tahun"
+            
     return None
 
 def fix_indonesian_price(val):
@@ -263,11 +256,11 @@ def transform_shopee(df):
     
     df_standard['status'] = df_standard['status'].astype(str).str.upper().str.strip()
     
-    if df_standard['status'] != 'SELESAI':
-        df_standard['status'] = 'BATAL'
+    df_standard.loc[df_standard['status'] != 'SELESAI', 'status'] = 'BATAL'
     
     df_standard['total_amount'] = pd.to_numeric(df_standard['total_amount'], errors='coerce').fillna(0)
-    df_standard = df_standard[df_standard['total_amount'] > 0]
+    kondisi_simpan = (df_standard['status'] == 'BATAL') | (df_standard['total_amount'] > 0)
+    df_standard = df_standard[kondisi_simpan]
 
     df_standard['date'] = pd.to_datetime(df_standard['date']).dt.date
     
@@ -338,11 +331,11 @@ def transform_tokopedia(df):
     
     df_standard['status'] = df_standard['status'].astype(str).str.upper().str.strip()
     
-    if df_standard['status'] != 'SELESAI':
-        df_standard['status'] = 'BATAL'
+    df_standard.loc[df_standard['status'] != 'SELESAI', 'status'] = 'BATAL'
         
     df_standard['total_amount'] = pd.to_numeric(df_standard['total_amount'], errors='coerce').fillna(0)
-    df_standard = df_standard[df_standard['total_amount'] > 0]
+    kondisi_simpan = (df_standard['status'] == 'BATAL') | (df_standard['total_amount'] > 0)
+    df_standard = df_standard[kondisi_simpan]
     
     df_standard['date'] = pd.to_datetime(df_standard['date']).dt.date
     

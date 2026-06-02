@@ -66,7 +66,7 @@ def upload_data():
             401,
         )
 
-    if "file" not in request.files:
+    if "files" not in request.files:
         return (
             jsonify(
                 {"code": "VALIDATION_ERROR", "message": "Tidak ada file yang dikirim"}
@@ -74,11 +74,19 @@ def upload_data():
             400,
         )
 
-    file = request.files["file"]
+    files = request.files.getlist("files")
     platform = request.form.get("platform")
 
-    if file.filename == "":
-        return jsonify({"code": "VALIDATION_ERROR", "message": "Nama file kosong"}), 400
+    if not files or files[0].filename == "":
+        return (
+            jsonify(
+                {
+                    "code": "VALIDATION_ERROR",
+                    "message": "File kosong atau tidak dipilih",
+                }
+            ),
+            400,
+        )
 
     if not platform:
         return (
@@ -92,127 +100,92 @@ def upload_data():
         )
 
     allowed_extensions = [".xlsx", ".csv"]
-    _, ext = os.path.splitext(file.filename)
-    if ext.lower() not in allowed_extensions:
-        return (
-            jsonify(
-                {
-                    "code": "FORMAT_ERROR",
-                    "message": "Hanya file .xlsx dan .csv yang diperbolehkan",
-                    "detail": {
-                        "hint": "Gunakan file Ekspor resmin dari Shopee, Tokopedia, atau TikTok Shop."
-                    },
-                }
-            ),
-            400,
-        )
 
-    filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-    file.save(filepath)
+    total_loaded = 0
+    total_skipped = 0
+    has_warnings = False
+    file_errors = []
+    file_warnings = []
 
-    try:
-        raw_df = extract.extract_data(filepath, platform)
+    # LOOPING
+    for file in files:
+        if file.filename == "":
+            continue
 
-        platform_lower = platform.lower()
-        if platform_lower == "shopee":
-            transformed_df = transform.transform_shopee(raw_df)
-        elif platform_lower in ["tokopedia", "tiktok"]:
-            transformed_df = transform.transform_tokopedia(raw_df)
-        else:
-            raise ValueError(
-                f"Fungsi transformasi untuk platform {platform} belum tersedia."
-            )
+        _, ext = os.path.splitext(file.filename)
+        if ext.lower() not in allowed_extensions:
+            file_errors.append(f"{file.filename} (Format tidak valid)")
+            continue
 
-        load_result = load.load_data_warehouse(transformed_df)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+        file.save(filepath)
 
-        if load_result is None:
-            return (
-                jsonify(
-                    {
-                        "code": "SUCCESS",
-                        "message": f"File berhasil diupload dan diproses untuk platform {platform}.",
-                        "detail": {},
-                    }
-                ),
-                200,
-            )
+        try:
+            raw_df = extract.extract_data(filepath, platform)
 
-        code = load_result.get("code", "SUCCESS")
+            platform_lower = platform.lower()
+            if platform_lower == "shopee":
+                transformed_df = transform.transform_shopee(raw_df)
+            elif platform_lower in ["tokopedia", "tiktok"]:
+                transformed_df = transform.transform_tokopedia(raw_df)
+            else:
+                raise ValueError(f"Platform {platform} belum didukung.")
 
-        if code == "NO_NEW_DATA":
-            return (
-                jsonify(
-                    {
-                        "code": "NO_NEW_DATA",
-                        "message": "Semua transaksi dalam file ini sudah ada di database.",
-                        "detail": {
-                            "duplicate_count": load_result.get("duplicate_count", 0)
-                        },
-                    }
-                ),
-                200,
-            )
+            load_result = load.load_data_warehouse(transformed_df)
 
-        if code == "ABORT_HIGH_UNKNOWN":
-            return (
-                jsonify(
-                    {
-                        "code": "ABORT_HIGH_UNKNOWN",
-                        "message": "Upload dibatalkan: persentase SKU UNKNOWN terlalu tinggi.",
-                        "detail": {
-                            "row_pct": load_result.get("row_pct"),
-                            "rev_pct": load_result.get("rev_pct"),
-                        },
-                    }
-                ),
-                200,
-            )
+            if load_result:
+                code = load_result.get("code", "SUCCESS")
+                if code in ["SUCCESS_WITH_WARNING", "ABORT_HIGH_UNKNOWN"]:
+                    has_warnings = True
+                    row_pct = load_result.get("row_pct", 0)
+                    if row_pct > 0:
+                        file_warnings.append(
+                            f"{file.filename}: {row_pct}% SKU Tidak Dikenal"
+                        )
 
-        if code == "SUCCESS_WITH_WARNING":
-            return (
-                jsonify(
-                    {
-                        "code": "SUCCESS_WITH_WARNING",
-                        "message": f"Data berhasil dimuat dengan catatan.",
-                        "detail": {
-                            "rows_loaded": load_result.get("rows_loaded"),
-                            "rows_skipped": load_result.get("rows_skipped", 0),
-                            "row_pct": load_result.get("row_pct"),
-                        },
-                    }
-                ),
-                200,
-            )
+                total_loaded += load_result.get("rows_loaded", 0)
+                total_skipped += load_result.get("rows_skipped", 0) or load_result.get(
+                    "duplicate_count", 0
+                )
 
-        # SUCCESS normal
-        return (
-            jsonify(
-                {
-                    "code": "SUCCESS",
-                    "message": f"File berhasil diproses untuk platform {platform}.",
-                    "detail": {
-                        "rows_loaded": load_result.get("rows_loaded"),
-                        "rows_skipped": load_result.get("rows_skipped", 0),
-                    },
-                }
-            ),
-            200,
-        )
+        except Exception as e:
+            file_errors.append(f"{file.filename} ({str(e)})")
 
-    except Exception as e:
-        import traceback
-
-        tb = traceback.format_exc()
+    if len(file_errors) == len(files) and len(files) > 0:
         return (
             jsonify(
                 {
                     "code": "SERVER_ERROR",
-                    "message": f"Terjadi kesalahan sistem: {str(e)}",
-                    "detail": {"trace": tb[-500:]},
+                    "message": "Semua file gagal diproses.",
+                    "detail": {"errors": file_errors},
                 }
             ),
             500,
         )
+
+    final_code = "SUCCESS"
+    if has_warnings or file_errors:
+        final_code = "SUCCESS_WITH_WARNING"
+    elif total_loaded == 0 and total_skipped > 0:
+        final_code = "NO_NEW_DATA"
+
+    msg = f"{len(files) - len(file_errors)} dari {len(files)} file berhasil diproses."
+
+    return (
+        jsonify(
+            {
+                "code": final_code,
+                "message": msg,
+                "detail": {
+                    "rows_loaded": total_loaded,
+                    "rows_skipped": total_skipped,
+                    "errors": file_errors if file_errors else None,
+                    "warnings": file_warnings if file_warnings else None,
+                },
+            }
+        ),
+        200,
+    )
 
 
 # ==========================================
@@ -229,8 +202,23 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         if platform:
             base_filter.append(PlatformDimension.platform_name == platform)
 
+        success_filter = base_filter + [OrderFact.status == "SELESAI"]
+
         def _base(cols):
-            """Query dengan anchor OrderFact, join date & platform, apply filter."""
+
+            return (
+                session.query(*cols)
+                .select_from(OrderFact)
+                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+                .join(
+                    PlatformDimension,
+                    OrderFact.platform_id == PlatformDimension.platform_id,
+                )
+                .filter(*success_filter)
+            )
+
+        def _all_status(cols):
+
             return (
                 session.query(*cols)
                 .select_from(OrderFact)
@@ -253,7 +241,27 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         platform_options = [p[0] for p in all_platforms]
 
         # --------------------------------------------------
-        # 2. KPI: Jumlah Model
+        # 2. KPI:Persentase Pembatalan
+        # --------------------------------------------------
+
+        total_all_status = (
+            _all_status([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
+        )
+        total_cancelled = (
+            _all_status([func.count(func.distinct(OrderFact.order_key))])
+            .filter(OrderFact.status == "BATAL")
+            .scalar()
+            or 0
+        )
+
+        cancellation_rate = (
+            round((total_cancelled / total_all_status * 100), 1)
+            if total_all_status > 0
+            else 0
+        )
+
+        # --------------------------------------------------
+        # 3. KPI: Jumlah Model
         # --------------------------------------------------
         num_models = (
             _base([func.count(func.distinct(ProductDimension.product_model))])
@@ -263,19 +271,19 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         )
 
         # --------------------------------------------------
-        # 3. KPI: Total Order
+        # 4. KPI: Total Order
         # --------------------------------------------------
         num_orders = (
             _base([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
         )
 
         # --------------------------------------------------
-        # 4. KPI: Total Pendapatan
+        # 5. KPI: Total Pendapatan
         # --------------------------------------------------
         revenue_total = _base([func.sum(OrderFact.total_amount)]).scalar() or 0
 
         # --------------------------------------------------
-        # 5. KPI: Jumlah Kota
+        # 6. KPI: Jumlah Kota
         # --------------------------------------------------
         num_cities = (
             _base([func.count(func.distinct(LocationDimension.city))])
@@ -288,12 +296,12 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         )
 
         # --------------------------------------------------
-        # 6. KPI: AOV
+        # 7. KPI: AOV
         # --------------------------------------------------
         aov = (revenue_total / num_orders) if num_orders > 0 else 0
 
         # --------------------------------------------------
-        # 7. KPI: Ramadhan vs Normal
+        # 8. KPI: Ramadhan vs Normal
         # --------------------------------------------------
         ramadhan_filter = base_filter + [DateDimension.is_ramadhan == 1]
         normal_filter = base_filter + [DateDimension.is_ramadhan == 0]
@@ -366,7 +374,7 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
             ramadhan_lift = None
 
         # --------------------------------------------------
-        # 8. Chart: Bar — Quantity per Warna
+        # 9. Chart: Bar — Quantity per Warna
         # --------------------------------------------------
         color_data = (
             _base([ProductDimension.product_color, func.sum(OrderFact.quantity)])
@@ -377,7 +385,7 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         )
 
         # --------------------------------------------------
-        # 9. Chart: Line — Penjualan per Platform per Tanggal
+        # 10. Chart: Line — Penjualan per Platform per Tanggal
         # --------------------------------------------------
         line_data = (
             _base(
@@ -393,7 +401,7 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         )
 
         # --------------------------------------------------
-        # 10. Top 5 Best Selling Models
+        # 11. Top 5 Best Selling Models
         # --------------------------------------------------
         top_products = (
             _base([ProductDimension.product_model, func.sum(OrderFact.quantity)])
@@ -405,20 +413,36 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         )
 
         # --------------------------------------------------
-        # 11. Map: Persebaran per Provinsi
+        # 12. Map: Persebaran per Provinsi
         # --------------------------------------------------
+        map_loc_filter = []
+        if start_date:
+            map_loc_filter.append(DateDimension.date >= start_date)
+        if end_date:
+            map_loc_filter.append(DateDimension.date <= end_date)
+        if platform:
+            map_loc_filter.append(PlatformDimension.platform_name == platform)
+        map_loc_filter.append(OrderFact.status == "SELESAI")
+
         map_query = (
-            _base([LocationDimension.province, func.sum(OrderFact.quantity)])
+            session.query(LocationDimension.province, func.sum(OrderFact.quantity))
+            .select_from(OrderFact)
+            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+            .join(
+                PlatformDimension,
+                OrderFact.platform_id == PlatformDimension.platform_id,
+            )
             .join(
                 LocationDimension,
                 OrderFact.location_id == LocationDimension.location_id,
             )
+            .filter(*map_loc_filter)
             .group_by(LocationDimension.province)
             .all()
         )
 
         # --------------------------------------------------
-        # 12. Chart: Avg Basket Size per Payment Method
+        # 13. Chart: Avg Basket Size per Payment Method
         # --------------------------------------------------
         payment_data = (
             _base(
@@ -437,7 +461,7 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         )
 
         # --------------------------------------------------
-        # 13. Chart: Product Size Distribution
+        # 14. Chart: Product Size Distribution
         # --------------------------------------------------
         size_data = (
             _base([ProductDimension.product_size, func.count(OrderFact.order_key)])
@@ -451,11 +475,15 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         for row in map_query:
             map_data.append([row[0], int(row[1])])
 
+        print("MAP DATA:", map_data)
+
         # --------------------------------------------------
         # Return
         # --------------------------------------------------
         return {
             "platform_options": platform_options,
+            "cancellation_rate": cancellation_rate,
+            "total_all_status": total_all_status,
             "num_models": num_models,
             "num_orders": num_orders,
             "revenue_month": float(revenue_total),

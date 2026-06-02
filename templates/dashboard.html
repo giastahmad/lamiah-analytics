@@ -822,31 +822,23 @@
       <div class="kpi-bg-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
           stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-          <polyline points="23 7 16 7 16 14" />
+          <circle cx="12" cy="12" r="10" />
+          <line x1="15" y1="9" x2="9" y2="15" />
+          <line x1="9" y1="9" x2="15" y2="15" />
         </svg>
       </div>
       <div class="kpi-label">
-        <span class="icon-wrap"><svg viewBox="0 0 24 24">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            <polyline points="23 7 16 7 16 14" />
-          </svg></span>
-        Lonjakan Ramadhan
+        <span class="icon-wrap">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </span>
+        Cancellation Rate
       </div>
-      <div class="kpi-value">
-        {% if m.ramadhan_lift is none %}
-        <span style="font-size: 16px; color: #9ca3af;">—</span>
-        {% else %}
-        {{ m.ramadhan_lift }}%
-        {% endif %}
-      </div>
-      <div class="kpi-sub">
-        {% if m.ramadhan_lift is none %}
-        Tidak ada data pembanding
-        {% else %}
-        vs rata-rata hari biasa
-        {% endif %}
-      </div>
+      <div class="kpi-value" style="font-size: 20px;">{{ m.cancellation_rate }}%</div>
+      <div class="kpi-sub">Dari {{ "{:,}".format(m.total_all_status) }} total pesanan masuk</div>
     </div>
 
   </div>
@@ -1218,36 +1210,89 @@
   });
 
   // Ramadhan toggle
-  document.getElementById('ramadhanToggle').addEventListener('change', function () {
-    const cmp = document.getElementById('cmpRow');
-    const label = document.getElementById('toggleLabel');
-    if (this.checked) { cmp.classList.add('open'); label.style.color = '#df5e33'; label.style.fontWeight = '600'; }
-    else { cmp.classList.remove('open'); label.style.color = '#6b7280'; label.style.fontWeight = '500'; }
-  });
+  const ramadhanToggle = document.getElementById('ramadhanToggle');
+  if (ramadhanToggle) {
+    ramadhanToggle.addEventListener('change', function () {
+      const cmp = document.getElementById('cmpRow');
+      const label = document.getElementById('toggleLabel');
+      if (this.checked) {
+        cmp.classList.add('open');
+        label.style.color = '#df5e33';
+        label.style.fontWeight = '600';
+      } else {
+        cmp.classList.remove('open');
+        label.style.color = '#6b7280';
+        label.style.fontWeight = '500';
+      }
+    });
+  }
 
   // Province map
-  google.charts.load('current', { packages: ['geochart'] });
+  function drawRegionMap() {
+    if (typeof google === 'undefined' || !google.visualization) {
+      setTimeout(drawRegionMap, 200);
+      return;
+    }
+
+    if (!m.map_data || m.map_data.length <= 1) {
+      document.getElementById('regions_div').innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:13px;">Tidak ada data provinsi</div>';
+      return;
+    }
+
+    try {
+      const isoMapping = {
+        "DKI JAKARTA": "ID-JK", "DI YOGYAKARTA": "ID-YO", "JAWA BARAT": "ID-JB", "JAWA TENGAH": "ID-JT", "JAWA TIMUR": "ID-JI",
+        "BANTEN": "ID-BT", "BALI": "ID-BA", "ACEH": "ID-AC", "SUMATERA UTARA": "ID-SU", "SUMATERA BARAT": "ID-SB",
+        "RIAU": "ID-RI", "KEPULAUAN RIAU": "ID-KR", "JAMBI": "ID-JA", "SUMATERA SELATAN": "ID-SS", "BENGKULU": "ID-BE",
+        "LAMPUNG": "ID-LA", "KEPULAUAN BANGKA BELITUNG": "ID-BB", "NUSA TENGGARA BARAT": "ID-NB", "NUSA TENGGARA TIMUR": "ID-NT",
+        "KALIMANTAN BARAT": "ID-KB", "KALIMANTAN TENGAH": "ID-KT", "KALIMANTAN SELATAN": "ID-KS", "KALIMANTAN TIMUR": "ID-KI",
+        "KALIMANTAN UTARA": "ID-KU", "SULAWESI UTARA": "ID-SA", "SULAWESI TENGAH": "ID-ST", "SULAWESI SELATAN": "ID-SN",
+        "SULAWESI TENGGARA": "ID-SG", "GORONTALO": "ID-GO", "SULAWESI BARAT": "ID-SR", "MALUKU": "ID-MA", "MALUKU UTARA": "ID-MU",
+        "PAPUA": "ID-PA", "PAPUA BARAT": "ID-PB", "PAPUA BARAT DAYA": "ID-PD", "PAPUA TENGAH": "ID-PT"
+      };
+
+      const mapDataCleaned = m.map_data.map(row => {
+        const copy = [...row];
+        if (typeof copy[0] === 'string' && copy[0] !== 'Provinsi') {
+          const n = copy[0].toUpperCase().trim();
+          if (isoMapping[n]) copy[0] = { v: isoMapping[n], f: copy[0] };
+        }
+        return copy;
+      });
+
+      const data = google.visualization.arrayToDataTable(mapDataCleaned);
+      const chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
+      const options = {
+        region: 'ID',
+        displayMode: 'regions',
+        resolution: 'provinces',
+        colorAxis: { colors: ['#f7e4e1', '#EA2F14'] },
+        backgroundColor: '#ffffff',
+        datalessRegionColor: '#f8f7f4',
+        defaultColor: '#f3f4f6'
+      };
+
+      chart.draw(data, options);
+      window.addEventListener('resize', () => chart.draw(data, options));
+    } catch (err) {
+      console.error('GeoChart error:', err);
+      document.getElementById('regions_div').innerHTML =
+        '<div style="color:red;padding:20px;font-size:12px;">Map error: ' + err.message + '</div>';
+    }
+  }
+
+  google.charts.load('current', { packages: ['geochart'], language: 'id' });
   google.charts.setOnLoadCallback(() => {
-    const isoMapping = {
-      "DKI JAKARTA": "ID-JK", "DI YOGYAKARTA": "ID-YO", "JAWA BARAT": "ID-JB", "JAWA TENGAH": "ID-JT", "JAWA TIMUR": "ID-JI",
-      "BANTEN": "ID-BT", "BALI": "ID-BA", "ACEH": "ID-AC", "SUMATERA UTARA": "ID-SU", "SUMATERA BARAT": "ID-SB",
-      "RIAU": "ID-RI", "KEPULAUAN RIAU": "ID-KR", "JAMBI": "ID-JA", "SUMATERA SELATAN": "ID-SS", "BENGKULU": "ID-BE",
-      "LAMPUNG": "ID-LA", "KEPULAUAN BANGKA BELITUNG": "ID-BB", "NUSA TENGGARA BARAT": "ID-NB", "NUSA TENGGARA TIMUR": "ID-NT",
-      "KALIMANTAN BARAT": "ID-KB", "KALIMANTAN TENGAH": "ID-KT", "KALIMANTAN SELATAN": "ID-KS", "KALIMANTAN TIMUR": "ID-KI",
-      "KALIMANTAN UTARA": "ID-KU", "SULAWESI UTARA": "ID-SA", "SULAWESI TENGAH": "ID-ST", "SULAWESI SELATAN": "ID-SN",
-      "SULAWESI TENGGARA": "ID-SG", "GORONTALO": "ID-GO", "SULAWESI BARAT": "ID-SR", "MALUKU": "ID-MA", "MALUKU UTARA": "ID-MU",
-      "PAPUA": "ID-PA", "PAPUA BARAT": "ID-PB", "PAPUA BARAT DAYA": "ID-PD", "PAPUA TENGAH": "ID-PT"
-    };
-    const mapDataCleaned = m.map_data.map(row => {
-      if (typeof row[0] === 'string' && row[0] !== 'Provinsi') {
-        const n = row[0].toUpperCase().trim();
-        if (isoMapping[n]) row[0] = { v: isoMapping[n], f: n };
+    setTimeout(drawRegionMap, 100);
+  });
+
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      if (document.getElementById('regions_div').children.length === 0) {
+        drawRegionMap();
       }
-      return row;
-    });
-    const data = google.visualization.arrayToDataTable(mapDataCleaned);
-    const chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
-    chart.draw(data, { region: 'ID', displayMode: 'regions', resolution: 'provinces', colorAxis: { colors: ['#f7e4e1', '#EA2F14'] }, backgroundColor: '#ffffff', datalessRegionColor: '#f8f7f4', defaultColor: '#f3f4f6' });
+    }, 800);
   });
 
   function validateAndSubmit() {

@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 from rapidfuzz import process, fuzz
+from sqlalchemy.dialects.mysql import insert
 from config import engine 
 
 def clean_and_override_province(province_str):
@@ -153,6 +154,25 @@ def load_product_dimension(engine_conn, df_transformed):
 
     return df_fact_ready
 
+def mysql_upsert(table, conn, keys, data_iter):
+    data = [dict(zip(keys, row)) for row in data_iter]
+    
+    insert_stmt = insert(table.table).values(data)
+    
+    upsert_stmt = insert_stmt.on_duplicate_key_update(
+        status=insert_stmt.inserted.status,
+        date_id=insert_stmt.inserted.date_id,
+        payment_method_id=insert_stmt.inserted.payment_method_id,
+        platform_id=insert_stmt.inserted.platform_id,
+        location_id=insert_stmt.inserted.location_id,
+        quantity=insert_stmt.inserted.quantity,
+        price=insert_stmt.inserted.price,
+        discount=insert_stmt.inserted.discount,
+        total_amount=insert_stmt.inserted.total_amount
+    )
+    
+    conn.execute(upsert_stmt)
+
 def load_data_warehouse(df_transformed):
     print("\n[START] Starting the Load process to the Data Warehouse...")
     
@@ -197,86 +217,93 @@ def load_data_warehouse(df_transformed):
         'total_amount': 'sum'
     })
     
-    print("   6. Checking potential duplicate entries in order_fact...")
-    current_order_keys = df_order_fact['order_key'].dropna().unique().tolist()
-    rows_skipped = 0
+    # print("   6. Checking potential duplicate entries in order_fact...")
+    # current_order_keys = df_order_fact['order_key'].dropna().unique().tolist()
+    # rows_skipped = 0
     
-    if current_order_keys:
-        keys_str = "', '".join([str(k).replace("'", "''") for k in current_order_keys])
-        query_check = f"SELECT order_key, product_id FROM order_fact WHERE order_key IN ('{keys_str}')"
+    # if current_order_keys:
+    #     keys_str = "', '".join([str(k).replace("'", "''") for k in current_order_keys])
+    #     query_check = f"SELECT order_key, product_id FROM order_fact WHERE order_key IN ('{keys_str}')"
         
-        try:
-            existing_facts = pd.read_sql(query_check, engine)
+    #     try:
+    #         existing_facts = pd.read_sql(query_check, engine)
             
-            if not existing_facts.empty:
-                print(f"      -> Found {len(existing_facts)} existing product records. Filtering...")
-                merged_fact   = df_order_fact.merge(existing_facts, on=['order_key', 'product_id'], how='left', indicator=True)
-                df_order_fact_final = merged_fact[merged_fact['_merge'] == 'left_only'].drop(columns=['_merge'])
-                rows_skipped = len(existing_facts)
-            else:
-                df_order_fact_final = df_order_fact
-        except Exception as e:
-            df_order_fact_final = df_order_fact
-    else:
-        df_order_fact_final = df_order_fact
+    #         if not existing_facts.empty:
+    #             print(f"      -> Found {len(existing_facts)} existing product records. Filtering...")
+    #             merged_fact   = df_order_fact.merge(existing_facts, on=['order_key', 'product_id'], how='left', indicator=True)
+    #             df_order_fact_final = merged_fact[merged_fact['_merge'] == 'left_only'].drop(columns=['_merge'])
+    #             rows_skipped = len(existing_facts)
+    #         else:
+    #             df_order_fact_final = df_order_fact
+    #     except Exception as e:
+    #         df_order_fact_final = df_order_fact
+    # else:
+    #     df_order_fact_final = df_order_fact
  
-    # ── All rows already exist? ─────────────────────────────────────────────────
-    if df_order_fact_final.empty and rows_skipped > 0:
-        print("[INFO] All data in this file already exists in the database (ignored).")
-        return {
-            "code":           "NO_NEW_DATA",
-            "rows_loaded":    0,
-            "rows_skipped":   rows_skipped,
-            "duplicate_count": rows_skipped,
-        }
+    # # ── All rows already exist? ─────────────────────────────────────────────────
+    # if df_order_fact_final.empty and rows_skipped > 0:
+    #     print("[INFO] All data in this file already exists in the database (ignored).")
+    #     return {
+    #         "code":           "NO_NEW_DATA",
+    #         "rows_loaded":    0,
+    #         "rows_skipped":   rows_skipped,
+    #         "duplicate_count": rows_skipped,
+    #     }
  
     # ── Unknown SKU quality gate ────────────────────────────────────────────────
-    UNKNOWN_PRODUCT_ID = 19
- 
-    total_rows    = len(df_order_fact_final)
-    unknown_rows  = len(df_order_fact_final[df_order_fact_final['product_id'] == UNKNOWN_PRODUCT_ID])
-    total_revenue = df_order_fact_final['total_amount'].sum()
-    unknown_revenue = df_order_fact_final[
-        df_order_fact_final['product_id'] == UNKNOWN_PRODUCT_ID
+    UNKNOWN_PRODUCT_ID = 27
+
+    total_rows    = len(df_order_fact)
+    unknown_rows  = len(df_order_fact[df_order_fact['product_id'] == UNKNOWN_PRODUCT_ID])
+    total_revenue = df_order_fact['total_amount'].sum()
+    unknown_revenue = df_order_fact[
+        df_order_fact['product_id'] == UNKNOWN_PRODUCT_ID
     ]['total_amount'].sum()
- 
+
     row_pct = 0.0
     rev_pct = 0.0
- 
+
     if total_rows > 0 and total_revenue > 0:
         row_pct = (unknown_rows / total_rows) * 100
         rev_pct = (unknown_revenue / total_revenue) * 100
- 
+
         print(f"   [DATA QUALITY] Product Status UNKNOWN:")
         print(f"      - Volume : {row_pct:.2f}% ({unknown_rows} from {total_rows} transactions)")
         print(f"      - Revenue: {rev_pct:.2f}% from total revenue of this batch")
- 
+
         if row_pct > 5.0 or rev_pct > 3.0:
             print(f"      [CRITICAL WARNING] UNKNOWN percentage too high — aborting load.")
             return {
                 "code":        "ABORT_HIGH_UNKNOWN",
                 "rows_loaded": 0,
-                "rows_skipped": rows_skipped,
+                "rows_skipped": 0,
                 "row_pct":     round(row_pct, 2),
                 "rev_pct":     round(rev_pct, 2),
             }
  
-    # ── Insert ──────────────────────────────────────────────────────────────────
-    print(f"   7. Inserting {len(df_order_fact_final)} new rows into order_fact...")
- 
+    # ── Insert (Upsert) ─────────────────────────────────────────────────────────
+    print(f"   6. Upserting {len(df_order_fact)} rows into order_fact...")
+
     try:
-        df_order_fact_final.to_sql('order_fact', engine, if_exists='append', index=False)
-        print("[SUCCESS] Data successfully loaded into Data Warehouse!")
+        df_order_fact.to_sql(
+            'order_fact', 
+            engine, 
+            if_exists='append', 
+            index=False,
+            method=mysql_upsert,
+            chunksize=1000
+        )
+        print("[SUCCESS] Data successfully loaded (and updated) into Data Warehouse!")
     except Exception as e:
-        print(f"[ERROR] Failed to insert data: {e}")
+        print(f"[ERROR] Failed to upsert data: {e}")
         raise
- 
-    has_warning = (row_pct > 0) or (rev_pct > 0)
- 
+
+    has_warning = (row_pct > 5.0) or (rev_pct > 3.0)
+
     return {
         "code":         "SUCCESS_WITH_WARNING" if has_warning else "SUCCESS",
-        "rows_loaded":  len(df_order_fact_final),
-        "rows_skipped": rows_skipped,
+        "rows_loaded":  len(df_order_fact),
+        "rows_skipped": 0,
         "row_pct":      round(row_pct, 2),
         "rev_pct":      round(rev_pct, 2),
     }
