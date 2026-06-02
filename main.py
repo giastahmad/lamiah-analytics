@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
-from sqlalchemy import func
+import joblib
+import pandas as pd
+import numpy as np
+from sqlalchemy import func, text
 from datetime import datetime
 import os
 from dotenv import load_dotenv
@@ -13,10 +16,15 @@ from models import (
     LocationDimension,
     PaymentMethodDimension,
 )
-from config import SessionLocal
+from config import SessionLocal, engine
 from etl import extract, transform, load
 
 app = Flask(__name__)
+
+MODEL_PATH = os.path.join(
+    os.path.dirname(__file__), "ml_models", "saved_models", "champion_model.pkl"
+)
+
 CORS(app)
 
 load_dotenv()
@@ -531,24 +539,180 @@ def dashboard_view():
 # ==========================================
 # 3. PREDIKSI
 # ==========================================
+def generate_recursive_forecast(model, days_ahead=14):
+
+    query_hist = """
+        SELECT 
+            dd.date AS order_date, 
+            MAX(pr.is_muslim_fashion) as is_muslim_fashion, 
+            SUM(oc.quantity) as quantity
+        FROM order_fact oc
+        JOIN date_dimension dd ON dd.date_id = oc.date_id
+        JOIN product_dimension pr ON pr.product_id = oc.product_id
+        WHERE oc.status = 'SELESAI'
+        GROUP BY dd.date
+        ORDER BY dd.date DESC
+        LIMIT 60
+    """
+    with engine.connect() as conn:
+        hist_df = pd.read_sql(text(query_hist), conn)
+
+    hist_df["order_date"] = pd.to_datetime(hist_df["order_date"])
+    hist_df = hist_df.sort_values("order_date").reset_index(drop=True)
+
+    last_date = hist_df["order_date"].max()
+    future_dates = pd.date_range(
+        start=last_date + pd.Timedelta(days=1), periods=days_ahead, freq="D"
+    )
+
+    start_date_str = hist_df["order_date"].min().strftime("%Y-%m-%d")
+    end_date_str = future_dates.max().strftime("%Y-%m-%d")
+
+    query_dates = f"""
+        SELECT 
+            date AS order_date, days_name, month, is_weekend, 
+            is_twin_date, is_payday, is_ramadhan
+        FROM date_dimension
+        WHERE date BETWEEN '{start_date_str}' AND '{end_date_str}'
+    """
+    with engine.connect() as conn:
+        date_dim = pd.read_sql(text(query_dates), conn)
+    date_dim["order_date"] = pd.to_datetime(date_dim["order_date"])
+
+    future_df = pd.DataFrame({"order_date": future_dates})
+
+    future_df["is_muslim_fashion"] = hist_df["is_muslim_fashion"].tail(1).values[0]
+    future_df["quantity"] = np.nan
+
+    combined_df = pd.concat([hist_df, future_df], ignore_index=True)
+    combined_df = combined_df.merge(date_dim, on="order_date", how="left")
+
+    cat_cols = ["days_name", "month"]
+    for col in cat_cols:
+        combined_df[col] = combined_df[col].astype("category")
+
+    forecast_results = []
+    start_idx = len(hist_df)
+
+    for i in range(start_idx, len(combined_df)):
+        temp = combined_df.iloc[: i + 1].copy()
+
+        temp["rolling_mean_7_qty"] = (
+            temp["quantity"].rolling(window=7, min_periods=1, closed="left").mean()
+        )
+        temp["rolling_mean_14_qty"] = (
+            temp["quantity"].rolling(window=14, min_periods=1, closed="left").mean()
+        )
+        temp["rolling_mean_30_qty"] = (
+            temp["quantity"].rolling(window=30, min_periods=1, closed="left").mean()
+        )
+
+        temp["rolling_std_3_qty"] = (
+            temp["quantity"].rolling(window=3, min_periods=1, closed="left").std()
+        )
+        temp["rolling_std_7_qty"] = (
+            temp["quantity"].rolling(window=7, min_periods=1, closed="left").std()
+        )
+
+        temp["lag_1_qty"] = temp["quantity"].shift(1)
+        temp["lag_3_qty"] = temp["quantity"].shift(3)
+        temp["lag_7_qty"] = temp["quantity"].shift(7)
+        temp["lag_21_qty"] = temp["quantity"].shift(21)
+        temp["lag_28_qty"] = temp["quantity"].shift(28)
+
+        temp["lag_7_rolling_mean"] = temp["rolling_mean_7_qty"].shift(7)
+        temp["lag_14_rolling_mean"] = temp["rolling_mean_14_qty"].shift(14)
+
+        temp["payday_weekend"] = temp["is_payday"] * temp["is_weekend"]
+        temp["ramadhan_twin"] = temp["is_ramadhan"] * temp["is_twin_date"]
+
+        temp["day_of_year"] = temp["order_date"].dt.dayofyear
+        temp["week_of_year"] = temp["order_date"].dt.isocalendar().week.astype(int)
+        temp["is_month_end"] = temp["order_date"].dt.is_month_end.astype(int)
+        temp["is_month_start"] = temp["order_date"].dt.is_month_start.astype(int)
+
+        current_features = temp.iloc[[i]].drop(columns=["order_date", "quantity"])
+
+        pred_qty = model.predict(current_features)[0]
+        pred_qty = max(0, np.round(pred_qty))
+
+        combined_df.at[i, "quantity"] = pred_qty
+
+        forecast_results.append(
+            {
+                "date": combined_df.at[i, "order_date"].strftime("%Y-%m-%d"),
+                "predicted_qty": int(pred_qty),
+            }
+        )
+
+    return forecast_results
+
+
 @app.route("/forecast")
-def forecast_view():
-    if request.args.get("key") != os.getenv("X-API-KEY"):
-        return "Akses Ditolak", 401
+def forecast_page():
+    if not os.path.exists(MODEL_PATH):
+        return render_template(
+            "forecast.html",
+            error="Model prediksi belum siap. Silakan jalankan pipeline retraining.",
+        )
 
-    return render_template("forecast.html")
-
-
-@app.route("/api/download-prediction", methods=["GET"])
-def download_prediction():
-    if not is_authorized(request):
-        return jsonify({"message": "Akses Ditolak"}), 401
-
-    path_to_excel = "./ml_models/forecast_sku_mei_2026.xlsx"
     try:
-        return send_file(path_to_excel, as_attachment=True)
-    except Exception:
-        return jsonify({"message": "File laporan tidak ditemukan"}), 404
+        model = joblib.load(MODEL_PATH)
+        forecast_results = generate_recursive_forecast(model, days_ahead=14)
+
+        total_forecast_qty = sum(item['predicted_qty'] for item in forecast_results)
+        
+        query_weights = """
+            SELECT 
+                pr.product_model, 
+                pr.product_color, 
+                SUM(oc.quantity) as qty
+            FROM order_fact oc
+            JOIN date_dimension dd ON dd.date_id = oc.date_id
+            JOIN product_dimension pr ON pr.product_id = oc.product_id
+            WHERE oc.status = 'SELESAI' 
+            AND dd.date >= (SELECT DATE_SUB(MAX(date), INTERVAL 90 DAY) FROM order_fact)
+            GROUP BY pr.product_model, pr.product_color
+        """
+        with engine.connect() as conn:
+            weight_df = pd.read_sql(text(query_weights), conn)
+            
+        model_df = weight_df.groupby('product_model')['qty'].sum().reset_index()
+        top_models = model_df.nlargest(5, 'qty')
+        model_weight_total = top_models['qty'].sum()
+        
+        top_models_forecast = []
+        for _, row in top_models.iterrows():
+            weight = row['qty'] / model_weight_total if model_weight_total > 0 else 0
+            top_models_forecast.append({
+                'name': row['product_model'],
+                'forecast_qty': int(round(total_forecast_qty * weight))
+            })
+            
+        color_df = weight_df.groupby('product_color')['qty'].sum().reset_index()
+        top_colors = color_df.nlargest(5, 'qty')
+        color_weight_total = top_colors['qty'].sum()
+        
+        top_colors_forecast = []
+        for _, row in top_colors.iterrows():
+            weight = row['qty'] / color_weight_total if color_weight_total > 0 else 0
+            top_colors_forecast.append({
+                'name': row['product_color'],
+                'forecast_qty': int(round(total_forecast_qty * weight))
+            })
+
+        return render_template(
+            'forecast.html', 
+            total_forecast=total_forecast_qty,
+            forecast_daily=forecast_results,
+            top_models=top_models_forecast,
+            top_colors=top_colors_forecast
+        )
+
+    except Exception as e:
+        return render_template(
+            "forecast.html", error=f"Terjadi kesalahan teknis: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
