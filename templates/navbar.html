@@ -117,22 +117,37 @@
     flex-shrink: 0;
   }
 
-  /* Right slot */
+  /* Right slot (User Email & Logout Desktop) */
   .nav-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
 
-  .nav-badge {
-    font-size: 11px;
+  .nav-user-name {
+    font-size: 13px;
     font-weight: 500;
+    color: #4b5563;
+  }
+
+  .nav-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
     color: #9ca3af;
-    padding: 3px 10px;
-    border: 1px solid #e5e7eb;
-    border-radius: 99px;
     background: #fafafa;
-    white-space: nowrap;
+    border: 1px solid #e5e7eb;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .nav-logout-btn:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #dc2626;
   }
 
   /* Hamburger button — hidden on desktop */
@@ -258,11 +273,7 @@
   }
 
   .sidebar-nav a:hover { background: #fff6f3; color: #E6521F; }
-
-  .sidebar-nav a.active {
-    background: #E6521F;
-    color: #fff;
-  }
+  .sidebar-nav a.active { background: #E6521F; color: #fff; }
 
   .sidebar-nav a svg {
     width: 18px;
@@ -290,47 +301,56 @@
     flex-shrink: 0;
   }
 
-  .sidebar-footer-badge {
-    display: inline-flex;
+  /* User profile wrap for sidebar footer */
+  .sidebar-user-wrap {
+    display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 11px;
-    font-weight: 500;
-    color: #9ca3af;
-    padding: 5px 12px;
+    justify-content: space-between;
+    background: #f9fafb;
+    padding: 10px 12px;
+    border-radius: 10px;
     border: 1px solid #e5e7eb;
-    border-radius: 99px;
-    background: #fafafa;
   }
 
-  .sidebar-footer-badge::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: #22c55e;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .sidebar-user-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #4b5563;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  .sidebar-logout-btn {
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .sidebar-logout-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
   }
 
   /* ════════════════════════════════
      BREAKPOINTS
   ════════════════════════════════ */
-
-  /* ── Large desktop (≥1200px): full width, full nav ── */
   @media (min-width: 1200px) {
     .nav-inner { max-width: 1600px; padding: 0 40px; }
   }
 
-  /* ── Small desktop / tablet landscape (992–1199px) ── */
   @media (max-width: 1199px) {
     .nav-inner { padding: 0 24px; }
     .nav-links a { padding: 7px 10px; font-size: 12.5px; gap: 6px; }
   }
 
-  /* ── Tablet portrait (768–991px): hide badge, compact links ── */
   @media (max-width: 991px) {
     .nav-inner { padding: 0 20px; justify-content: center; }
-    .nav-badge { display: none; }
     .nav-links a span.link-text { display: none; }
     .nav-links a { padding: 8px 10px; gap: 0; }
     .nav-links a svg { width: 18px; height: 18px; }
@@ -338,7 +358,6 @@
     .nav-right { display: none; }
   }
 
-  /* ── Mobile (≤767px): hamburger + sidebar ── */
   @media (max-width: 767px) {
     .nav-inner { padding: 0 16px; justify-content: space-between;}
     .nav-links { display: none; }
@@ -348,7 +367,6 @@
     .nav-brand-icon img { width: 32px; height: 32px; }
   }
 
-  /* ── Small mobile (≤575px) ── */
   @media (max-width: 575px) {
     .nav-inner { padding: 0 12px; height: 54px; justify-content: space-between;}
     .nav-brand-name { font-size: 15px; }
@@ -356,10 +374,8 @@
   }
 </style>
 
-<!-- Sidebar overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- Sidebar panel -->
 <aside class="sidebar" id="sidebar" aria-label="Navigation menu" role="navigation">
   <div class="sidebar-header">
     <a class="nav-brand" id="sidebar-brand-link" href="#">
@@ -407,22 +423,30 @@
   </nav>
 
   <div class="sidebar-footer">
-    <span class="sidebar-footer-badge">Lamiah</span>
+    {% if session.get('user_email') %}
+      <div class="sidebar-user-wrap">
+        <span class="sidebar-user-name">{{ session.get('user_name') }}</span>
+        <a href="/logout" class="sidebar-logout-btn" title="Logout">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </a>
+      </div>
+    {% endif %}
   </div>
 </aside>
 
-<!-- Navbar -->
 <nav class="nav-root" aria-label="Main navigation">
   <div class="nav-inner">
 
-    <!-- Brand -->
     <a class="nav-brand" id="nav-brand-link" href="#">
       <div class="nav-brand-icon">
         <img src="{{ url_for('static', filename='lamiah-new.png') }}" alt="Logo Lamiah">
       </div>
     </a>
 
-    <!-- Desktop nav links -->
     <ul class="nav-links">
       <li>
         <a id="nav-dashboard" href="#">
@@ -458,12 +482,19 @@
       </li>
     </ul>
 
-    <!-- Right slot -->
     <div class="nav-right">
-      <!-- <div class="nav-badge">Lamiah</div> -->
+      {% if session.get('user_email') %}
+        <div class="nav-user-name">{{ session.get('user_name') }}</div>
+        <a href="/logout" class="nav-logout-btn" title="Logout">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </a>
+      {% endif %}
     </div>
 
-    <!-- Hamburger (mobile only) -->
     <button class="nav-hamburger" id="navHamburger" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="sidebar">
       <svg viewBox="0 0 24 24">
         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -511,7 +542,6 @@
       if (el) el.href = url;
     });
 
-    // Active state — mark both desktop and sidebar links
     const endpoint = '{{ request.endpoint }}';
     const activeMap = {
       'dashboard_view': ['nav-dashboard', 'sb-dashboard'],

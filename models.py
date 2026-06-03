@@ -1,4 +1,5 @@
-from sqlalchemy import Integer, String, Float, Boolean, Date, ForeignKey, Column, UniqueConstraint
+from sqlalchemy import Integer, String, Float, Boolean, Date, ForeignKey, Column, UniqueConstraint, DateTime
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
@@ -69,3 +70,13 @@ class OrderFact(Base):
     __table_args__ = (
         UniqueConstraint('order_key', 'product_id', name='uq_order_product'),
     )
+    
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = {'schema': 'lamiah_app'}
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, nullable=False)
+    username = Column(String(50), unique=True, nullable=False)
+    role = Column(String(50), default="admin")
+    created_at = Column(DateTime, default=func.now())

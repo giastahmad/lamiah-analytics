@@ -19,3 +19,6 @@ Thumbs.db
 
 # temp files
 ~$*.xlsx
+
+#firebase
+firebase-key.json

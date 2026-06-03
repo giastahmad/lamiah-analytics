@@ -1,12 +1,14 @@
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from flask_cors import CORS
 import joblib
 import pandas as pd
 import numpy as np
 from sqlalchemy import func, text
-from datetime import datetime
 import os
 from dotenv import load_dotenv
+import firebase_admin
+from firebase_admin import credentials, auth
+from functools import wraps
 
 from models import (
     OrderFact,
@@ -15,11 +17,17 @@ from models import (
     DateDimension,
     LocationDimension,
     PaymentMethodDimension,
+    User
 )
 from config import SessionLocal, engine
 from etl import extract, transform, load
 
 app = Flask(__name__)
+
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
+
+cred = credentials.Certificate("firebase-key.json")
+firebase_admin.initialize_app(cred)
 
 MODEL_PATH = os.path.join(
     os.path.dirname(__file__), "ml_models", "saved_models", "champion_model.pkl"
@@ -34,14 +42,57 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
 # ==========================================
-# KONFIGURASI KEAMANAN URL
+# FUNGSI PROTEKSI ROUTE (DECORATOR)
 # ==========================================
-def is_authorized(req):
-    token_di_header = req.headers.get("X-API-KEY")
-    token_di_url = req.args.get("key")
-    secret_key = os.getenv("X-API-KEY")
-    return token_di_header == secret_key or token_di_url == secret_key
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_email' not in session:
+            return redirect(url_for('login_view'))
+        return f(*args, **kwargs)
+    return decorated_function
 
+# ==========================================
+# ROUTE AUTHENTICATION
+# ==========================================
+@app.route("/login")
+def login_view():
+    if 'user_email' in session:
+        return redirect(url_for('dashboard_view'))
+    return render_template("login.html")
+
+@app.route("/api/auth/verify", methods=["POST"])
+def verify_token():
+    data = request.json
+    id_token = data.get("token")
+    
+    if not id_token:
+        return jsonify({"message": "Token tidak ditemukan"}), 400
+
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+        email = decoded_token.get("email")
+        username = decoded_token.get("name")
+        
+        db_session = SessionLocal()
+        user = db_session.query(User).filter(User.email == email).first()
+        db_session.close()
+        
+        if user:
+            session['user_email'] = email
+            session['user_role'] = user.role
+            session['user_name'] = username
+            return jsonify({"status": "success", "redirect": "/dashboard"}), 200
+        else:
+            return jsonify({"status": "unauthorized", "message": "Email Anda belum didaftarkan oleh Admin."}), 403
+            
+    except Exception as e:
+        return jsonify({"status": "error", "message": "Sesi tidak valid atau kadaluarsa."}), 401
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for('login_view'))
 
 # ==========================================
 # INDEX
@@ -55,24 +106,13 @@ def index():
 # 1. UPLOAD
 # ==========================================
 @app.route("/upload")
+@login_required
 def upload_view():
-    if request.args.get("key") != os.getenv("X-API-KEY"):
-        return "Akses Ditolak", 401
     return render_template("upload.html")
 
 
 @app.route("/api/upload", methods=["POST"])
 def upload_data():
-    if not is_authorized(request):
-        return (
-            jsonify(
-                {
-                    "code": "UNAUTHORIZED",
-                    "message": "Akses Ditolak: URL tidak valid atau tidak memiliki izin.",
-                }
-            ),
-            401,
-        )
 
     if "files" not in request.files:
         return (
@@ -524,9 +564,8 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
 
 
 @app.route("/dashboard")
+@login_required
 def dashboard_view():
-    if request.args.get("key") != os.getenv("X-API-KEY"):
-        return "Akses Ditolak", 401
 
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
@@ -663,6 +702,7 @@ def generate_recursive_forecast(model, days_ahead=14):
 
 
 @app.route("/forecast")
+@login_required
 def forecast_view():
     if not os.path.exists(MODEL_PATH):
         return render_template(
