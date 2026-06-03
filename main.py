@@ -539,6 +539,20 @@ def dashboard_view():
 # ==========================================
 # 3. PREDIKSI
 # ==========================================
+FORECAST_CACHE = {
+    "db_state": None,
+    "data": None
+}
+
+def get_db_state():
+    try:
+        query = "SELECT COUNT(order_key), MAX(date_id) FROM order_fact"
+        with engine.connect() as conn:
+            result = conn.execute(text(query)).fetchone()
+            return f"{result[0]}_{result[1]}"
+    except Exception:
+        return None
+
 def generate_recursive_forecast(model, days_ahead=14):
 
     query_hist = """
@@ -649,14 +663,28 @@ def generate_recursive_forecast(model, days_ahead=14):
 
 
 @app.route("/forecast")
-def forecast_page():
+def forecast_view():
     if not os.path.exists(MODEL_PATH):
         return render_template(
             "forecast.html",
             error="Model prediksi belum siap. Silakan jalankan pipeline retraining.",
         )
+        
+    global FORECAST_CACHE
 
     try:
+        db_state = get_db_state()
+        
+        if FORECAST_CACHE["db_state"] == db_state and FORECAST_CACHE["data"] is not None:
+            forecast_results = FORECAST_CACHE["data"]
+            return render_template(
+                'forecast.html',
+                total_forecast=forecast_results["total_forecast_qty"],
+                forecast_daily=forecast_results["forecast_results"],
+                top_models=forecast_results["top_models_forecast"],
+                top_colors=forecast_results["top_colors_forecast"]
+            )
+            
         model = joblib.load(MODEL_PATH)
         forecast_results = generate_recursive_forecast(model, days_ahead=14)
 
@@ -700,6 +728,14 @@ def forecast_page():
                 'name': row['product_color'],
                 'forecast_qty': int(round(total_forecast_qty * weight))
             })
+            
+        FORECAST_CACHE["db_state"] = db_state
+        FORECAST_CACHE["data"] = {
+            "total_forecast_qty": total_forecast_qty,
+            "forecast_results": forecast_results,
+            "top_models_forecast": top_models_forecast,
+            "top_colors_forecast": top_colors_forecast
+        }
 
         return render_template(
             'forecast.html', 
