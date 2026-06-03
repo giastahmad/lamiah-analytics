@@ -982,14 +982,28 @@
             </tr>
           </thead>
           <tbody>
-            {% for p in m.top_products %}
+            {% for model in m.top_products %}
             <tr>
-              <td><span
-                  class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">{{
-                  loop.index }}</span></td>
-              <td style="font-weight: 500; color: #111827;">{{ p[0] }}</td>
-              <td style="text-align: right; font-weight: 600; color: #374151;">{{ "{:,}".format(p[1]) }} <span
-                  style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span></td>
+              <td>
+                <span
+                  class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                  {{ loop.index }}
+                </span>
+              </td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 12px;">
+
+                  <img src="/static/images/{{ model[0]|replace(' ', '%20') }}.jpg"
+                    onerror="this.onerror=null; this.src='/static/images/UNKNOWN.jpg';" alt="{{ model[0].strip() }}"
+                    style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #f3f4f6;">
+
+                  <span style="font-weight: 500; color: #111827;">{{ model[0] }}</span>
+                </div>
+              </td>
+              <td style="text-align: right; font-weight: 600; color: #374151;">
+                {{ "{:,}".format(model[1]) }} <span
+                  style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
+              </td>
             </tr>
             {% endfor %}
           </tbody>

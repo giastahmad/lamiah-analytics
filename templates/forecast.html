@@ -5,281 +5,378 @@
 {% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-  * {
-    font-family: 'DM Sans', sans-serif;
-  }
+    * {
+        font-family: 'DM Sans', sans-serif;
+    }
 
-  body {
-    background: #f8f7f4;
-  }
+    body {
+        background: #f8f7f4;
+    }
 
-  /* ── Page wrapper ── */
-  .dash-wrapper {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 36px 40px;
-  }
+    /* ── Page wrapper ── */
+    .dash-wrapper {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 36px 40px;
+    }
 
-  /* ── KPI Cards ── */
-  .kpi-card {
-    background: #fff;
-    border: 1px solid #e8e5df;
-    border-radius: 16px;
-    padding: 24px;
-    position: relative;
-    overflow: hidden;
-    transition: box-shadow 0.2s, transform 0.2s;
-  }
+    /* ── KPI Cards ── */
+    .kpi-card {
+        background: #fff;
+        border: 1px solid #e8e5df;
+        border-radius: 16px;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow 0.2s, transform 0.2s;
+    }
 
-  .kpi-card:hover {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
-    transform: translateY(-2px);
-  }
+    .kpi-card:hover {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+        transform: translateY(-2px);
+    }
 
-  .kpi-card.main {
-    background: radial-gradient(circle at 0% 140%, rgba(251, 158, 58, 0.22) 0%, rgba(251, 158, 58, 0.15) 45%, rgba(251, 158, 58, 0.08) 55%, #ffffff 70%);
-  }
+    .kpi-card.main {
+        background: radial-gradient(circle at 0% 140%, rgba(251, 158, 58, 0.22) 0%, rgba(251, 158, 58, 0.15) 45%, rgba(251, 158, 58, 0.08) 55%, #ffffff 70%);
+    }
 
-  .kpi-bg-icon {
-    position: absolute;
-    bottom: -10px;
-    right: -14px;
-    opacity: 0.09;
-    pointer-events: none;
-    user-select: none;
-  }
+    .kpi-bg-icon {
+        position: absolute;
+        bottom: -10px;
+        right: -14px;
+        opacity: 0.09;
+        pointer-events: none;
+        user-select: none;
+    }
 
-  .kpi-bg-icon svg {
-    width: 96px;
-    height: 96px;
-  }
+    .kpi-bg-icon svg {
+        width: 96px;
+        height: 96px;
+    }
 
-  .kpi-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #9ca3af;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 6px;
-  }
+    .kpi-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 6px;
+    }
 
-  .kpi-label .icon-wrap {
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    background: rgba(230, 82, 31, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
+    .kpi-label .icon-wrap {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: rgba(230, 82, 31, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
 
-  .kpi-label .icon-wrap svg {
-    width: 14px;
-    height: 14px;
-    stroke: #E6521F;
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
+    .kpi-label .icon-wrap svg {
+        width: 14px;
+        height: 14px;
+        stroke: #E6521F;
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
 
-  .kpi-value {
-    font-size: 28px;
-    font-weight: 600;
-    color: #111827;
-    margin-top: 4px;
-    line-height: 1.2;
-    font-family: 'Lora', serif;
-  }
+    .kpi-value {
+        font-size: 28px;
+        font-weight: 600;
+        color: #111827;
+        margin-top: 4px;
+        line-height: 1.2;
+        font-family: 'Lora', serif;
+    }
 
-  .kpi-sub {
-    font-size: 12px;
-    color: #9ca3af;
-    margin-top: 6px;
-  }
+    .kpi-sub {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 6px;
+    }
 
-  /* ── KPI Grid ── */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 16px;
-    margin-bottom: 16px;
-    margin-top: 12px;
-  }
+    /* ── KPI Grid ── */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+        margin-top: 12px;
+    }
 
-  /* ── Chart Cards ── */
-  .chart-card {
-    background: #fff;
-    border: 1px solid #e8e5df;
-    border-radius: 16px;
-    padding: 28px;
-  }
+    /* ── Chart Cards ── */
+    .chart-card {
+        background: #fff;
+        border: 1px solid #e8e5df;
+        border-radius: 16px;
+        padding: 28px;
+    }
 
-  .chart-title {
-    font-family: 'Lora', serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 20px;
-  }
+    .chart-title {
+        font-family: 'Lora', serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 20px;
+    }
 
-  /* ── Typography ── */
-  .page-title {
-    font-family: 'Lora', serif;
-    font-size: 26px;
-    font-weight: 600;
-    color: #111827;
-  }
+    /* ── Typography ── */
+    .page-title {
+        font-family: 'Lora', serif;
+        font-size: 26px;
+        font-weight: 600;
+        color: #111827;
+    }
 
-  .page-sub {
-    font-size: 13px;
-    color: #9ca3af;
-    margin-top: 2px;
-  }
+    .page-sub {
+        font-size: 13px;
+        color: #9ca3af;
+        margin-top: 2px;
+    }
 
-  .section-divider {
-    font-size: 11px;
-    font-weight: 600;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0 4px;
-    margin: 8px 0;
-  }
+    .section-divider {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 0 4px;
+        margin: 8px 0;
+    }
 
-  /* ── Table ── */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
+    /* ── Table ── */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-  thead th {
-    font-size: 11px;
-    font-weight: 600;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 8px 12px;
-    border-bottom: 1px solid #f3f4f6;
-  }
+    thead th {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 8px 12px;
+        border-bottom: 1px solid #f3f4f6;
+    }
 
-  tbody tr {
-    border-bottom: 1px solid #f9fafb;
-    transition: background 0.1s;
-  }
+    tbody tr {
+        border-bottom: 1px solid #f9fafb;
+        transition: background 0.1s;
+    }
 
-  tbody tr:last-child {
-    border-bottom: none;
-  }
+    tbody tr:last-child {
+        border-bottom: none;
+    }
 
-  tbody tr:hover {
-    background: #fafafa;
-  }
+    tbody tr:hover {
+        background: #fafafa;
+    }
 
-  tbody td {
-    padding: 12px;
-    font-size: 14px;
-    color: #374151;
-  }
+    tbody td {
+        padding: 12px;
+        font-size: 14px;
+        color: #374151;
+    }
 
-  .rank-badge {
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    background: #f3f4f6;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: #6b7280;
-  }
+    .rank-badge {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: #f3f4f6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+    }
 
-  .rank-badge.gold {
-    background: #fffbeb;
-    color: #d97706;
-  }
+    .rank-badge.gold {
+        background: #fffbeb;
+        color: #d97706;
+    }
 
-  .rank-badge.silver {
-    background: #f8fafc;
-    color: #64748b;
-  }
+    .rank-badge.silver {
+        background: #f8fafc;
+        color: #64748b;
+    }
 
-  .rank-badge.bronze {
-    background: #fff7ed;
-    color: #c2410c;
-  }
+    .rank-badge.bronze {
+        background: #fff7ed;
+        color: #c2410c;
+    }
 
-  /* ── Chart layout grids ── */
-  .chart-row-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
+    /* ── Chart layout grids ── */
+    .chart-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
 
-  .chart-row-1 {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
+    .chart-row-1 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
 
-  /* ════════════════════
+
+    /* ════════════════════
      RESPONSIVE
   ════════════════════ */
-  @media (max-width: 1199px) {
-    .dash-wrapper { padding: 28px 28px; }
-    .kpi-value { font-size: 24px; }
-  }
+    @media (max-width: 1199px) {
+        .dash-wrapper {
+            padding: 28px 28px;
+        }
 
-  @media (max-width: 991px) {
-    .dash-wrapper { padding: 24px 20px; }
-    .kpi-value { font-size: 22px; }
-    .chart-row-2 { grid-template-columns: 1fr; }
-    .page-title { font-size: 22px; }
-  }
+        .kpi-value {
+            font-size: 24px;
+        }
+    }
 
-  @media (max-width: 767px) {
-    .dash-wrapper { padding: 20px 14px; }
-    .kpi-card { padding: 16px; border-radius: 12px; }
-    .kpi-value { font-size: 20px; }
-    .kpi-bg-icon { display: none; }
-    .page-title { font-size: 20px; text-align: center; }
-    .page-sub { font-size: 12px; }
-    .section-divider { font-size: 10px; }
-    .chart-card { padding: 18px 14px; border-radius: 12px; }
-    .chart-title { font-size: 14px; margin-bottom: 14px; }
-    .chart-row-1, .chart-row-2 { gap: 12px; margin-bottom: 12px; }
-    thead th { font-size: 10px; padding: 6px 8px; }
-    tbody td { font-size: 13px; padding: 10px 8px; }
-  }
+    @media (max-width: 991px) {
+        .dash-wrapper {
+            padding: 24px 20px;
+        }
 
-  @media (max-width: 575px) {
-    .dash-wrapper { padding: 16px 10px; }
-    .kpi-card { padding: 14px; border-radius: 10px; }
-    .kpi-value { font-size: 18px; }
-    .kpi-label { font-size: 9.5px; gap: 5px; }
-    .kpi-label .icon-wrap { width: 22px; height: 22px; }
-    .kpi-sub { font-size: 10px; }
-    .chart-card { padding: 14px 12px; }
-    .chart-title { font-size: 13px; }
-    .page-title { font-size: 18px; text-align: center; }
-  }
+        .kpi-value {
+            font-size: 22px;
+        }
+
+        .chart-row-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .page-title {
+            font-size: 22px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .dash-wrapper {
+            padding: 20px 14px;
+        }
+
+        .kpi-card {
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .kpi-value {
+            font-size: 20px;
+        }
+
+        .kpi-bg-icon {
+            display: none;
+        }
+
+        .page-title {
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .page-sub {
+            font-size: 12px;
+        }
+
+        .section-divider {
+            font-size: 10px;
+        }
+
+        .chart-card {
+            padding: 18px 14px;
+            border-radius: 12px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+
+        .chart-row-1,
+        .chart-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: stretch;
+        }
+
+        .chart-row-2 .chart-card {
+            height: 100%;
+        }
+
+        thead th {
+            font-size: 10px;
+            padding: 6px 8px;
+        }
+
+        tbody td {
+            font-size: 13px;
+            padding: 10px 8px;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .dash-wrapper {
+            padding: 16px 10px;
+        }
+
+        .kpi-card {
+            padding: 14px;
+            border-radius: 10px;
+        }
+
+        .kpi-value {
+            font-size: 18px;
+        }
+
+        .kpi-label {
+            font-size: 9.5px;
+            gap: 5px;
+        }
+
+        .kpi-label .icon-wrap {
+            width: 22px;
+            height: 22px;
+        }
+
+        .kpi-sub {
+            font-size: 10px;
+        }
+
+        .chart-card {
+            padding: 14px 12px;
+        }
+
+        .chart-title {
+            font-size: 13px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            text-align: center;
+        }
+    }
 </style>
 
 <div class="dash-wrapper">
 
     <!-- Header -->
-    <div class="page-header-wrap" style="margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div class="page-header-wrap"
+        style="margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div>
             <div class="page-title">Dashboard Prediksi Permintaan</div>
             <div class="page-sub">Hasil ramalan kuantitas produk menggunakan algoritma LightGBM</div>
@@ -287,7 +384,8 @@
     </div>
 
     {% if error %}
-    <div style="background: #fff1f0; border: 1px solid #fca5a5; color: #dc2626; padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+    <div
+        style="background: #fff1f0; border: 1px solid #fca5a5; color: #dc2626; padding: 16px; border-radius: 12px; margin-bottom: 24px;">
         {{ error }}
     </div>
     {% else %}
@@ -306,12 +404,15 @@
                     Total Prediksi Penjualan 2 Minggu
                 </div>
                 <div class="kpi-value" style="font-size: 36px; color: #E6521F;">{{ "{:,}".format(total_forecast) }}
-                    <span style="font-size: 16px; color: #6b7280; font-family: 'DM Sans', sans-serif; font-weight: 500;">Unit</span>
+                    <span
+                        style="font-size: 16px; color: #6b7280; font-family: 'DM Sans', sans-serif; font-weight: 500;">Unit</span>
                 </div>
-                <div class="kpi-sub">Agregasi hasil model ML dari {{ forecast_daily[0].date }} s/d {{ forecast_daily[-1].date }}</div>
+                <div class="kpi-sub">Agregasi hasil model ML dari {{ forecast_daily[0].date }} s/d {{
+                    forecast_daily[-1].date }}</div>
             </div>
             <div class="kpi-bg-icon" style="opacity: 0.15; right: 20px; top: -10px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                     <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
@@ -333,7 +434,8 @@
         <!-- Top 5 Models -->
         <div class="chart-card">
             <div class="chart-title">Distribusi 5 Model Terlaris</div>
-            <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Dibobot berdasarkan performa 3 bulan terakhir</div>
+            <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Dibobot berdasarkan performa 3 bulan
+                terakhir</div>
             <div style="overflow-x: auto;">
                 <table>
                     <thead>
@@ -347,12 +449,26 @@
                         {% for model in top_models %}
                         <tr>
                             <td>
-                                <span class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                                <span
+                                    class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
                                     {{ loop.index }}
                                 </span>
                             </td>
-                            <td style="font-weight: 500; color: #111827;">{{ model.name }}</td>
-                            <td style="text-align: right; font-weight: 600; color: #374151;">{{ "{:,}".format(model.forecast_qty) }} <span style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+
+                                    <img src="/static/images/{{ model.name }}.jpg"
+                                        onerror="this.onerror=null; this.src='/static/images/UNKNOWN.jpg';"
+                                        alt="{{ model.name }}"
+                                        style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #f3f4f6;">
+
+                                    <span style="font-weight: 500; color: #111827;">{{ model.name }}</span>
+                                </div>
+                            </td>
+                            <td style="text-align: right; font-weight: 600; color: #374151;">
+                                {{ "{:,}".format(model.forecast_qty) }} <span
+                                    style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -361,9 +477,10 @@
         </div>
 
         <!-- Top 5 Colors -->
-        <div class="chart-card">
+        <div class="chart-card color-card">
             <div class="chart-title">Distribusi 5 Warna Terlaris</div>
-            <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Dibobot berdasarkan performa 3 bulan terakhir</div>
+            <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Dibobot berdasarkan performa 3 bulan
+                terakhir</div>
             <div style="overflow-x: auto;">
                 <table>
                     <thead>
@@ -377,12 +494,15 @@
                         {% for color in top_colors %}
                         <tr>
                             <td>
-                                <span class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                                <span
+                                    class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
                                     {{ loop.index }}
                                 </span>
                             </td>
                             <td style="font-weight: 500; color: #111827;">{{ color.name }}</td>
-                            <td style="text-align: right; font-weight: 600; color: #374151;">{{ "{:,}".format(color.forecast_qty) }} <span style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span></td>
+                            <td style="text-align: right; font-weight: 600; color: #374151;">{{
+                                "{:,}".format(color.forecast_qty) }} <span
+                                    style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>
