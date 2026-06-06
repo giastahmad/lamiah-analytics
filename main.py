@@ -3,6 +3,7 @@ from flask_cors import CORS
 import joblib
 import pandas as pd
 import numpy as np
+import threading
 from sqlalchemy import func, text
 import os
 from dotenv import load_dotenv
@@ -17,7 +18,9 @@ from models import (
     DateDimension,
     LocationDimension,
     PaymentMethodDimension,
-    User
+    User,
+    DailySalesSummary,
+    ForecastCache,
 )
 from config import SessionLocal, engine
 from etl import extract, transform, load
@@ -47,25 +50,28 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_email' not in session:
-            return redirect(url_for('login_view'))
+        if "user_email" not in session:
+            return redirect(url_for("login_view"))
         return f(*args, **kwargs)
+
     return decorated_function
+
 
 # ==========================================
 # ROUTE AUTHENTICATION
 # ==========================================
 @app.route("/login")
 def login_view():
-    if 'user_email' in session:
-        return redirect(url_for('dashboard_view'))
+    if "user_email" in session:
+        return redirect(url_for("dashboard_view"))
     return render_template("login.html")
+
 
 @app.route("/api/auth/verify", methods=["POST"])
 def verify_token():
     data = request.json
     id_token = data.get("token")
-    
+
     if not id_token:
         return jsonify({"message": "Token tidak ditemukan"}), 400
 
@@ -73,26 +79,41 @@ def verify_token():
         decoded_token = auth.verify_id_token(id_token)
         email = decoded_token.get("email")
         username = decoded_token.get("name")
-        
+
         db_session = SessionLocal()
         user = db_session.query(User).filter(User.email == email).first()
         db_session.close()
-        
+
         if user:
-            session['user_email'] = email
-            session['user_role'] = user.role
-            session['user_name'] = username
+            session["user_email"] = email
+            session["user_role"] = user.role
+            session["user_name"] = username
             return jsonify({"status": "success", "redirect": "/dashboard"}), 200
         else:
-            return jsonify({"status": "unauthorized", "message": "Email Anda belum didaftarkan oleh Admin."}), 403
-            
+            return (
+                jsonify(
+                    {
+                        "status": "unauthorized",
+                        "message": "Email Anda belum didaftarkan oleh Admin.",
+                    }
+                ),
+                403,
+            )
+
     except Exception as e:
-        return jsonify({"status": "error", "message": "Sesi tidak valid atau kadaluarsa."}), 401
+        return (
+            jsonify(
+                {"status": "error", "message": "Sesi tidak valid atau kadaluarsa."}
+            ),
+            401,
+        )
+
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for('login_view'))
+    return redirect(url_for("login_view"))
+
 
 # ==========================================
 # INDEX
@@ -219,6 +240,9 @@ def upload_data():
 
     msg = f"{len(files) - len(file_errors)} dari {len(files)} file berhasil diproses."
 
+    if final_code in ["SUCCESS", "SUCCESS_WITH_WARNING"] and total_loaded > 0:
+        threading.Thread(target=update_forecast_cache_background).start()
+
     return (
         jsonify(
             {
@@ -250,32 +274,18 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         if platform:
             base_filter.append(PlatformDimension.platform_name == platform)
 
-        success_filter = base_filter + [OrderFact.status == "SELESAI"]
+        success_filter = base_filter + [DailySalesSummary.status == "SELESAI"]
 
         def _base(cols):
-
             return (
                 session.query(*cols)
-                .select_from(OrderFact)
-                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+                .select_from(DailySalesSummary)
+                .join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id)
                 .join(
                     PlatformDimension,
-                    OrderFact.platform_id == PlatformDimension.platform_id,
+                    DailySalesSummary.platform_id == PlatformDimension.platform_id,
                 )
                 .filter(*success_filter)
-            )
-
-        def _all_status(cols):
-
-            return (
-                session.query(*cols)
-                .select_from(OrderFact)
-                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-                .join(
-                    PlatformDimension,
-                    OrderFact.platform_id == PlatformDimension.platform_id,
-                )
-                .filter(*base_filter)
             )
 
         # --------------------------------------------------
@@ -288,65 +298,72 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         )
         platform_options = [p[0] for p in all_platforms]
 
-        # --------------------------------------------------
-        # 2. KPI:Persentase Pembatalan
-        # --------------------------------------------------
+        fact_success_filter = base_filter + [OrderFact.status == "SELESAI"]
+        fact_batal_filter = base_filter + [OrderFact.status == "BATAL"]
 
+        # --------------------------------------------------
+        # 2. KPI: Persentase Pembatalan
+        # --------------------------------------------------
         total_all_status = (
-            _all_status([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
+            session.query(func.count(func.distinct(OrderFact.order_key)))
+            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .filter(*base_filter)
+            .scalar() or 0
         )
+        
         total_cancelled = (
-            _all_status([func.count(func.distinct(OrderFact.order_key))])
-            .filter(OrderFact.status == "BATAL")
-            .scalar()
-            or 0
+            session.query(func.count(func.distinct(OrderFact.order_key)))
+            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .filter(*fact_batal_filter)
+            .scalar() or 0
         )
 
         cancellation_rate = (
-            round((total_cancelled / total_all_status * 100), 1)
+            round((float(total_cancelled) / float(total_all_status) * 100), 1)
             if total_all_status > 0
             else 0
         )
 
         # --------------------------------------------------
-        # 3. KPI: Jumlah Model
+        # 3. KPI: Jumlah Model (Tetap pakai Summary)
         # --------------------------------------------------
         num_models = (
             _base([func.count(func.distinct(ProductDimension.product_model))])
-            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
-            .scalar()
-            or 0
+            .join(ProductDimension, DailySalesSummary.product_id == ProductDimension.product_id)
+            .scalar() or 0
         )
 
         # --------------------------------------------------
-        # 4. KPI: Total Order
+        # 4. KPI: Total Order (Kembali ke OrderFact)
         # --------------------------------------------------
         num_orders = (
-            _base([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
+            session.query(func.count(func.distinct(OrderFact.order_key)))
+            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .filter(*fact_success_filter)
+            .scalar() or 0
         )
 
         # --------------------------------------------------
-        # 5. KPI: Total Pendapatan
+        # 5. KPI: Total Pendapatan (Tetap pakai Summary - Amount Additive)
         # --------------------------------------------------
-        revenue_total = _base([func.sum(OrderFact.total_amount)]).scalar() or 0
+        revenue_total = _base([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
 
         # --------------------------------------------------
-        # 6. KPI: Jumlah Kota
+        # 6. KPI: Jumlah Kota (Tetap pakai Summary)
         # --------------------------------------------------
         num_cities = (
             _base([func.count(func.distinct(LocationDimension.city))])
-            .join(
-                LocationDimension,
-                OrderFact.location_id == LocationDimension.location_id,
-            )
-            .scalar()
-            or 0
+            .join(LocationDimension, DailySalesSummary.location_id == LocationDimension.location_id)
+            .scalar() or 0
         )
 
         # --------------------------------------------------
         # 7. KPI: AOV
         # --------------------------------------------------
-        aov = (revenue_total / num_orders) if num_orders > 0 else 0
+        aov = (float(revenue_total) / float(num_orders)) if num_orders > 0 else 0
 
         # --------------------------------------------------
         # 8. KPI: Ramadhan vs Normal
@@ -354,69 +371,50 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         ramadhan_filter = base_filter + [DateDimension.is_ramadhan == 1]
         normal_filter = base_filter + [DateDimension.is_ramadhan == 0]
 
+        fact_ramadhan_filter = fact_success_filter + [DateDimension.is_ramadhan == 1]
+        fact_normal_filter = fact_success_filter + [DateDimension.is_ramadhan == 0]
+
         def _ramadhan(cols):
-            return (
-                session.query(*cols)
-                .select_from(OrderFact)
-                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-                .join(
-                    PlatformDimension,
-                    OrderFact.platform_id == PlatformDimension.platform_id,
-                )
-                .filter(*ramadhan_filter)
-            )
+            return session.query(*cols).select_from(DailySalesSummary).join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id).join(PlatformDimension, DailySalesSummary.platform_id == PlatformDimension.platform_id).filter(*ramadhan_filter)
 
         def _normal(cols):
-            return (
-                session.query(*cols)
-                .select_from(OrderFact)
-                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-                .join(
-                    PlatformDimension,
-                    OrderFact.platform_id == PlatformDimension.platform_id,
-                )
-                .filter(*normal_filter)
-            )
+            return session.query(*cols).select_from(DailySalesSummary).join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id).join(PlatformDimension, DailySalesSummary.platform_id == PlatformDimension.platform_id).filter(*normal_filter)
 
-        ramadhan_days = (
-            _ramadhan([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        )
-        normal_days = (
-            _normal([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        )
-        total_days = (
-            _base([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        )
+        ramadhan_days = _ramadhan([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        normal_days = _normal([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        total_days = _base([func.count(func.distinct(DateDimension.date))]).scalar() or 0
 
-        ramadhan_revenue = _ramadhan([func.sum(OrderFact.total_amount)]).scalar() or 0
-        normal_revenue = _normal([func.sum(OrderFact.total_amount)]).scalar() or 0
+        ramadhan_revenue = _ramadhan([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
+        normal_revenue = _normal([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
 
         ramadhan_orders = (
-            _ramadhan([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
+            session.query(func.count(func.distinct(OrderFact.order_key)))
+            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .filter(*fact_ramadhan_filter)
+            .scalar() or 0
         )
+        
         normal_orders = (
-            _normal([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
+            session.query(func.count(func.distinct(OrderFact.order_key)))
+            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .filter(*fact_normal_filter)
+            .scalar() or 0
         )
 
-        overall_avg_revenue = (
-            (float(revenue_total) / total_days) if total_days > 0 else 0
-        )
-        overall_avg_orders = (num_orders / total_days) if total_days > 0 else 0
+        overall_avg_revenue = ((float(revenue_total) / float(total_days)) if total_days > 0 else 0)
+        overall_avg_orders = (float(num_orders) / float(total_days)) if total_days > 0 else 0
 
-        ramadhan_avg_revenue = (
-            (ramadhan_revenue / ramadhan_days) if ramadhan_days > 0 else 0
-        )
-        normal_avg_revenue = (normal_revenue / normal_days) if normal_days > 0 else 0
-        ramadhan_avg_orders = (
-            (ramadhan_orders / ramadhan_days) if ramadhan_days > 0 else 0
-        )
-        normal_avg_orders = (normal_orders / normal_days) if normal_days > 0 else 0
+        ramadhan_avg_revenue = ((float(ramadhan_revenue) / float(ramadhan_days)) if ramadhan_days > 0 else 0)
+        normal_avg_revenue = ((float(normal_revenue) / float(normal_days)) if normal_days > 0 else 0)
+        ramadhan_avg_orders = ((float(ramadhan_orders) / float(ramadhan_days)) if ramadhan_days > 0 else 0)
+        normal_avg_orders = ((float(normal_orders) / float(normal_days)) if normal_days > 0 else 0)
 
         has_comparison = ramadhan_days > 0 and normal_days > 0
         if has_comparison and normal_avg_revenue > 0:
             ramadhan_lift = round(
-                (ramadhan_avg_revenue - normal_avg_revenue) / normal_avg_revenue * 100,
-                1,
+                (float(ramadhan_avg_revenue) - float(normal_avg_revenue)) / float(normal_avg_revenue) * 100, 1
             )
         else:
             ramadhan_lift = None
@@ -425,10 +423,18 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # 9. Chart: Bar — Quantity per Warna
         # --------------------------------------------------
         color_data = (
-            _base([ProductDimension.product_color, func.sum(OrderFact.quantity)])
-            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
+            _base(
+                [
+                    ProductDimension.product_color,
+                    func.sum(DailySalesSummary.total_quantity),
+                ]
+            )
+            .join(
+                ProductDimension,
+                DailySalesSummary.product_id == ProductDimension.product_id,
+            )
             .group_by(ProductDimension.product_color)
-            .order_by(func.sum(OrderFact.quantity).desc())
+            .order_by(func.sum(DailySalesSummary.total_quantity).desc())
             .all()
         )
 
@@ -440,7 +446,7 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
                 [
                     DateDimension.date,
                     PlatformDimension.platform_name,
-                    func.sum(OrderFact.total_amount),
+                    func.sum(DailySalesSummary.total_amount),
                 ]
             )
             .group_by(DateDimension.date, PlatformDimension.platform_name)
@@ -452,10 +458,18 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # 11. Top 5 Best Selling Models
         # --------------------------------------------------
         top_products = (
-            _base([ProductDimension.product_model, func.sum(OrderFact.quantity)])
-            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
+            _base(
+                [
+                    ProductDimension.product_model,
+                    func.sum(DailySalesSummary.total_quantity),
+                ]
+            )
+            .join(
+                ProductDimension,
+                DailySalesSummary.product_id == ProductDimension.product_id,
+            )
             .group_by(ProductDimension.product_model)
-            .order_by(func.sum(OrderFact.quantity).desc())
+            .order_by(func.sum(DailySalesSummary.total_quantity).desc())
             .limit(5)
             .all()
         )
@@ -470,19 +484,21 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
             map_loc_filter.append(DateDimension.date <= end_date)
         if platform:
             map_loc_filter.append(PlatformDimension.platform_name == platform)
-        map_loc_filter.append(OrderFact.status == "SELESAI")
+        map_loc_filter.append(DailySalesSummary.status == "SELESAI")
 
         map_query = (
-            session.query(LocationDimension.province, func.sum(OrderFact.quantity))
-            .select_from(OrderFact)
-            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+            session.query(
+                LocationDimension.province, func.sum(DailySalesSummary.total_quantity)
+            )
+            .select_from(DailySalesSummary)
+            .join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id)
             .join(
                 PlatformDimension,
-                OrderFact.platform_id == PlatformDimension.platform_id,
+                DailySalesSummary.platform_id == PlatformDimension.platform_id,
             )
             .join(
                 LocationDimension,
-                OrderFact.location_id == LocationDimension.location_id,
+                DailySalesSummary.location_id == LocationDimension.location_id,
             )
             .filter(*map_loc_filter)
             .group_by(LocationDimension.province)
@@ -492,19 +508,24 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # --------------------------------------------------
         # 13. Chart: Avg Basket Size per Payment Method
         # --------------------------------------------------
+        avg_basket_formula = func.sum(DailySalesSummary.total_amount) / func.sum(
+            DailySalesSummary.total_orders
+        )
+
         payment_data = (
             _base(
                 [
                     PaymentMethodDimension.payment_method_name,
-                    func.avg(OrderFact.total_amount),
+                    avg_basket_formula,
                 ]
             )
             .join(
                 PaymentMethodDimension,
-                OrderFact.payment_method_id == PaymentMethodDimension.payment_method_id,
+                DailySalesSummary.payment_method_id
+                == PaymentMethodDimension.payment_method_id,
             )
             .group_by(PaymentMethodDimension.payment_method_name)
-            .order_by(func.avg(OrderFact.total_amount).desc())
+            .order_by(avg_basket_formula.desc())
             .all()
         )
 
@@ -512,18 +533,24 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # 14. Chart: Product Size Distribution
         # --------------------------------------------------
         size_data = (
-            _base([ProductDimension.product_size, func.count(OrderFact.order_key)])
-            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
+            _base(
+                [
+                    ProductDimension.product_size,
+                    func.sum(DailySalesSummary.total_quantity),
+                ]
+            )
+            .join(
+                ProductDimension,
+                DailySalesSummary.product_id == ProductDimension.product_id,
+            )
             .group_by(ProductDimension.product_size)
-            .order_by(func.count(OrderFact.order_key).desc())
+            .order_by(func.sum(DailySalesSummary.total_quantity).desc())
             .all()
         )
 
         map_data = [["Provinsi", "Total Terjual"]]
         for row in map_query:
             map_data.append([row[0], int(row[1])])
-
-        print("MAP DATA:", map_data)
 
         # --------------------------------------------------
         # Return
@@ -554,7 +581,9 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
             ],
             "top_products": [[p[0], int(p[1])] for p in top_products],
             "payment_labels": [p[0] for p in payment_data],
-            "payment_values": [float(p[1]) for p in payment_data],
+            "payment_values": [
+                float(p[1]) if p[1] is not None else 0 for p in payment_data
+            ],
             "size_labels": [s[0] for s in size_data],
             "size_values": [int(s[1]) for s in size_data],
         }
@@ -578,10 +607,8 @@ def dashboard_view():
 # ==========================================
 # 3. PREDIKSI
 # ==========================================
-FORECAST_CACHE = {
-    "db_state": None,
-    "data": None
-}
+FORECAST_CACHE = {"db_state": None, "data": None}
+
 
 def get_db_state():
     try:
@@ -592,8 +619,9 @@ def get_db_state():
     except Exception:
         return None
 
-def generate_recursive_forecast(model, days_ahead=14):
 
+def generate_recursive_forecast(model, days_ahead=14):
+   
     query_hist = """
         SELECT 
             dd.date AS order_date, 
@@ -633,7 +661,6 @@ def generate_recursive_forecast(model, days_ahead=14):
     date_dim["order_date"] = pd.to_datetime(date_dim["order_date"])
 
     future_df = pd.DataFrame({"order_date": future_dates})
-
     future_df["is_muslim_fashion"] = hist_df["is_muslim_fashion"].tail(1).values[0]
     future_df["quantity"] = np.nan
 
@@ -643,62 +670,169 @@ def generate_recursive_forecast(model, days_ahead=14):
     cat_cols = ["days_name", "month"]
     for col in cat_cols:
         combined_df[col] = combined_df[col].astype("category")
+        
+    feature_cols = [
+        "rolling_mean_7_qty", "rolling_mean_14_qty", "rolling_mean_30_qty",
+        "rolling_std_3_qty", "rolling_std_7_qty",
+        "lag_1_qty", "lag_3_qty", "lag_7_qty", "lag_21_qty", "lag_28_qty",
+        "lag_7_rolling_mean", "lag_14_rolling_mean",
+        "payday_weekend", "ramadhan_twin", 
+        "day_of_year", "week_of_year", "is_month_end", "is_month_start"
+    ]
+    for col in feature_cols:
+        combined_df[col] = 0.0
 
     forecast_results = []
     start_idx = len(hist_df)
+    
+    qty_history = hist_df["quantity"].tolist()
 
     for i in range(start_idx, len(combined_df)):
-        temp = combined_df.iloc[: i + 1].copy()
+        current_date = combined_df.at[i, "order_date"]
+        
+        lag_1 = qty_history[-1] if len(qty_history) >= 1 else 0
+        lag_3 = qty_history[-3] if len(qty_history) >= 3 else 0
+        lag_7 = qty_history[-7] if len(qty_history) >= 7 else 0
+        lag_21 = qty_history[-21] if len(qty_history) >= 21 else 0
+        lag_28 = qty_history[-28] if len(qty_history) >= 28 else 0
 
-        temp["rolling_mean_7_qty"] = (
-            temp["quantity"].rolling(window=7, min_periods=1, closed="left").mean()
-        )
-        temp["rolling_mean_14_qty"] = (
-            temp["quantity"].rolling(window=14, min_periods=1, closed="left").mean()
-        )
-        temp["rolling_mean_30_qty"] = (
-            temp["quantity"].rolling(window=30, min_periods=1, closed="left").mean()
-        )
+        rolling_7 = np.mean(qty_history[-7:]) if len(qty_history) >= 7 else np.mean(qty_history)
+        rolling_14 = np.mean(qty_history[-14:]) if len(qty_history) >= 14 else np.mean(qty_history)
+        rolling_30 = np.mean(qty_history[-30:]) if len(qty_history) >= 30 else np.mean(qty_history)
+ 
+        std_3 = np.std(qty_history[-3:], ddof=1) if len(qty_history) >= 2 else 0.0
+        std_7 = np.std(qty_history[-7:], ddof=1) if len(qty_history) >= 2 else 0.0
 
-        temp["rolling_std_3_qty"] = (
-            temp["quantity"].rolling(window=3, min_periods=1, closed="left").std()
-        )
-        temp["rolling_std_7_qty"] = (
-            temp["quantity"].rolling(window=7, min_periods=1, closed="left").std()
-        )
+        lag_7_rolling_mean = np.mean(qty_history[-14:-7]) if len(qty_history) >= 14 else 0
+        lag_14_rolling_mean = np.mean(qty_history[-28:-14]) if len(qty_history) >= 28 else 0
 
-        temp["lag_1_qty"] = temp["quantity"].shift(1)
-        temp["lag_3_qty"] = temp["quantity"].shift(3)
-        temp["lag_7_qty"] = temp["quantity"].shift(7)
-        temp["lag_21_qty"] = temp["quantity"].shift(21)
-        temp["lag_28_qty"] = temp["quantity"].shift(28)
+        combined_df.at[i, "rolling_mean_7_qty"] = rolling_7
+        combined_df.at[i, "rolling_mean_14_qty"] = rolling_14
+        combined_df.at[i, "rolling_mean_30_qty"] = rolling_30
+        combined_df.at[i, "rolling_std_3_qty"] = std_3
+        combined_df.at[i, "rolling_std_7_qty"] = std_7
+        combined_df.at[i, "lag_1_qty"] = lag_1
+        combined_df.at[i, "lag_3_qty"] = lag_3
+        combined_df.at[i, "lag_7_qty"] = lag_7
+        combined_df.at[i, "lag_21_qty"] = lag_21
+        combined_df.at[i, "lag_28_qty"] = lag_28
+        combined_df.at[i, "lag_7_rolling_mean"] = lag_7_rolling_mean
+        combined_df.at[i, "lag_14_rolling_mean"] = lag_14_rolling_mean
+        
+        combined_df.at[i, "payday_weekend"] = combined_df.at[i, "is_payday"] * combined_df.at[i, "is_weekend"]
+        combined_df.at[i, "ramadhan_twin"] = combined_df.at[i, "is_ramadhan"] * combined_df.at[i, "is_twin_date"]
+        
+        combined_df.at[i, "day_of_year"] = current_date.dayofyear
+        combined_df.at[i, "week_of_year"] = current_date.isocalendar().week
+        combined_df.at[i, "is_month_end"] = int(current_date.is_month_end)
+        combined_df.at[i, "is_month_start"] = int(current_date.is_month_start)
 
-        temp["lag_7_rolling_mean"] = temp["rolling_mean_7_qty"].shift(7)
-        temp["lag_14_rolling_mean"] = temp["rolling_mean_14_qty"].shift(14)
-
-        temp["payday_weekend"] = temp["is_payday"] * temp["is_weekend"]
-        temp["ramadhan_twin"] = temp["is_ramadhan"] * temp["is_twin_date"]
-
-        temp["day_of_year"] = temp["order_date"].dt.dayofyear
-        temp["week_of_year"] = temp["order_date"].dt.isocalendar().week.astype(int)
-        temp["is_month_end"] = temp["order_date"].dt.is_month_end.astype(int)
-        temp["is_month_start"] = temp["order_date"].dt.is_month_start.astype(int)
-
-        current_features = temp.iloc[[i]].drop(columns=["order_date", "quantity"])
+        current_features = combined_df.iloc[[i]].drop(columns=["order_date", "quantity"])
 
         pred_qty = model.predict(current_features)[0]
         pred_qty = max(0, np.round(pred_qty))
 
         combined_df.at[i, "quantity"] = pred_qty
+        qty_history.append(pred_qty)
 
         forecast_results.append(
             {
-                "date": combined_df.at[i, "order_date"].strftime("%Y-%m-%d"),
+                "date": current_date.strftime("%Y-%m-%d"),
                 "predicted_qty": int(pred_qty),
             }
         )
 
     return forecast_results
+
+
+def update_forecast_cache_background():
+    global FORECAST_CACHE
+    try:
+
+        if not os.path.exists(MODEL_PATH):
+            return
+
+        model = joblib.load(MODEL_PATH)
+
+        forecast_results = generate_recursive_forecast(model, days_ahead=14)
+        total_forecast_qty = sum(item["predicted_qty"] for item in forecast_results)
+
+        # Kalkulasi Top Models & Colors
+        query_weights = """
+            SELECT 
+                pr.product_model, 
+                pr.product_color, 
+                SUM(ds.total_quantity) as qty
+            FROM daily_sales_summary ds
+            JOIN date_dimension dd ON dd.date_id = ds.date_id
+            JOIN product_dimension pr ON pr.product_id = ds.product_id
+            WHERE ds.status = 'SELESAI' 
+            AND dd.date >= (SELECT DATE_SUB(MAX(dd2.date), INTERVAL 90 DAY) 
+                            FROM daily_sales_summary ds2 
+                            JOIN date_dimension dd2 ON ds2.date_id = dd2.date_id)
+            GROUP BY pr.product_model, pr.product_color
+        """
+        with engine.connect() as conn:
+            weight_df = pd.read_sql(text(query_weights), conn)
+
+        model_df = weight_df.groupby("product_model")["qty"].sum().reset_index()
+        top_models = model_df.nlargest(5, "qty")
+        model_weight_total = top_models["qty"].sum()
+
+        top_models_forecast = [
+            {
+                "name": row["product_model"],
+                "forecast_qty": int(
+                    round(
+                        total_forecast_qty
+                        * (
+                            row["qty"] / model_weight_total
+                            if model_weight_total > 0
+                            else 0
+                        )
+                    )
+                ),
+            }
+            for _, row in top_models.iterrows()
+        ]
+
+        color_df = weight_df.groupby("product_color")["qty"].sum().reset_index()
+        top_colors = color_df.nlargest(5, "qty")
+        color_weight_total = top_colors["qty"].sum()
+
+        top_colors_forecast = [
+            {
+                "name": row["product_color"],
+                "forecast_qty": int(
+                    round(
+                        total_forecast_qty
+                        * (
+                            row["qty"] / color_weight_total
+                            if color_weight_total > 0
+                            else 0
+                        )
+                    )
+                ),
+            }
+            for _, row in top_colors.iterrows()
+        ]
+
+        db_state_now = get_db_state()
+
+        session = SessionLocal()
+        new_cache = ForecastCache(
+            db_state=db_state_now,
+            total_forecast_qty=total_forecast_qty,
+            forecast_daily=forecast_results,
+            top_models=top_models_forecast,
+            top_colors=top_colors_forecast,
+        )
+        session.add(new_cache)
+        session.commit()
+        session.close()
+
+    except Exception as e:
+        print(f"[ERROR] Forecast background gagal: {e}")
 
 
 @app.route("/forecast")
@@ -709,80 +843,35 @@ def forecast_view():
             "forecast.html",
             error="Model prediksi belum siap. Silakan jalankan pipeline retraining.",
         )
-        
-    global FORECAST_CACHE
 
     try:
+        session = SessionLocal()
+        cache = (
+            session.query(ForecastCache)
+            .order_by(ForecastCache.created_at.desc())
+            .first()
+        )
         db_state = get_db_state()
-        
-        if FORECAST_CACHE["db_state"] == db_state and FORECAST_CACHE["data"] is not None:
-            forecast_results = FORECAST_CACHE["data"]
-            return render_template(
-                'forecast.html',
-                total_forecast=forecast_results["total_forecast_qty"],
-                forecast_daily=forecast_results["forecast_results"],
-                top_models=forecast_results["top_models_forecast"],
-                top_colors=forecast_results["top_colors_forecast"]
-            )
-            
-        model = joblib.load(MODEL_PATH)
-        forecast_results = generate_recursive_forecast(model, days_ahead=14)
 
-        total_forecast_qty = sum(item['predicted_qty'] for item in forecast_results)
-        
-        query_weights = """
-            SELECT 
-                pr.product_model, 
-                pr.product_color, 
-                SUM(oc.quantity) as qty
-            FROM order_fact oc
-            JOIN date_dimension dd ON dd.date_id = oc.date_id
-            JOIN product_dimension pr ON pr.product_id = oc.product_id
-            WHERE oc.status = 'SELESAI' 
-            AND dd.date >= (SELECT DATE_SUB(MAX(date), INTERVAL 90 DAY) FROM order_fact)
-            GROUP BY pr.product_model, pr.product_color
-        """
-        with engine.connect() as conn:
-            weight_df = pd.read_sql(text(query_weights), conn)
-            
-        model_df = weight_df.groupby('product_model')['qty'].sum().reset_index()
-        top_models = model_df.nlargest(5, 'qty')
-        model_weight_total = top_models['qty'].sum()
-        
-        top_models_forecast = []
-        for _, row in top_models.iterrows():
-            weight = row['qty'] / model_weight_total if model_weight_total > 0 else 0
-            top_models_forecast.append({
-                'name': row['product_model'],
-                'forecast_qty': int(round(total_forecast_qty * weight))
-            })
-            
-        color_df = weight_df.groupby('product_color')['qty'].sum().reset_index()
-        top_colors = color_df.nlargest(5, 'qty')
-        color_weight_total = top_colors['qty'].sum()
-        
-        top_colors_forecast = []
-        for _, row in top_colors.iterrows():
-            weight = row['qty'] / color_weight_total if color_weight_total > 0 else 0
-            top_colors_forecast.append({
-                'name': row['product_color'],
-                'forecast_qty': int(round(total_forecast_qty * weight))
-            })
-            
-        FORECAST_CACHE["db_state"] = db_state
-        FORECAST_CACHE["data"] = {
-            "total_forecast_qty": total_forecast_qty,
-            "forecast_results": forecast_results,
-            "top_models_forecast": top_models_forecast,
-            "top_colors_forecast": top_colors_forecast
-        }
+        if not cache or cache.db_state != db_state:
+            update_forecast_cache_background()
+            cache = (
+                session.query(ForecastCache)
+                .order_by(ForecastCache.created_at.desc())
+                .first()
+            )
+
+        session.close()
+
+        if not cache:
+            return render_template("forecast.html", error="Gagal memuat data prediksi.")
 
         return render_template(
-            'forecast.html', 
-            total_forecast=total_forecast_qty,
-            forecast_daily=forecast_results,
-            top_models=top_models_forecast,
-            top_colors=top_colors_forecast
+            "forecast.html",
+            total_forecast=cache.total_forecast_qty,
+            forecast_daily=cache.forecast_daily,
+            top_models=cache.top_models,
+            top_colors=cache.top_colors,
         )
 
     except Exception as e:

@@ -1,9 +1,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap"
+  rel="stylesheet"
+/>
 
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
   body {
     font-family: "DM Sans", sans-serif;
@@ -13,7 +20,7 @@
   }
 
   /* ════════════════════════════════
-     NAVBAR — shared base
+     NAVBAR
   ════════════════════════════════ */
   .nav-root {
     position: sticky;
@@ -44,7 +51,6 @@
     text-decoration: none;
     flex-shrink: 0;
   }
-
   .nav-brand-icon {
     width: 32px;
     height: 32px;
@@ -54,21 +60,18 @@
     justify-content: center;
     flex-shrink: 0;
   }
-
   .nav-brand-icon img {
-    width: 40px;  
+    width: 40px;
     height: 40px;
     object-fit: contain;
   }
-
   .nav-brand-name {
     font-family: "Lora", serif;
     font-size: 17px;
     font-weight: 600;
-    color: #E6521F;
+    color: var(--t-c1);
     letter-spacing: -0.01em;
   }
-
   .nav-brand-sub {
     font-size: 10px;
     font-weight: 500;
@@ -79,7 +82,7 @@
     line-height: 1;
   }
 
-  /* Desktop nav links */
+  /* Nav links */
   .nav-links {
     display: flex;
     align-items: center;
@@ -88,7 +91,6 @@
     margin: 0;
     padding: 0;
   }
-
   .nav-links a {
     display: flex;
     align-items: center;
@@ -99,13 +101,19 @@
     font-weight: 500;
     color: #6b7280;
     text-decoration: none;
-    transition: background 0.15s, color 0.15s;
+    transition:
+      background 0.15s,
+      color 0.15s;
     white-space: nowrap;
   }
-
-  .nav-links a:hover { background: #f3f4f6; color: #E6521F; }
-  .nav-links a.active { background: #E6521F; color: #f8f7f4; }
-
+  .nav-links a:hover {
+    background: color-mix(in srgb, var(--t-c1) 10%, #fff);
+    color: var(--t-c1);
+  }
+  .nav-links a.active {
+    background: var(--t-c1);
+    color: #fff;
+  }
   .nav-links a svg {
     width: 14px;
     height: 14px;
@@ -117,19 +125,17 @@
     flex-shrink: 0;
   }
 
-  /* Right slot (User Email & Logout Desktop) */
+  /* Right slot */
   .nav-right {
     display: flex;
     align-items: center;
     gap: 12px;
   }
-
   .nav-user-name {
     font-size: 13px;
     font-weight: 500;
     color: #4b5563;
   }
-
   .nav-logout-btn {
     display: flex;
     align-items: center;
@@ -143,14 +149,13 @@
     text-decoration: none;
     transition: all 0.15s;
   }
-
   .nav-logout-btn:hover {
     background: #fee2e2;
     border-color: #fca5a5;
     color: #dc2626;
   }
 
-  /* Hamburger button — hidden on desktop */
+  /* Hamburger */
   .nav-hamburger {
     display: none;
     align-items: center;
@@ -161,12 +166,15 @@
     border-radius: 9px;
     background: #fafafa;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
     flex-shrink: 0;
   }
-
-  .nav-hamburger:hover { background: #f3f4f6; border-color: #d1d5db; }
-
+  .nav-hamburger:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+  }
   .nav-hamburger svg {
     width: 18px;
     height: 18px;
@@ -176,11 +184,12 @@
     stroke-linecap: round;
     transition: stroke 0.15s;
   }
-
-  .nav-hamburger:hover svg { stroke: #E6521F; }
+  .nav-hamburger:hover svg {
+    stroke: var(--t-c1);
+  }
 
   /* ════════════════════════════════
-     SIDEBAR (mobile/tablet)
+     SIDEBAR
   ════════════════════════════════ */
   .sidebar-overlay {
     display: none;
@@ -192,8 +201,10 @@
     opacity: 0;
     transition: opacity 0.25s ease;
   }
-
-  .sidebar-overlay.open { display: block; opacity: 1; }
+  .sidebar-overlay.open {
+    display: block;
+    opacity: 1;
+  }
 
   .sidebar {
     position: fixed;
@@ -208,10 +219,10 @@
     flex-direction: column;
     transform: translateX(-100%);
     transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
-    will-change: transform;
   }
-
-  .sidebar.open { transform: translateX(0); }
+  .sidebar.open {
+    transform: translateX(0);
+  }
 
   .sidebar-header {
     display: flex;
@@ -221,7 +232,6 @@
     border-bottom: 1px solid #f3f4f6;
     flex-shrink: 0;
   }
-
   .sidebar-close {
     width: 32px;
     height: 32px;
@@ -235,9 +245,10 @@
     transition: background 0.15s;
     flex-shrink: 0;
   }
-
-  .sidebar-close:hover { background: #fee2e2; border-color: #fca5a5; }
-
+  .sidebar-close:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
   .sidebar-close svg {
     width: 16px;
     height: 16px;
@@ -247,8 +258,9 @@
     stroke-linecap: round;
     transition: stroke 0.15s;
   }
-
-  .sidebar-close:hover svg { stroke: #E6521F; }
+  .sidebar-close:hover svg {
+    stroke: #dc2626;
+  }
 
   .sidebar-nav {
     flex: 1;
@@ -258,7 +270,6 @@
     flex-direction: column;
     gap: 4px;
   }
-
   .sidebar-nav a {
     display: flex;
     align-items: center;
@@ -269,12 +280,18 @@
     font-weight: 500;
     color: #6b7280;
     text-decoration: none;
-    transition: background 0.15s, color 0.15s;
+    transition:
+      background 0.15s,
+      color 0.15s;
   }
-
-  .sidebar-nav a:hover { background: #fff6f3; color: #E6521F; }
-  .sidebar-nav a.active { background: #E6521F; color: #fff; }
-
+  .sidebar-nav a:hover {
+    background: color-mix(in srgb, var(--t-c1) 10%, #fff);
+    color: var(--t-c1);
+  }
+  .sidebar-nav a.active {
+    background: var(--t-c1);
+    color: #fff;
+  }
   .sidebar-nav a svg {
     width: 18px;
     height: 18px;
@@ -285,7 +302,6 @@
     stroke-linejoin: round;
     flex-shrink: 0;
   }
-
   .sidebar-nav-label {
     font-size: 10px;
     font-weight: 600;
@@ -300,8 +316,6 @@
     border-top: 1px solid #f3f4f6;
     flex-shrink: 0;
   }
-
-  /* User profile wrap for sidebar footer */
   .sidebar-user-wrap {
     display: flex;
     align-items: center;
@@ -311,7 +325,6 @@
     border-radius: 10px;
     border: 1px solid #e5e7eb;
   }
-
   .sidebar-user-name {
     font-size: 12px;
     font-weight: 500;
@@ -321,7 +334,6 @@
     text-overflow: ellipsis;
     max-width: 160px;
   }
-
   .sidebar-logout-btn {
     color: #9ca3af;
     display: flex;
@@ -329,9 +341,10 @@
     justify-content: center;
     padding: 6px;
     border-radius: 6px;
-    transition: background 0.15s, color 0.15s;
+    transition:
+      background 0.15s,
+      color 0.15s;
   }
-
   .sidebar-logout-btn:hover {
     background: #fee2e2;
     color: #dc2626;
@@ -341,60 +354,119 @@
      BREAKPOINTS
   ════════════════════════════════ */
   @media (min-width: 1200px) {
-    .nav-inner { max-width: 1600px; padding: 0 40px; }
+    .nav-inner {
+      max-width: 1600px;
+      padding: 0 40px;
+    }
   }
-
   @media (max-width: 1199px) {
-    .nav-inner { padding: 0 24px; }
-    .nav-links a { padding: 7px 10px; font-size: 12.5px; gap: 6px; }
+    .nav-inner {
+      padding: 0 24px;
+    }
+    .nav-links a {
+      padding: 7px 10px;
+      font-size: 12.5px;
+      gap: 6px;
+    }
   }
-
   @media (max-width: 991px) {
-    .nav-inner { padding: 0 20px; justify-content: center; }
-    .nav-links a span.link-text { display: none; }
-    .nav-links a { padding: 8px 10px; gap: 0; }
-    .nav-links a svg { width: 18px; height: 18px; }
-    .nav-brand { display: none; }
-    .nav-right { display: none; }
+    .nav-inner {
+      padding: 0 20px;
+      justify-content: center;
+    }
+    .nav-links a span.link-text {
+      display: none;
+    }
+    .nav-links a {
+      padding: 8px 10px;
+      gap: 0;
+    }
+    .nav-links a svg {
+      width: 18px;
+      height: 18px;
+    }
+    .nav-brand {
+      display: none;
+    }
+    .nav-right {
+      display: none;
+    }
   }
-
   @media (max-width: 767px) {
-    .nav-inner { padding: 0 16px; justify-content: space-between;}
-    .nav-links { display: none; }
-    .nav-right { display: none; }
-    .nav-hamburger { display: flex; }
-    .nav-brand { display: flex; }
-    .nav-brand-icon img { width: 32px; height: 32px; }
+    .nav-inner {
+      padding: 0 16px;
+      justify-content: space-between;
+    }
+    .nav-links {
+      display: none;
+    }
+    .nav-right {
+      display: none;
+    }
+    .nav-hamburger {
+      display: flex;
+    }
+    .nav-brand {
+      display: flex;
+    }
+    .nav-brand-icon img {
+      width: 32px;
+      height: 32px;
+    }
   }
-
   @media (max-width: 575px) {
-    .nav-inner { padding: 0 12px; height: 54px; justify-content: space-between;}
-    .nav-brand-name { font-size: 15px; }
-    .nav-brand { display: flex; }
+    .nav-inner {
+      padding: 0 12px;
+      height: 54px;
+      justify-content: space-between;
+    }
+    .nav-brand-name {
+      font-size: 15px;
+    }
+    .nav-brand {
+      display: flex;
+    }
   }
 </style>
 
+{% set platform_filter = request.args.get('platform', '') %} {% if
+platform_filter == 'Shopee' %} {% set logo_file = 'lamiah-new.png' %} {% elif
+platform_filter == 'Tokopedia' %} {% set logo_file = 'lamiah_green.png' %} {%
+elif 'TikTok' in platform_filter %} {% set logo_file = 'lamiah_black.png' %} {%
+else %} {% set logo_file = 'lamiah-blue.png' %} {% endif %}
+
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<aside class="sidebar" id="sidebar" aria-label="Navigation menu" role="navigation">
+<aside
+  class="sidebar"
+  id="sidebar"
+  aria-label="Navigation menu"
+  role="navigation"
+>
   <div class="sidebar-header">
     <a class="nav-brand" id="sidebar-brand-link" href="#">
       <div class="nav-brand-icon">
-        <img src="{{ url_for('static', filename='lamiah-new.png') }}" alt="Logo Lamiah">
+        <img
+          src="{{ url_for('static', filename=logo_file) }}"
+          alt="Logo Lamiah"
+        />
       </div>
-      <div class="nav-brand-left">
+      <div>
         <div class="nav-brand-name">Analytics</div>
         <div class="nav-brand-sub">System</div>
       </div>
     </a>
     <button class="sidebar-close" id="sidebarClose" aria-label="Tutup menu">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <svg viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
     </button>
   </div>
 
   <nav class="sidebar-nav">
     <div class="sidebar-nav-label">Menu</div>
-    <a id="sb-dashboard" href="#" class="">
+    <a id="sb-dashboard" href="#">
       <svg viewBox="0 0 24 24">
         <rect x="3" y="3" width="7" height="7" rx="1.5" />
         <rect x="14" y="3" width="7" height="7" rx="1.5" />
@@ -413,10 +485,14 @@
     </a>
     <a id="sb-forecast" href="#">
       <svg viewBox="0 0 24 24">
-        <path d="M12 2v4"/><path d="M12 18v4"/>
-        <path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/>
-        <path d="M2 12h4"/><path d="M18 12h4"/>
-        <path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/>
+        <path d="M12 2v4" />
+        <path d="M12 18v4" />
+        <path d="M4.93 4.93l2.83 2.83" />
+        <path d="M16.24 16.24l2.83 2.83" />
+        <path d="M2 12h4" />
+        <path d="M18 12h4" />
+        <path d="M4.93 19.07l2.83-2.83" />
+        <path d="M16.24 7.76l2.83-2.83" />
       </svg>
       ML Forecast
     </a>
@@ -424,26 +500,37 @@
 
   <div class="sidebar-footer">
     {% if session.get('user_email') %}
-      <div class="sidebar-user-wrap">
-        <span class="sidebar-user-name">{{ session.get('user_name') }}</span>
-        <a href="/logout" class="sidebar-logout-btn" title="Logout">
-          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-        </a>
-      </div>
+    <div class="sidebar-user-wrap">
+      <span class="sidebar-user-name">{{ session.get('user_name') }}</span>
+      <a href="/logout" class="sidebar-logout-btn" title="Logout">
+        <svg
+          viewBox="0 0 24 24"
+          width="16"
+          height="16"
+          stroke="currentColor"
+          stroke-width="2"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </a>
+    </div>
     {% endif %}
   </div>
 </aside>
 
 <nav class="nav-root" aria-label="Main navigation">
   <div class="nav-inner">
-
     <a class="nav-brand" id="nav-brand-link" href="#">
       <div class="nav-brand-icon">
-        <img src="{{ url_for('static', filename='lamiah-new.png') }}" alt="Logo Lamiah">
+        <img
+          src="{{ url_for('static', filename=logo_file) }}"
+          alt="Logo Lamiah"
+        />
       </div>
     </a>
 
@@ -472,10 +559,14 @@
       <li>
         <a id="nav-forecast" href="#">
           <svg viewBox="0 0 24 24">
-            <path d="M12 2v4"/><path d="M12 18v4"/>
-            <path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/>
-            <path d="M2 12h4"/><path d="M18 12h4"/>
-            <path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/>
+            <path d="M12 2v4" />
+            <path d="M12 18v4" />
+            <path d="M4.93 4.93l2.83 2.83" />
+            <path d="M16.24 16.24l2.83 2.83" />
+            <path d="M2 12h4" />
+            <path d="M18 12h4" />
+            <path d="M4.93 19.07l2.83-2.83" />
+            <path d="M16.24 7.76l2.83-2.83" />
           </svg>
           <span class="link-text">ML Forecast</span>
         </a>
@@ -484,106 +575,114 @@
 
     <div class="nav-right">
       {% if session.get('user_email') %}
-        <div class="nav-user-name">{{ session.get('user_name') }}</div>
-        <a href="/logout" class="nav-logout-btn" title="Logout">
-          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-        </a>
+      <div class="nav-user-name">{{ session.get('user_name') }}</div>
+      <a href="/logout" class="nav-logout-btn" title="Logout">
+        <svg
+          viewBox="0 0 24 24"
+          width="16"
+          height="16"
+          stroke="currentColor"
+          stroke-width="2"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </a>
       {% endif %}
     </div>
 
-    <button class="nav-hamburger" id="navHamburger" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="sidebar">
+    <button
+      class="nav-hamburger"
+      id="navHamburger"
+      aria-label="Buka menu navigasi"
+      aria-expanded="false"
+      aria-controls="sidebar"
+    >
       <svg viewBox="0 0 24 24">
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
       </svg>
     </button>
-
   </div>
 </nav>
 
 <script>
   (function () {
     const current = new URLSearchParams(window.location.search);
-    const FILTER_KEYS = ['key', 'start_date', 'end_date', 'platform'];
+    const FILTER_KEYS = ["key", "start_date", "end_date", "platform"];
 
     function buildUrl(basePath) {
       const params = new URLSearchParams();
-      FILTER_KEYS.forEach(k => {
+      FILTER_KEYS.forEach((k) => {
         const v = current.get(k);
         if (v) params.set(k, v);
       });
       const qs = params.toString();
-      return qs ? basePath + '?' + qs : basePath;
+      return qs ? basePath + "?" + qs : basePath;
     }
 
-    // Set hrefs
-    const dashUrl     = buildUrl('/dashboard');
-    const uploadUrl   = buildUrl('/upload');
-    const forecastUrl = buildUrl('/forecast');
+    const dashUrl = buildUrl("/dashboard");
+    const uploadUrl = buildUrl("/upload");
+    const forecastUrl = buildUrl("/forecast");
 
     const links = {
-      'nav-brand-link': dashUrl,
-      'nav-dashboard':  dashUrl,
-      'nav-upload':     uploadUrl,
-      'nav-forecast':   forecastUrl,
-      'sidebar-brand-link': dashUrl,
-      'sb-dashboard':   dashUrl,
-      'sb-upload':      uploadUrl,
-      'sb-forecast':    forecastUrl,
+      "nav-brand-link": dashUrl,
+      "nav-dashboard": dashUrl,
+      "nav-upload": uploadUrl,
+      "nav-forecast": forecastUrl,
+      "sidebar-brand-link": dashUrl,
+      "sb-dashboard": dashUrl,
+      "sb-upload": uploadUrl,
+      "sb-forecast": forecastUrl,
     };
-
     Object.entries(links).forEach(([id, url]) => {
       const el = document.getElementById(id);
       if (el) el.href = url;
     });
 
-    const endpoint = '{{ request.endpoint }}';
+    const endpoint = "{{ request.endpoint }}";
     const activeMap = {
-      'dashboard_view': ['nav-dashboard', 'sb-dashboard'],
-      'upload_view':    ['nav-upload',    'sb-upload'],
-      'forecast_view':  ['nav-forecast',  'sb-forecast'],
+      dashboard_view: ["nav-dashboard", "sb-dashboard"],
+      upload_view: ["nav-upload", "sb-upload"],
+      forecast_view: ["nav-forecast", "sb-forecast"],
     };
-
-    (activeMap[endpoint] || []).forEach(id => {
+    (activeMap[endpoint] || []).forEach((id) => {
       const el = document.getElementById(id);
-      if (el) el.classList.add('active');
+      if (el) el.classList.add("active");
     });
 
-    // ── Sidebar open/close ──
-    const hamburger     = document.getElementById('navHamburger');
-    const sidebar       = document.getElementById('sidebar');
-    const overlay       = document.getElementById('sidebarOverlay');
-    const closeBtn      = document.getElementById('sidebarClose');
-
+    // Sidebar
+    const hamburger = document.getElementById("navHamburger");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    const closeBtn = document.getElementById("sidebarClose");
     function openSidebar() {
-      sidebar.classList.add('open');
-      overlay.classList.add('open');
-      hamburger.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
+      sidebar.classList.add("open");
+      overlay.classList.add("open");
+      hamburger.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden";
     }
-
     function closeSidebar() {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      sidebar.classList.remove("open");
+      overlay.classList.remove("open");
+      hamburger.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
     }
-
-    hamburger.addEventListener('click', openSidebar);
-    closeBtn.addEventListener('click', closeSidebar);
-    overlay.addEventListener('click', closeSidebar);
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebar();
+    hamburger.addEventListener("click", openSidebar);
+    closeBtn.addEventListener("click", closeSidebar);
+    overlay.addEventListener("click", closeSidebar);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && sidebar.classList.contains("open"))
+        closeSidebar();
     });
-
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 767 && sidebar.classList.contains('open')) closeSidebar();
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 767 && sidebar.classList.contains("open"))
+        closeSidebar();
     });
   })();
 </script>

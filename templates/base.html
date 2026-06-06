@@ -5,25 +5,151 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Lamiah Analytics{% endblock %}</title>
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='lamiah-new.png') }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='lamiah-new.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='lamiah-blue.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='lamiah-blue.png') }}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  {# ── active platform + theme palette ── #}
+  {% set active_platform = request.args.get('platform') %}
+
+  {% if active_platform == 'Shopee' %}
+    {% set theme = {
+      'name':    'shopee',
+      'c1':      '#EE4D2D',
+      'c2':      '#F97048',
+      'c3':      '#FBAB91',
+      'c4':      '#FDD9CE',
+      'c5':      '#FEF0EB',
+      'nav_active_text': '#fff'
+    } %}
+  {% elif active_platform == 'Tokopedia' %}
+    {% set theme = {
+      'name':    'tokopedia',
+      'c1':      '#43B449',
+      'c2':      '#68C56D',
+      'c3':      '#96D999',
+      'c4':      '#C8EDCA',
+      'c5':      '#EBF7EB',
+      'nav_active_text': '#fff'
+    } %}
+  {% elif active_platform == 'TikTok Shop' or active_platform == 'TikTok' or active_platform == 'tiktok' %}
+    {% set theme = {
+      'name':    'tiktok',
+      'c1':      '#1a1a1a',
+      'c2':      '#444444',
+      'c3':      '#777777',
+      'c4':      '#bbbbbb',
+      'c5':      '#ebebeb',
+      'nav_active_text': '#fff'
+    } %}
+  {% else %}
+    {% set theme = {
+      'name':    'default',
+      'c1':      '#401FE6',
+      'c2':      '#5638EB',
+      'c3':      '#6D52F2',
+      'c4':      '#B3A6F7',
+      'c5':      '#D0C9F5',
+      'nav_active_text': '#fff'
+    } %}
+  {% endif %}
+
   <style>
-    html {
-      overflow-y: scroll;
+    html { overflow-y: scroll; }
+
+    :root {
+      --t-c1: {{ theme.c1 }};
+      --t-c2: {{ theme.c2 }};
+      --t-c3: {{ theme.c3 }};
+      --t-c4: {{ theme.c4 }};
+      --t-c5: {{ theme.c5 }};
+
+      --primary-color: {{ theme.c1 }};
     }
+
+    .btn-primary,
+    .btn-primary:active {
+      background-color: var(--t-c1) !important;
+      border-color:     var(--t-c1) !important;
+      color: {{ theme.nav_active_text }};
+    }
+    .btn-primary:hover {
+      background-color: var(--t-c2) !important;
+      border-color:     var(--t-c2) !important;
+    }
+    .text-primary  { color: var(--t-c1) !important; }
+    .card-header   { border-top: 3px solid var(--t-c1); }
+    a              { color: var(--t-c1); }
+
+    .kpi-card.main {
+      background: radial-gradient(
+        circle at 0% 140%,
+        color-mix(in srgb, var(--t-c1) 22%, transparent) 0%,
+        color-mix(in srgb, var(--t-c1) 15%, transparent) 45%,
+        color-mix(in srgb, var(--t-c1)  8%, transparent) 55%,
+        #ffffff 70%
+      ) !important;
+    }
+
+    .kpi-label .icon-wrap {
+      background: color-mix(in srgb, var(--t-c1) 12%, transparent) !important;
+    }
+    .kpi-label .icon-wrap svg { stroke: var(--t-c1) !important; }
+
+    .filter-input:focus  { border-color: var(--t-c1) !important; }
+    .form-select:focus   { border-color: var(--t-c1) !important; }
+
+    .filter-active-badge {
+      background: color-mix(in srgb, var(--t-c1) 12%, #fff);
+      color: var(--t-c1);
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .toggle-input:checked + .toggle-track { background: var(--t-c1) !important; }
+
+    .fill-overall   { background: linear-gradient(90deg, var(--t-c1), var(--t-c2)) !important; }
+    .fill-ramadhan  { background: linear-gradient(90deg, var(--t-c2), var(--t-c1)) !important; }
+
+    .cmp-tag.ramadhan { background: color-mix(in srgb, var(--t-c1) 10%, #fff); color: var(--t-c1) !important; }
+
+    .page-eyebrow { color: var(--t-c1) !important; }
+
+    .btn-submit {
+      background: var(--t-c1) !important;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--t-c2) !important; }
+
+    .drop-zone:hover, .drop-zone.has-file { border-color: var(--t-c2) !important; background: color-mix(in srgb, var(--t-c1) 4%, #fff) !important; }
+    .drop-zone.dragover                   { border-color: var(--t-c1) !important; background: color-mix(in srgb, var(--t-c1) 6%, #fff) !important; }
+    .drop-zone:hover .drop-icon, .drop-zone.has-file .drop-icon { color: var(--t-c2) !important; }
+    .drop-zone.dragover .drop-icon        { color: var(--t-c1) !important; }
+
+    .forecast-kpi-value { color: var(--t-c1) !important; }
   </style>
+
+  <script id="__theme__" type="application/json">
+  {
+    "name": "{{ theme.name }}",
+    "c1":   "{{ theme.c1 }}",
+    "c2":   "{{ theme.c2 }}",
+    "c3":   "{{ theme.c3 }}",
+    "c4":   "{{ theme.c4 }}",
+    "c5":   "{{ theme.c5 }}"
+  }
+  </script>
+  <script>
+    window.THEME = JSON.parse(document.getElementById('__theme__').textContent);
+  </script>
 </head>
 
 <body class="bg-light">
-
   {% include 'navbar.html' %}
-
-  {% block content %}
-  {% endblock %}
-
+  {% block content %}{% endblock %}
 </body>
 
 </html>

@@ -2,6 +2,7 @@ import re
 import pandas as pd
 from rapidfuzz import process, fuzz
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy import text
 from config import engine 
 
 def clean_and_override_province(province_str):
@@ -216,39 +217,6 @@ def load_data_warehouse(df_transformed):
         'discount':     'sum',
         'total_amount': 'sum'
     })
-    
-    # print("   6. Checking potential duplicate entries in order_fact...")
-    # current_order_keys = df_order_fact['order_key'].dropna().unique().tolist()
-    # rows_skipped = 0
-    
-    # if current_order_keys:
-    #     keys_str = "', '".join([str(k).replace("'", "''") for k in current_order_keys])
-    #     query_check = f"SELECT order_key, product_id FROM order_fact WHERE order_key IN ('{keys_str}')"
-        
-    #     try:
-    #         existing_facts = pd.read_sql(query_check, engine)
-            
-    #         if not existing_facts.empty:
-    #             print(f"      -> Found {len(existing_facts)} existing product records. Filtering...")
-    #             merged_fact   = df_order_fact.merge(existing_facts, on=['order_key', 'product_id'], how='left', indicator=True)
-    #             df_order_fact_final = merged_fact[merged_fact['_merge'] == 'left_only'].drop(columns=['_merge'])
-    #             rows_skipped = len(existing_facts)
-    #         else:
-    #             df_order_fact_final = df_order_fact
-    #     except Exception as e:
-    #         df_order_fact_final = df_order_fact
-    # else:
-    #     df_order_fact_final = df_order_fact
- 
-    # # ── All rows already exist? ─────────────────────────────────────────────────
-    # if df_order_fact_final.empty and rows_skipped > 0:
-    #     print("[INFO] All data in this file already exists in the database (ignored).")
-    #     return {
-    #         "code":           "NO_NEW_DATA",
-    #         "rows_loaded":    0,
-    #         "rows_skipped":   rows_skipped,
-    #         "duplicate_count": rows_skipped,
-    #     }
  
     # ── Unknown SKU quality gate ────────────────────────────────────────────────
     UNKNOWN_PRODUCT_ID = 27
@@ -294,6 +262,29 @@ def load_data_warehouse(df_transformed):
             chunksize=1000
         )
         print("[SUCCESS] Data successfully loaded (and updated) into Data Warehouse!")
+        
+        unique_date_ids = df_order_fact['date_id'].dropna().unique().tolist()
+        if unique_date_ids:
+           
+            date_ids_str = ','.join(map(str, unique_date_ids))
+            
+            summary_sql = f"""
+                INSERT INTO daily_sales_summary 
+                (date_id, platform_id, product_id, location_id, payment_method_id, status, total_orders, total_quantity, total_amount)
+                SELECT 
+                    date_id, platform_id, product_id, location_id, payment_method_id, status,
+                    COUNT(DISTINCT order_key), SUM(quantity), SUM(total_amount)
+                FROM order_fact
+                WHERE date_id IN ({date_ids_str})
+                GROUP BY date_id, platform_id, product_id, location_id, payment_method_id, status
+                ON DUPLICATE KEY UPDATE
+                    total_orders = VALUES(total_orders),
+                    total_quantity = VALUES(total_quantity),
+                    total_amount = VALUES(total_amount);
+            """
+            with engine.begin() as conn:
+                conn.execute(text(summary_sql))            
+            
     except Exception as e:
         print(f"[ERROR] Failed to upsert data: {e}")
         raise

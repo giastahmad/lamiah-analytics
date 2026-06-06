@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Float, Boolean, Date, ForeignKey, Column, UniqueConstraint, DateTime
+from sqlalchemy import Integer, String, Float, Boolean, Date, ForeignKey, Column, UniqueConstraint, DateTime, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship, declarative_base
 
@@ -77,6 +77,36 @@ class User(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, nullable=False)
-    username = Column(String(50), unique=True, nullable=False)
     role = Column(String(50), default="admin")
     created_at = Column(DateTime, default=func.now())
+    
+class DailySalesSummary(Base):
+    __tablename__ = 'daily_sales_summary'
+   
+    summary_id = Column(Integer, primary_key=True, autoincrement=True)
+    date_id = Column(Integer, ForeignKey('date_dimension.date_id'))
+    platform_id = Column(Integer, ForeignKey('platform_dimension.platform_id'))
+    product_id = Column(Integer, ForeignKey('product_dimension.product_id'))
+    location_id = Column(Integer, ForeignKey('location_dimension.location_id'))
+    payment_method_id = Column(Integer, ForeignKey('payment_method_dimension.payment_method_id'))
+    status = Column(String(20), nullable=False)
+    
+    total_orders = Column(Integer, nullable=False, default=0)
+    total_quantity = Column(Integer, nullable=False, default=0)
+    total_amount = Column(Float, nullable=False, default=0.0)
+    
+    __table_args__ = (
+        UniqueConstraint('date_id', 'platform_id', 'product_id', 'location_id', 'payment_method_id', 'status', name='uq_daily_summary'),
+    )
+
+class ForecastCache(Base):
+    __tablename__ = 'forecast_cache'
+    __table_args__ = {'schema': 'lamiah_app'}
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    created_at = Column(DateTime, default=func.now())
+    db_state = Column(String(100), nullable=False)
+    total_forecast_qty = Column(Integer, nullable=False)
+    forecast_daily = Column(JSON, nullable=False)
+    top_models = Column(JSON, nullable=False)
+    top_colors = Column(JSON, nullable=False)

@@ -1,5 +1,7 @@
-{% extends 'base.html' %} {% block title %}Lamiah Analytics{% endblock %} {%
-block content %}
+{% extends 'base.html' %} 
+{% block title %}Lamiah Analytics{% endblock %} 
+
+{% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
@@ -35,7 +37,7 @@ block content %}
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #ea2f14;
+    color: var(--t-c1);
     margin-bottom: 10px;
   }
   .page-title {
@@ -77,7 +79,7 @@ block content %}
     margin-bottom: 10px;
   }
   .field-label svg {
-    color: #ea2f14;
+    color: var(--t-c1);
     flex-shrink: 0;
   }
 
@@ -102,7 +104,7 @@ block content %}
     cursor: pointer;
   }
   .form-select:focus {
-    border-color: #ea2f14;
+    border-color: var(--t-c1);
     background-color: #fff;
   }
 
@@ -121,17 +123,17 @@ block content %}
     margin-bottom: 10px;
   }
   .drop-zone:hover {
-    border-color: #fb9e3a;
-    background: #fffbf5;
+    border-color: var(--t-c2);
+    background: color-mix(in srgb, var(--t-c1) 4%, #fff);
   }
   .drop-zone.dragover {
-    border-color: #ea2f14;
-    background: #fff8f6;
+    border-color: var(--t-c1);
+    background: color-mix(in srgb, var(--t-c1) 6%, #fff);
   }
   .drop-zone.has-file {
     border-style: solid;
-    border-color: #fb9e3a;
-    background: #fffbf5;
+    border-color: var(--t-c2);
+    background: color-mix(in srgb, var(--t-c1) 4%, #fff);
   }
 
   .drop-icon {
@@ -143,10 +145,10 @@ block content %}
   }
   .drop-zone:hover .drop-icon,
   .drop-zone.has-file .drop-icon {
-    color: #fb9e3a;
+    color: var(--t-c2);
   }
   .drop-zone.dragover .drop-icon {
-    color: #ea2f14;
+    color: var(--t-c1);
   }
 
   .drop-zone-text {
@@ -193,15 +195,15 @@ block content %}
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #fff8f0;
-    border: 1px solid #fde8cc;
+    background: color-mix(in srgb, var(--t-c1) 4%, #fff);
+    border: 1px solid color-mix(in srgb, var(--t-c1) 15%, #fff);
     border-radius: 10px;
     padding: 11px 14px;
   }
   .file-preview-icon {
     width: 32px;
     height: 32px;
-    background: #ea2f14;
+    background: var(--t-c1);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -234,20 +236,20 @@ block content %}
     cursor: pointer;
     font-size: 12px;
     font-weight: 600;
-    color: #ea2f14;
+    color: var(--t-c1);
     padding: 4px 8px;
     margin-top: 4px;
     border-radius: 6px;
     transition: background 0.15s;
   }
   .remove-all-btn:hover {
-    background: #fee2e2;
+    background: color-mix(in srgb, var(--t-c1) 12%, #fff);
   }
 
   /* ── Submit ── */
   .btn-submit {
     width: 100%;
-    background: #ea2f14;
+    background: var(--t-c1);
     color: #fff;
     border: none;
     padding: 15px;
@@ -266,7 +268,7 @@ block content %}
     letter-spacing: 0.01em;
   }
   .btn-submit:hover:not(:disabled) {
-    background: #fb9e3a;
+    background: var(--t-c2);
   }
   .btn-submit:active:not(:disabled) {
     transform: scale(0.99);
@@ -276,7 +278,7 @@ block content %}
     cursor: not-allowed;
   }
 
-  /* ── Toast ── */
+  /* ── Toast ──  */
   .toast-container {
     position: fixed;
     top: 24px;
@@ -451,7 +453,7 @@ block content %}
   .progress-bar {
     height: 100%;
     width: 0%;
-    background: #ea2f14;
+    background: var(--t-c1);
     border-radius: 99px;
     transition: width 0.4s ease;
   }

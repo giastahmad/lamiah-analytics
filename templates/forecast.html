@@ -1,6 +1,5 @@
-{% extends 'base.html' %}
-
-{% block title %}Lamiah Analytics{% endblock %}
+{% extends 'base.html' %} 
+{% block title %}Lamiah Analytics{% endblock %} 
 
 {% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,14 +17,12 @@
         background: #f8f7f4;
     }
 
-    /* ── Page wrapper ── */
     .dash-wrapper {
         max-width: 1600px;
         margin: 0 auto;
         padding: 36px 40px;
     }
 
-    /* ── KPI Cards ── */
     .kpi-card {
         background: #fff;
         border: 1px solid #e8e5df;
@@ -42,7 +39,11 @@
     }
 
     .kpi-card.main {
-        background: radial-gradient(circle at 0% 140%, rgba(251, 158, 58, 0.22) 0%, rgba(251, 158, 58, 0.15) 45%, rgba(251, 158, 58, 0.08) 55%, #ffffff 70%);
+        background: radial-gradient(circle at 0% 140%, 
+            color-mix(in srgb, var(--t-c1) 22%, transparent) 0%, 
+            color-mix(in srgb, var(--t-c1) 15%, transparent) 45%, 
+            color-mix(in srgb, var(--t-c1) 8%, transparent) 55%, 
+            #ffffff 70%);
     }
 
     .kpi-bg-icon {
@@ -57,6 +58,7 @@
     .kpi-bg-icon svg {
         width: 96px;
         height: 96px;
+        stroke: var(--t-c1);
     }
 
     .kpi-label {
@@ -75,7 +77,7 @@
         width: 26px;
         height: 26px;
         border-radius: 8px;
-        background: rgba(230, 82, 31, 0.1);
+        background: color-mix(in srgb, var(--t-c1) 12%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -85,7 +87,7 @@
     .kpi-label .icon-wrap svg {
         width: 14px;
         height: 14px;
-        stroke: #E6521F;
+        stroke: var(--t-c1);
         fill: none;
         stroke-width: 1.8;
         stroke-linecap: round;
@@ -107,7 +109,6 @@
         margin-top: 6px;
     }
 
-    /* ── KPI Grid ── */
     .kpi-grid {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
@@ -116,7 +117,6 @@
         margin-top: 12px;
     }
 
-    /* ── Chart Cards ── */
     .chart-card {
         background: #fff;
         border: 1px solid #e8e5df;
@@ -132,7 +132,6 @@
         margin-bottom: 20px;
     }
 
-    /* ── Typography ── */
     .page-title {
         font-family: 'Lora', serif;
         font-size: 26px;
@@ -156,7 +155,6 @@
         margin: 8px 0;
     }
 
-    /* ── Table ── */
     table {
         width: 100%;
         border-collapse: collapse;
@@ -219,7 +217,6 @@
         color: #c2410c;
     }
 
-    /* ── Chart layout grids ── */
     .chart-row-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -237,144 +234,50 @@
 
     /* ════════════════════
      RESPONSIVE
-  ════════════════════ */
+    ════════════════════ */
     @media (max-width: 1199px) {
-        .dash-wrapper {
-            padding: 28px 28px;
-        }
-
-        .kpi-value {
-            font-size: 24px;
-        }
+        .dash-wrapper { padding: 28px 28px; }
+        .kpi-value { font-size: 24px; }
     }
 
     @media (max-width: 991px) {
-        .dash-wrapper {
-            padding: 24px 20px;
-        }
-
-        .kpi-value {
-            font-size: 22px;
-        }
-
-        .chart-row-2 {
-            grid-template-columns: 1fr;
-        }
-
-        .page-title {
-            font-size: 22px;
-        }
+        .dash-wrapper { padding: 24px 20px; }
+        .kpi-value { font-size: 22px; }
+        .chart-row-2 { grid-template-columns: 1fr; }
+        .page-title { font-size: 22px; }
     }
 
     @media (max-width: 767px) {
-        .dash-wrapper {
-            padding: 20px 14px;
-        }
-
-        .kpi-card {
-            padding: 16px;
-            border-radius: 12px;
-        }
-
-        .kpi-value {
-            font-size: 20px;
-        }
-
-        .kpi-bg-icon {
-            display: none;
-        }
-
-        .page-title {
-            font-size: 20px;
-            text-align: center;
-        }
-
-        .page-sub {
-            font-size: 12px;
-        }
-
-        .section-divider {
-            font-size: 10px;
-        }
-
-        .chart-card {
-            padding: 18px 14px;
-            border-radius: 12px;
-        }
-
-        .chart-title {
-            font-size: 14px;
-            margin-bottom: 14px;
-        }
-
-        .chart-row-1,
-        .chart-row-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            align-items: stretch;
-        }
-
-        .chart-row-2 .chart-card {
-            height: 100%;
-        }
-
-        thead th {
-            font-size: 10px;
-            padding: 6px 8px;
-        }
-
-        tbody td {
-            font-size: 13px;
-            padding: 10px 8px;
-        }
+        .dash-wrapper { padding: 20px 14px; }
+        .kpi-card { padding: 16px; border-radius: 12px; }
+        .kpi-value { font-size: 20px; }
+        .kpi-bg-icon { display: none; }
+        .page-title { font-size: 20px; text-align: center; }
+        .page-sub { font-size: 12px; }
+        .section-divider { font-size: 10px; }
+        .chart-card { padding: 18px 14px; border-radius: 12px; }
+        .chart-title { font-size: 14px; margin-bottom: 14px; }
+        .chart-row-1, .chart-row-2 { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+        .chart-row-2 .chart-card { height: 100%; }
+        thead th { font-size: 10px; padding: 6px 8px; }
+        tbody td { font-size: 13px; padding: 10px 8px; }
     }
 
     @media (max-width: 575px) {
-        .dash-wrapper {
-            padding: 16px 10px;
-        }
-
-        .kpi-card {
-            padding: 14px;
-            border-radius: 10px;
-        }
-
-        .kpi-value {
-            font-size: 18px;
-        }
-
-        .kpi-label {
-            font-size: 9.5px;
-            gap: 5px;
-        }
-
-        .kpi-label .icon-wrap {
-            width: 22px;
-            height: 22px;
-        }
-
-        .kpi-sub {
-            font-size: 10px;
-        }
-
-        .chart-card {
-            padding: 14px 12px;
-        }
-
-        .chart-title {
-            font-size: 13px;
-        }
-
-        .page-title {
-            font-size: 18px;
-            text-align: center;
-        }
+        .dash-wrapper { padding: 16px 10px; }
+        .kpi-card { padding: 14px; border-radius: 10px; }
+        .kpi-value { font-size: 18px; }
+        .kpi-label { font-size: 9.5px; gap: 5px; }
+        .kpi-label .icon-wrap { width: 22px; height: 22px; }
+        .kpi-sub { font-size: 10px; }
+        .chart-card { padding: 14px 12px; }
+        .chart-title { font-size: 13px; }
+        .page-title { font-size: 18px; text-align: center; }
     }
 </style>
 
 <div class="dash-wrapper">
 
-    <!-- Header -->
     <div class="page-header-wrap"
         style="margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div>
@@ -390,7 +293,6 @@
     </div>
     {% else %}
 
-    <!-- KPI Section -->
     <div class="section-divider">Estimasi Permintaan (14 Hari Kedepan)</div>
     <div class="kpi-grid" style="grid-template-columns: 1fr;">
         <div class="kpi-card main" style="display: flex; align-items: center; justify-content: space-between;">
@@ -403,7 +305,7 @@
                     </span>
                     Total Prediksi Penjualan 2 Minggu
                 </div>
-                <div class="kpi-value" style="font-size: 36px; color: #E6521F;">{{ "{:,}".format(total_forecast) }}
+                <div class="kpi-value" style="font-size: 36px; color: var(--t-c1);">{{ "{:,}".format(total_forecast) }}
                     <span
                         style="font-size: 16px; color: #6b7280; font-family: 'DM Sans', sans-serif; font-weight: 500;">Unit</span>
                 </div>
@@ -411,7 +313,7 @@
                     forecast_daily[-1].date }}</div>
             </div>
             <div class="kpi-bg-icon" style="opacity: 0.15; right: 20px; top: -10px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--t-c1)" stroke-width="1.2" stroke-linecap="round"
                     stroke-linejoin="round">
                     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                     <polyline points="17 6 23 6 23 12"></polyline>
@@ -420,7 +322,6 @@
         </div>
     </div>
 
-    <!-- Chart & Distribusi -->
     <div class="section-divider" style="margin-top: 24px;">Rincian Kebutuhan Stok</div>
 
     <div class="chart-row-1">
@@ -431,7 +332,6 @@
     </div>
 
     <div class="chart-row-2">
-        <!-- Top 5 Models -->
         <div class="chart-card">
             <div class="chart-title">Distribusi 5 Model Terlaris</div>
             <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Dibobot berdasarkan performa 3 bulan
@@ -476,7 +376,6 @@
             </div>
         </div>
 
-        <!-- Top 5 Colors -->
         <div class="chart-card color-card">
             <div class="chart-title">Distribusi 5 Warna Terlaris</div>
             <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Dibobot berdasarkan performa 3 bulan
@@ -519,10 +418,10 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const rawData = JSON.parse(document.getElementById('forecast-data').textContent);
-
         const labels = rawData.map(item => item.date);
         const dataPoints = rawData.map(item => item.predicted_qty);
-
+        const themeColor = window.THEME ? window.THEME.c1 : '#E6521F';
+        
         const ctx = document.getElementById('forecastLineChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
@@ -531,8 +430,8 @@
                 datasets: [{
                     label: 'Estimasi Permintaan',
                     data: dataPoints,
-                    borderColor: '#E6521F',
-                    backgroundColor: 'rgba(230, 82, 31, 0.1)',
+                    borderColor: themeColor,
+                    backgroundColor: themeColor + '1A',
                     borderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,

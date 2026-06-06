@@ -19,14 +19,12 @@
     background: #f8f7f4;
   }
 
-  /* ── Page wrapper ── */
   .dash-wrapper {
     max-width: 1600px;
     margin: 0 auto;
     padding: 36px 40px;
   }
 
-  /* ── KPI Cards ── */
   .kpi-card {
     background: #fff;
     border: 1px solid #e8e5df;
@@ -43,7 +41,11 @@
   }
 
   .kpi-card.main {
-    background: radial-gradient(circle at 0% 140%, rgba(251, 158, 58, 0.22) 0%, rgba(251, 158, 58, 0.15) 45%, rgba(251, 158, 58, 0.08) 55%, #ffffff 70%);
+    background: radial-gradient(circle at 0% 140%,
+      color-mix(in srgb, var(--t-c1) 22%, transparent) 0%,
+      color-mix(in srgb, var(--t-c1) 15%, transparent) 45%,
+      color-mix(in srgb, var(--t-c1)  8%, transparent) 55%,
+      #ffffff 70%);
   }
 
   .kpi-bg-icon {
@@ -58,6 +60,7 @@
   .kpi-bg-icon svg {
     width: 96px;
     height: 96px;
+    stroke: var(--t-c1);
   }
 
   .kpi-label {
@@ -76,7 +79,7 @@
     width: 26px;
     height: 26px;
     border-radius: 8px;
-    background: rgba(230, 82, 31, 0.1);
+    background: color-mix(in srgb, var(--t-c1) 12%, transparent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -86,7 +89,7 @@
   .kpi-label .icon-wrap svg {
     width: 14px;
     height: 14px;
-    stroke: #E6521F;
+    stroke: var(--t-c1);
     fill: none;
     stroke-width: 1.8;
     stroke-linecap: round;
@@ -108,7 +111,6 @@
     margin-top: 6px;
   }
 
-  /* ── KPI Grid ── */
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -117,7 +119,6 @@
     margin-top: 12px;
   }
 
-  /* ── Chart Cards ── */
   .chart-card {
     background: #fff;
     border: 1px solid #e8e5df;
@@ -133,7 +134,6 @@
     margin-bottom: 20px;
   }
 
-  /* ── Filter Bar ── */
   .filter-bar {
     background: #fff;
     border: 1px solid #e8e5df;
@@ -173,7 +173,7 @@
   }
 
   .filter-input:focus {
-    border-color: #df5e33;
+    border-color: var(--t-c1);
     background: #fff;
   }
 
@@ -197,7 +197,6 @@
     color: #374151;
   }
 
-  /* ── Typography ── */
   .page-title {
     font-family: 'Lora', serif;
     font-size: 26px;
@@ -221,7 +220,6 @@
     margin: 8px 0;
   }
 
-  /* ── Table ── */
   table {
     width: 100%;
     border-collapse: collapse;
@@ -284,7 +282,6 @@
     color: #c2410c;
   }
 
-  /* ── Ramadhan Toggle ── */
   .toggle-wrap {
     display: flex;
     align-items: center;
@@ -327,15 +324,14 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
 
-  .toggle-input:checked+.toggle-track {
-    background: #E6521F;
+  .toggle-input:checked + .toggle-track {
+    background: var(--t-c1);
   }
 
-  .toggle-input:checked+.toggle-track::after {
+  .toggle-input:checked + .toggle-track::after {
     transform: translateX(16px);
   }
 
-  /* ── Progress bars ── */
   .avg-bar {
     height: 6px;
     border-radius: 99px;
@@ -351,18 +347,17 @@
   }
 
   .fill-overall {
-    background: linear-gradient(90deg, #E6521F, #df5e33);
+    background: linear-gradient(90deg, var(--t-c1), var(--t-c2));
   }
 
   .fill-ramadhan {
-    background: linear-gradient(90deg, #df5e33, #E6521F);
+    background: linear-gradient(90deg, var(--t-c2), var(--t-c1));
   }
 
   .fill-normal {
     background: #d1d5db;
   }
 
-  /* ── Compare row (Ramadhan) ── */
   .cmp-row {
     display: grid;
     grid-template-columns: 1fr 1px 1fr;
@@ -402,8 +397,8 @@
   }
 
   .cmp-tag.ramadhan {
-    background: #f5f3ff;
-    color: #E6521F;
+    background: color-mix(in srgb, var(--t-c1) 10%, #fff);
+    color: var(--t-c1);
   }
 
   .cmp-tag.normal {
@@ -411,7 +406,6 @@
     color: #6b7280;
   }
 
-  /* ── Chart layout grids ── */
   .chart-row-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -426,247 +420,83 @@
     margin-bottom: 20px;
   }
 
+  .filter-active-badge {
+    background: color-mix(in srgb, var(--t-c1) 12%, #fff);
+    color: var(--t-c1);
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
   /* ════════════════════
      RESPONSIVE
   ════════════════════ */
 
-  /* ── Small desktop (992–1199px) ── */
   @media (max-width: 1199px) {
-    .dash-wrapper {
-      padding: 28px 28px;
-    }
-
-    .kpi-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .kpi-value {
-      font-size: 24px;
-    }
+    .dash-wrapper { padding: 28px 28px; }
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .kpi-value { font-size: 24px; }
   }
 
-  /* ── Tablet (768–991px) ── */
   @media (max-width: 991px) {
-    .dash-wrapper {
-      padding: 24px 20px;
-    }
-
-    .kpi-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .kpi-card {
-      padding: 18px;
-    }
-
-    .kpi-value {
-      font-size: 22px;
-    }
-
-    .kpi-value[style*="font-size: 20px"] {
-      font-size: 17px !important;
-    }
-
-    .chart-row-2 {
-      grid-template-columns: 1fr;
-    }
-
-    .page-title {
-      font-size: 22px;
-    }
-
-    .filter-bar {
-      padding: 16px 18px;
-      gap: 12px;
-    }
-
-    .filter-input {
-      font-size: 13px;
-      padding: 8px 12px;
-    }
-
-    .avg-grid {
-      grid-template-columns: 1fr !important;
-      gap: 16px !important;
-    }
-
-    .cmp-row {
-      grid-template-columns: 1fr;
-    }
-
-    .cmp-divider {
-      display: none;
-    }
-
-    .cmp-row.open {
-      max-height: 400px;
-    }
+    .dash-wrapper { padding: 24px 20px; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .kpi-card { padding: 18px; }
+    .kpi-value { font-size: 22px; }
+    .kpi-value[style*="font-size: 20px"] { font-size: 17px !important; }
+    .chart-row-2 { grid-template-columns: 1fr; }
+    .page-title { font-size: 22px; }
+    .filter-bar { padding: 16px 18px; gap: 12px; }
+    .filter-input { font-size: 13px; padding: 8px 12px; }
+    .avg-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+    .cmp-row { grid-template-columns: 1fr; }
+    .cmp-divider { display: none; }
+    .cmp-row.open { max-height: 400px; }
   }
 
-  /* ── Mobile (≤767px) ── */
   @media (max-width: 767px) {
-    .dash-wrapper {
-      padding: 20px 14px;
-    }
-
-    .kpi-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-
-    .kpi-card {
-      padding: 16px;
-      border-radius: 12px;
-    }
-
-    .kpi-value {
-      font-size: 20px;
-    }
-
-    .kpi-value[style*="font-size: 20px"] {
-      font-size: 15px !important;
-    }
-
-    .kpi-bg-icon {
-      display: none;
-    }
-
-    .page-title {
-      font-size: 20px;
-      text-align: center;
-    }
-
-    .page-sub {
-      font-size: 12px;
-    }
-
-    .section-divider {
-      font-size: 10px;
-    }
-
-    .filter-bar {
-      padding: 14px;
-      gap: 10px;
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .filter-group {
-      width: 100%;
-    }
-
-    .filter-input {
-      width: 100%;
-    }
-
-    .btn-reset {
-      width: 100%;
-      text-align: center;
-    }
-
-    .chart-card {
-      padding: 18px 14px;
-      border-radius: 12px;
-    }
-
-    .chart-title {
-      font-size: 14px;
-      margin-bottom: 14px;
-    }
-
-    .chart-row-1,
-    .chart-row-2 {
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .dash-section-mb {
-      margin-bottom: 12px !important;
-    }
-
-    .page-header-wrap {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .toggle-wrap {
-      flex-wrap: wrap;
-    }
-
-    thead th {
-      font-size: 10px;
-      padding: 6px 8px;
-    }
-
-    tbody td {
-      font-size: 13px;
-      padding: 10px 8px;
-    }
-
-    .avg-grid {
-      grid-template-columns: 1fr !important;
-      gap: 14px !important;
-    }
+    .dash-wrapper { padding: 20px 14px; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .kpi-card { padding: 16px; border-radius: 12px; }
+    .kpi-value { font-size: 20px; }
+    .kpi-value[style*="font-size: 20px"] { font-size: 15px !important; }
+    .kpi-bg-icon { display: none; }
+    .page-title { font-size: 20px; text-align: center; }
+    .page-sub { font-size: 12px; }
+    .section-divider { font-size: 10px; }
+    .filter-bar { padding: 14px; gap: 10px; flex-direction: column; align-items: stretch; }
+    .filter-group { width: 100%; }
+    .filter-input { width: 100%; }
+    .btn-reset { width: 100%; text-align: center; }
+    .chart-card { padding: 18px 14px; border-radius: 12px; }
+    .chart-title { font-size: 14px; margin-bottom: 14px; }
+    .chart-row-1, .chart-row-2 { gap: 12px; margin-bottom: 12px; }
+    .dash-section-mb { margin-bottom: 12px !important; }
+    .page-header-wrap { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .toggle-wrap { flex-wrap: wrap; }
+    thead th { font-size: 10px; padding: 6px 8px; }
+    tbody td { font-size: 13px; padding: 10px 8px; }
+    .avg-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
   }
 
-  /* ── Small mobile (≤575px) ── */
   @media (max-width: 575px) {
-    .dash-wrapper {
-      padding: 16px 10px;
-    }
-
-    .kpi-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .kpi-card {
-      padding: 14px;
-      border-radius: 10px;
-    }
-
-    .kpi-value {
-      font-size: 18px;
-    }
-
-    .kpi-label {
-      font-size: 9.5px;
-      gap: 5px;
-    }
-
-    .kpi-label .icon-wrap {
-      width: 22px;
-      height: 22px;
-    }
-
-    .kpi-sub {
-      font-size: 10px;
-    }
-
-    .chart-card {
-      padding: 14px 12px;
-    }
-
-    .chart-title {
-      font-size: 13px;
-    }
-
-    .page-title {
-      font-size: 18px;
-      text-align: center;
-    }
-
-    .filter-bar {
-      border-radius: 12px;
-    }
+    .dash-wrapper { padding: 16px 10px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .kpi-card { padding: 14px; border-radius: 10px; }
+    .kpi-value { font-size: 18px; }
+    .kpi-label { font-size: 9.5px; gap: 5px; }
+    .kpi-label .icon-wrap { width: 22px; height: 22px; }
+    .kpi-sub { font-size: 10px; }
+    .chart-card { padding: 14px 12px; }
+    .chart-title { font-size: 13px; }
+    .page-title { font-size: 18px; text-align: center; }
+    .filter-bar { border-radius: 12px; }
   }
 </style>
 
 <div class="dash-wrapper">
 
-  <!-- Header -->
   <div class="page-header-wrap"
     style="margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
     <div>
@@ -675,14 +505,11 @@
     </div>
     <div>
       {% if request.args.get('start_date') or request.args.get('end_date') %}
-      <span
-        style="background: #fff6ee; color: #E6521F; padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 600;">Filter
-        Aktif</span>
+      <span class="filter-active-badge">Filter Aktif</span>
       {% endif %}
     </div>
   </div>
 
-  <!-- Filter Bar -->
   <form method="GET" action="/dashboard" id="filterForm">
     <input type="hidden" name="key" value="{{ request.args.get('key') }}">
     <div class="filter-bar">
@@ -715,24 +542,20 @@
     </div>
   </form>
 
-  <!-- KPI Section -->
   <div class="section-divider">Ringkasan Utama</div>
   <div class="kpi-grid">
 
     <div class="kpi-card main">
       <div class="kpi-bg-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
-          stroke-linejoin="round">
-          <path
-            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
           <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
           <line x1="12" y1="22.08" x2="12" y2="12" />
         </svg>
       </div>
       <div class="kpi-label">
         <span class="icon-wrap"><svg viewBox="0 0 24 24">
-            <path
-              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
             <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
             <line x1="12" y1="22.08" x2="12" y2="12" />
           </svg></span>
@@ -744,8 +567,7 @@
 
     <div class="kpi-card main">
       <div class="kpi-bg-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="9" cy="21" r="1" />
           <circle cx="20" cy="21" r="1" />
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
@@ -765,8 +587,7 @@
 
     <div class="kpi-card main">
       <div class="kpi-bg-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="1" x2="12" y2="23" />
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
         </svg>
@@ -784,8 +605,7 @@
 
     <div class="kpi-card main">
       <div class="kpi-bg-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
           <circle cx="12" cy="10" r="3" />
         </svg>
@@ -803,8 +623,7 @@
 
     <div class="kpi-card main">
       <div class="kpi-bg-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
         </svg>
       </div>
@@ -820,8 +639,7 @@
 
     <div class="kpi-card main">
       <div class="kpi-bg-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E6521F" stroke-width="1.2" stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10" />
           <line x1="15" y1="9" x2="9" y2="15" />
           <line x1="9" y1="9" x2="15" y2="15" />
@@ -843,7 +661,6 @@
 
   </div>
 
-  <!-- Rata-rata Harian -->
   <div style="margin-bottom: 28px;" class="dash-section-mb">
     <div class="chart-card" style="padding: 20px 24px;">
       <div
@@ -858,11 +675,9 @@
         {% endif %}
       </div>
 
-      <!-- Overall averages -->
       <div class="avg-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
         <div>
-          <div
-            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
+          <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
             Rata-rata Pendapatan / Hari</div>
           <div style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
             Rp {{ "{:,.0f}".format(m.overall_avg_revenue) }}</div>
@@ -872,8 +687,7 @@
           </div>
         </div>
         <div>
-          <div
-            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
+          <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
             Rata-rata Order / Hari</div>
           <div style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
             {{ "{:.1f}".format(m.overall_avg_orders) }}</div>
@@ -884,16 +698,14 @@
         </div>
       </div>
 
-      <!-- Ramadhan compare (hidden) -->
       <div class="cmp-row" id="cmpRow">
         <div>
           <div class="cmp-tag ramadhan">🌙 Ramadhan</div>
           <div style="margin-bottom: 14px;">
-            <div
-              style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+            <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
               Pendapatan / Hari</div>
-            <div style="font-size: 18px; font-weight: 600; color: #E6521F; font-family: 'Lora', serif;">Rp {{
-              "{:,.0f}".format(m.ramadhan_avg_revenue) }}</div>
+            <div class="cmp-ramadhan-value" style="font-size: 18px; font-weight: 600; font-family: 'Lora', serif;">
+              Rp {{ "{:,.0f}".format(m.ramadhan_avg_revenue) }}</div>
             {% set r_rev_pct = (m.ramadhan_avg_revenue / (m.ramadhan_avg_revenue + m.normal_avg_revenue) * 100) if
             (m.ramadhan_avg_revenue + m.normal_avg_revenue) > 0 else 50 %}
             <div class="avg-bar">
@@ -901,11 +713,10 @@
             </div>
           </div>
           <div>
-            <div
-              style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+            <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
               Order / Hari</div>
-            <div style="font-size: 18px; font-weight: 600; color: #E6521F; font-family: 'Lora', serif;">{{
-              "{:.1f}".format(m.ramadhan_avg_orders) }}</div>
+            <div class="cmp-ramadhan-value" style="font-size: 18px; font-weight: 600; font-family: 'Lora', serif;">
+              {{ "{:.1f}".format(m.ramadhan_avg_orders) }}</div>
             {% set r_ord_pct = (m.ramadhan_avg_orders / (m.ramadhan_avg_orders + m.normal_avg_orders) * 100) if
             (m.ramadhan_avg_orders + m.normal_avg_orders) > 0 else 50 %}
             <div class="avg-bar">
@@ -917,11 +728,10 @@
         <div>
           <div class="cmp-tag normal">☀️ Hari Biasa</div>
           <div style="margin-bottom: 14px;">
-            <div
-              style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+            <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
               Pendapatan / Hari</div>
-            <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: 'Lora', serif;">Rp {{
-              "{:,.0f}".format(m.normal_avg_revenue) }}</div>
+            <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: 'Lora', serif;">
+              Rp {{ "{:,.0f}".format(m.normal_avg_revenue) }}</div>
             {% set n_rev_pct = (m.normal_avg_revenue / (m.ramadhan_avg_revenue + m.normal_avg_revenue) * 100) if
             (m.ramadhan_avg_revenue + m.normal_avg_revenue) > 0 else 50 %}
             <div class="avg-bar">
@@ -929,11 +739,10 @@
             </div>
           </div>
           <div>
-            <div
-              style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+            <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
               Order / Hari</div>
-            <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: 'Lora', serif;">{{
-              "{:.1f}".format(m.normal_avg_orders) }}</div>
+            <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: 'Lora', serif;">
+              {{ "{:.1f}".format(m.normal_avg_orders) }}</div>
             {% set n_ord_pct = (m.normal_avg_orders / (m.ramadhan_avg_orders + m.normal_avg_orders) * 100) if
             (m.ramadhan_avg_orders + m.normal_avg_orders) > 0 else 50 %}
             <div class="avg-bar">
@@ -945,7 +754,6 @@
     </div>
   </div>
 
-  <!-- Tren & Distribusi -->
   <div class="section-divider" style="margin-bottom: 12px;">Tren & Distribusi</div>
   <div class="chart-row-1">
     <div class="chart-card">
@@ -962,7 +770,6 @@
     </div>
   </div>
 
-  <!-- Platform + Top Products -->
   <div class="chart-row-2">
     <div class="chart-card">
       <div class="chart-title">Proporsi Penjualan per Platform</div>
@@ -985,24 +792,20 @@
             {% for model in m.top_products %}
             <tr>
               <td>
-                <span
-                  class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                <span class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
                   {{ loop.index }}
                 </span>
               </td>
               <td>
                 <div style="display: flex; align-items: center; gap: 12px;">
-
                   <img src="/static/images/{{ model[0]|replace(' ', '%20') }}.jpg"
                     onerror="this.onerror=null; this.src='/static/images/UNKNOWN.jpg';" alt="{{ model[0].strip() }}"
                     style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #f3f4f6;">
-
                   <span style="font-weight: 500; color: #111827;">{{ model[0] }}</span>
                 </div>
               </td>
               <td style="text-align: right; font-weight: 600; color: #374151;">
-                {{ "{:,}".format(model[1]) }} <span
-                  style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
+                {{ "{:,}".format(model[1]) }} <span style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
               </td>
             </tr>
             {% endfor %}
@@ -1012,7 +815,6 @@
     </div>
   </div>
 
-  <!-- Payment + Size -->
   <div class="chart-row-2">
     <div class="chart-card">
       <div class="chart-title">Rata-rata Nilai Belanja per Metode Pembayaran</div>
@@ -1026,7 +828,6 @@
     </div>
   </div>
 
-  <!-- Map -->
   <div class="chart-row-1">
     <div class="chart-card">
       <div class="chart-title">Sebaran Penjualan per Provinsi</div>
@@ -1038,23 +839,59 @@
 
 </div>
 
-<!-- JSON data -->
 <script id="dashboard-data" type="application/json">{{ m | tojson }}</script>
 
 <script>
-  const m = JSON.parse(document.getElementById('dashboard-data').textContent);
 
-  const PALETTE = ['#EA2F14', '#E6521F', '#F56B2A', '#FB9E3A', '#FFC857', '#FCEF91', '#FFE8C2'];
+  const rawDataContent = document.getElementById('dashboard-data').textContent;
+  let m = {};
+  try {
+    m = JSON.parse(rawDataContent) || {};
+   
+  } catch (err) {
+    console.error("Gagal melakukan parse JSON dari #dashboard-data:", err);
+  }
+
+  const rawLineData   = m.line_data || [];
+  const paymentLabels = m.payment_labels || [];
+  const paymentValues = m.payment_values || [];
+  const sizeLabels    = m.size_labels || [];
+  const sizeValues    = m.size_values || [];
+  const colorLabels   = m.color_labels || [];
+  const colorValues   = m.color_values || [];
+  
+  const dates     = [...new Set(rawLineData.map(d => d.date))];
+  const platforms = [...new Set(rawLineData.map(d => d.platform))];
+
+  // ── Platform colors ──
+  const PLATFORM_COLORS = {
+    'Shopee':      '#EE4D2D',
+    'Tokopedia':   '#43B449',
+    'TikTok Shop': '#1a1a1a',
+    'TikTok':      '#1a1a1a'
+  };
+
+  const T = window.THEME || { c1: '#E6521F', c2: '#F07A47' }; 
+  const themeColor  = T.c1;
+  const themeColor2 = T.c2;
+
+  function neutralPalette(count) {
+    const stops = [T.c1, T.c2, T.c3, T.c4, T.c5];
+    return Array.from({ length: count }, (_, i) => stops[i % stops.length] || themeColor);
+  }
+
+  document.querySelectorAll('.cmp-ramadhan-value').forEach(el => {
+    el.style.color = themeColor;
+  });
+
   const GRID_COLOR = 'rgba(0,0,0,0.04)';
   const TICK_COLOR = '#9ca3af';
 
-  const rawLineData = m.line_data;
-  const dates = [...new Set(rawLineData.map(d => d.date))];
-  const platforms = [...new Set(rawLineData.map(d => d.platform))];
-
   const baseChartOpts = {
     plugins: {
-      legend: { labels: { font: { family: 'DM Sans', size: 12 }, color: '#80756b', boxWidth: 10, boxHeight: 10, borderRadius: 3 } }
+      legend: {
+        labels: { font: { family: 'DM Sans', size: 12 }, color: '#80756b', boxWidth: 10, boxHeight: 10, borderRadius: 3 }
+      }
     },
     scales: {
       x: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { family: 'DM Sans', size: 11 } } },
@@ -1062,210 +899,278 @@
     }
   };
 
-  const platformTotals = platforms.map(p =>
-    rawLineData.filter(d => d.platform === p).reduce((sum, d) => sum + d.amount, 0)
-  );
-
-  new Chart(document.getElementById('paymentBarChart'), {
-    type: 'bar',
-    data: {
-      labels: m.payment_labels,
-      datasets: [{ label: 'Rata-rata Nilai Belanja (Rp)', data: m.payment_values, backgroundColor: PALETTE[4] + 'cc', borderRadius: 6, borderSkipped: false }]
-    },
-    options: { ...baseChartOpts, responsive: true, plugins: { ...baseChartOpts.plugins, legend: { display: false }, tooltip: { callbacks: { label: ctx => 'Rp ' + ctx.raw.toLocaleString('id-ID') } } } }
-  });
-
-  new Chart(document.getElementById('sizeDonutChart'), {
-    type: 'doughnut',
-    data: {
-      labels: m.size_labels,
-      datasets: [{ data: m.size_values, backgroundColor: m.size_labels.map((_, i) => PALETTE[(i + 1) % PALETTE.length] + 'cc'), hoverBackgroundColor: m.size_labels.map((_, i) => PALETTE[(i + 1) % PALETTE.length]), borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4 }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '20%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 12 }, color: '#6b7280', usePointStyle: true, padding: 20 } }, tooltip: { callbacks: { label: ctx => (ctx.label ? ctx.label + ': ' : '') + ctx.raw.toLocaleString('id-ID') + ' Order' } } } }
-  });
-
-  new Chart(document.getElementById('platformDonutChart'), {
-    type: 'pie',
-    data: {
-      labels: platforms,
-      datasets: [{ data: platformTotals, backgroundColor: platforms.map((_, i) => PALETTE[(i + 2) % PALETTE.length] + 'cc'), hoverBackgroundColor: platforms.map((_, i) => PALETTE[(i + 2) % PALETTE.length]), borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4 }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 12 }, color: '#6b7280', usePointStyle: true, padding: 20 } }, tooltip: { callbacks: { label: ctx => (ctx.label ? ctx.label + ': ' : '') + 'Rp ' + ctx.raw.toLocaleString('id-ID') } } } }
-  });
-
-  // ── Granularity controls ─────────────────────────────────
-  const dayCount = dates.length;
-
-  const granularityOptions = [];
-  granularityOptions.push({ key: 'daily', label: 'Harian' });   // selalu tersedia
-  if (dayCount > 7) granularityOptions.push({ key: 'weekly', label: 'Mingguan' });
-  if (dayCount > 60) granularityOptions.push({ key: 'monthly', label: 'Bulanan' });
-
-  let activeGranularity = dayCount > 90 ? 'monthly' : dayCount > 30 ? 'weekly' : 'daily';
-
-  const btnContainer = document.getElementById('granularityBtns');
-
-  function renderGranularityBtns() {
-    btnContainer.innerHTML = '';
-    granularityOptions.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.textContent = opt.label;
-      btn.dataset.key = opt.key;
-      const isActive = opt.key === activeGranularity;
-      btn.style.cssText = `
-      padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 500;
-      cursor: pointer; border: 1px solid; transition: all 0.15s;
-      font-family: 'DM Sans', sans-serif;
-      background: ${isActive ? '#E6521F' : '#fafafa'};
-      color: ${isActive ? '#fff' : '#6b7280'};
-      border-color: ${isActive ? '#E6521F' : '#e5e7eb'};
-    `;
-      btn.onclick = () => {
-        activeGranularity = opt.key;
-        renderGranularityBtns();
-        updateSalesChart();
-      };
-      btnContainer.appendChild(btn);
+  // ── Payment Bar Chart ────────────────────────────────────────
+  try {
+    new Chart(document.getElementById('paymentBarChart'), {
+      type: 'bar',
+      data: {
+        labels: paymentLabels,
+        datasets: [{
+          label: 'Rata-rata Nilai Belanja (Rp)',
+          data: paymentValues,
+          backgroundColor: themeColor + 'CC',
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        ...baseChartOpts,
+        responsive: true,
+        plugins: {
+          ...baseChartOpts.plugins,
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => 'Rp ' + (ctx.raw || 0).toLocaleString('id-ID') } }
+        }
+      }
     });
+    console.log("V Payment Bar Chart OK");
+  } catch (err) {
+    console.error("X Error pada Payment Bar Chart:", err);
   }
 
-  // ── Aggregasi data ────────────────────────────────────────
-  function getAggregatedData(granularity) {
-    if (granularity === 'daily') {
+  // ── Size Donut Chart ─────────────────────────────────────────
+  try {
+    new Chart(document.getElementById('sizeDonutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: sizeLabels,
+        datasets: [{
+          data: sizeValues,
+          backgroundColor: neutralPalette(sizeLabels.length),
+          hoverBackgroundColor: sizeLabels.map(() => themeColor),
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '20%',
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 12 }, color: '#6b7280', usePointStyle: true, padding: 20 } },
+          tooltip: { callbacks: { label: ctx => (ctx.label || '') + ': ' + (ctx.raw || 0).toLocaleString('id-ID') + ' Order' } }
+        }
+      }
+    });
+    console.log("V Size Donut Chart OK");
+  } catch (err) {
+    console.error("X Error pada Size Donut Chart:", err);
+  }
+
+  // ── Platform Pie ────────────────
+  try {
+    const platformTotals = platforms.map(p =>
+      rawLineData.filter(d => d.platform === p).reduce((sum, d) => sum + (d.amount || 0), 0)
+    );
+
+    new Chart(document.getElementById('platformDonutChart'), {
+      type: 'pie',
+      data: {
+        labels: platforms,
+        datasets: [{
+          data: platformTotals,
+          backgroundColor: platforms.map(p => (PLATFORM_COLORS[p] || themeColor) + 'CC'),
+          hoverBackgroundColor: platforms.map(p => PLATFORM_COLORS[p] || themeColor),
+          borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 12 }, color: '#6b7280', usePointStyle: true, padding: 20 } },
+          tooltip: { callbacks: { label: ctx => (ctx.label || '') + ': Rp ' + (ctx.raw || 0).toLocaleString('id-ID') } }
+        }
+      }
+    });
+    console.log("V Platform Donut Chart OK");
+  } catch (err) {
+    console.error("X Error pada Platform Donut Chart:", err);
+  }
+
+  // ── Color Bar Chart ──────────────────────────────────────────
+  try {
+    new Chart(document.getElementById('colorBarChart'), {
+      type: 'bar',
+      data: {
+        labels: colorLabels,
+        datasets: [{
+          label: 'Kuantitas',
+          data: colorValues,
+          backgroundColor: neutralPalette(colorValues.length),
+          borderRadius: 6, borderSkipped: false
+        }]
+      },
+      options: { ...baseChartOpts, responsive: true, plugins: { ...baseChartOpts.plugins, legend: { display: false } } }
+    });
+    console.log("V Color Bar Chart OK");
+  } catch (err) {
+    console.error("X Error pada Color Bar Chart:", err);
+  }
+
+  // ── Granularity Controls & Sales Line Chart ──────────────────
+  let activeGranularity = 'daily';
+  let salesChart = null;
+
+  try {
+    const dayCount = dates.length;
+    const granularityOptions = [{ key: 'daily', label: 'Harian' }];
+    if (dayCount > 7)  granularityOptions.push({ key: 'weekly',  label: 'Mingguan' });
+    if (dayCount > 60) granularityOptions.push({ key: 'monthly', label: 'Bulanan' });
+
+    activeGranularity = dayCount > 90 ? 'monthly' : dayCount > 30 ? 'weekly' : 'daily';
+    const btnContainer = document.getElementById('granularityBtns');
+
+    function renderGranularityBtns() {
+      if(!btnContainer) return;
+      btnContainer.innerHTML = '';
+      granularityOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt.label;
+        btn.dataset.key = opt.key;
+        const isActive = opt.key === activeGranularity;
+        btn.style.cssText = `
+          padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 500;
+          cursor: pointer; border: 1px solid; transition: all 0.15s;
+          font-family: 'DM Sans', sans-serif;
+          background: ${isActive ? themeColor : '#fafafa'};
+          color: ${isActive ? '#fff' : '#6b7280'};
+          border-color: ${isActive ? themeColor : '#e5e7eb'};
+        `;
+        btn.onclick = () => { activeGranularity = opt.key; renderGranularityBtns(); updateSalesChart(); };
+        btnContainer.appendChild(btn);
+      });
+    }
+
+    function getAggregatedData(granularity) {
+      if (granularity === 'daily') {
+        return {
+          labels: dates,
+          datasets: platforms.map(p => ({
+            label: p,
+            data: dates.map(dt => {
+              const f = rawLineData.find(d => d.date === dt && d.platform === p);
+              return f ? (f.amount || 0) : 0;
+            })
+          }))
+        };
+      }
+      const grouped = {};
+      rawLineData.forEach(d => {
+        if(!d.date) return;
+        const dt  = new Date(d.date);
+        let key;
+        if (granularity === 'monthly') {
+          key = d.date.slice(0, 7);
+        } else {
+          const day  = dt.getDay();
+          const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+          const monday = new Date(new Date(d.date).setDate(diff));
+          key = monday.toISOString().slice(0, 10);
+        }
+        if (!grouped[key]) grouped[key] = {};
+        grouped[key][d.platform] = (grouped[key][d.platform] || 0) + (d.amount || 0);
+      });
+      const aggLabels = Object.keys(grouped).sort();
       return {
-        labels: dates,
-        datasets: platforms.map((p, i) => ({
+        labels: aggLabels,
+        datasets: platforms.map(p => ({
           label: p,
-          data: dates.map(dt => {
-            const f = rawLineData.find(d => d.date === dt && d.platform === p);
-            return f ? f.amount : 0;
-          })
+          data: aggLabels.map(k => grouped[k]?.[p] || 0)
         }))
       };
     }
 
-    const grouped = {};
-    rawLineData.forEach(d => {
-      const dt = new Date(d.date);
-      let key;
-      if (granularity === 'monthly') {
-        key = d.date.slice(0, 7); // "YYYY-MM"
-      } else {
-        const day = dt.getDay();
-        const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(new Date(d.date).setDate(diff));
-        key = monday.toISOString().slice(0, 10);
+    salesChart = new Chart(document.getElementById('salesLineChart'), {
+      type: 'line',
+      data: { labels: [], datasets: [] },
+      options: {
+        ...baseChartOpts, responsive: true,
+        plugins: { ...baseChartOpts.plugins, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': Rp ' + (ctx.raw || 0).toLocaleString('id-ID') } } }
       }
-      if (!grouped[key]) grouped[key] = {};
-      grouped[key][d.platform] = (grouped[key][d.platform] || 0) + d.amount;
     });
 
-    const aggLabels = Object.keys(grouped).sort();
-    return {
-      labels: aggLabels,
-      datasets: platforms.map((p, i) => ({
-        label: p,
-        data: aggLabels.map(k => grouped[k]?.[p] || 0)
-      }))
-    };
-  }
+    window.updateSalesChart = function() {
+      const { labels, datasets } = getAggregatedData(activeGranularity);
+      const showPoints = labels.length <= 60;
 
-  // ── Inisialisasi chart ────────────────────────────────────
-  const salesChart = new Chart(document.getElementById('salesLineChart'), {
-    type: 'line',
-    data: { labels: [], datasets: [] },
-    options: {
-      ...baseChartOpts,
-      responsive: true,
-      plugins: {
-        ...baseChartOpts.plugins,
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.dataset.label + ': Rp ' + ctx.raw.toLocaleString('id-ID')
-          }
-        }
-      }
+      salesChart.data.labels = labels;
+      salesChart.data.datasets = datasets.map(ds => {
+        const color = PLATFORM_COLORS[ds.label] || themeColor;
+        return {
+          ...ds, borderColor: color, backgroundColor: color + '18',
+          borderWidth: 2, pointRadius: showPoints ? 3 : 0, pointHoverRadius: 5,
+          tension: 0.35, fill: false,
+        };
+      });
+
+      const modeLabel = { daily: 'Harian', weekly: 'Mingguan', monthly: 'Bulanan' }[activeGranularity];
+      const titleEl = document.getElementById('salesChartTitle');
+      if(titleEl) titleEl.textContent = `Tren Penjualan per Platform · ${modeLabel}`;
+      
+      salesChart.update();
     }
-  });
 
-  function updateSalesChart() {
-    const { labels, datasets } = getAggregatedData(activeGranularity);
-    const showPoints = labels.length <= 60;
-
-    salesChart.data.labels = labels;
-    salesChart.data.datasets = datasets.map((ds, i) => ({
-      ...ds,
-      borderColor: PALETTE[(i + 2) % PALETTE.length],
-      backgroundColor: PALETTE[(i + 2) % PALETTE.length] + '18',
-      borderWidth: 2,
-      pointRadius: showPoints ? 3 : 0,
-      pointHoverRadius: 5,
-      tension: 0.35,
-      fill: false
-    }));
-
-    const modeLabel = { daily: 'Harian', weekly: 'Mingguan', monthly: 'Bulanan' }[activeGranularity];
-    document.getElementById('salesChartTitle').textContent = `Tren Penjualan per Platform · ${modeLabel}`;
-
-    salesChart.update();
+    renderGranularityBtns();
+    updateSalesChart();
+    console.log("V Sales Line Chart OK");
+  } catch (err) {
+    console.error("X Error pada Sales Line Chart / Granularity:", err);
   }
 
-  // ── Init ──────────────────────────────────────────────────
-  renderGranularityBtns();
-  updateSalesChart();
-
-  new Chart(document.getElementById('colorBarChart'), {
-    type: 'bar',
-    data: {
-      labels: m.color_labels,
-      datasets: [{ label: 'Kuantitas', data: m.color_values, backgroundColor: m.color_values.map((_, i) => { const r = i / Math.max(m.color_values.length - 1, 1); return r <= 0.25 ? PALETTE[0] : r <= 0.50 ? PALETTE[3] : r <= 0.75 ? PALETTE[5] : PALETTE[6]; }), borderRadius: 6, borderSkipped: false }]
-    },
-    options: { ...baseChartOpts, responsive: true, plugins: { ...baseChartOpts.plugins, legend: { display: false } } }
-  });
-
-  // Ramadhan toggle
-  const ramadhanToggle = document.getElementById('ramadhanToggle');
-  if (ramadhanToggle) {
-    ramadhanToggle.addEventListener('change', function () {
-      const cmp = document.getElementById('cmpRow');
-      const label = document.getElementById('toggleLabel');
-      if (this.checked) {
-        cmp.classList.add('open');
-        label.style.color = '#df5e33';
-        label.style.fontWeight = '600';
-      } else {
-        cmp.classList.remove('open');
-        label.style.color = '#6b7280';
-        label.style.fontWeight = '500';
-      }
-    });
+  // ── Ramadhan Toggle ──────────────────────────────────────────
+  try {
+    const ramadhanToggle = document.getElementById('ramadhanToggle');
+    if (ramadhanToggle) {
+      ramadhanToggle.addEventListener('change', function () {
+        const cmp   = document.getElementById('cmpRow');
+        const label = document.getElementById('toggleLabel');
+        if (!cmp) return;
+        
+        if (this.checked) {
+          cmp.classList.add('open');
+          if(label) { label.style.color = themeColor; label.style.fontWeight = '600'; }
+        } else {
+          cmp.classList.remove('open');
+          if(label) { label.style.color = '#6b7280'; label.style.fontWeight = '500'; }
+        }
+      });
+    }
+  } catch(err) {
+    console.error("X Error pada Ramadhan Toggle:", err);
   }
 
-  // Province map
+  // ── Province Map ─────────────────────────────────────────────
   function drawRegionMap() {
+    console.log("Mencoba menggambar Region Map...");
     if (typeof google === 'undefined' || !google.visualization) {
+      console.warn("Google Maps API belum siap, mencoba lagi dalam 200ms...");
       setTimeout(drawRegionMap, 200);
+      return;
+    }
+    
+    const container = document.getElementById('regions_div');
+    if (!container) {
+      console.error("X Container div 'regions_div' tidak ditemukan di DOM!");
       return;
     }
 
     if (!m.map_data || m.map_data.length <= 1) {
-      document.getElementById('regions_div').innerHTML =
-        '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:13px;">Tidak ada data provinsi</div>';
+      console.warn("Data Map Kosong atau tidak valid:", m.map_data);
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:13px;width:100%;">Tidak ada data provinsi</div>';
       return;
     }
-
+    
     try {
       const isoMapping = {
-        "DKI JAKARTA": "ID-JK", "DI YOGYAKARTA": "ID-YO", "JAWA BARAT": "ID-JB", "JAWA TENGAH": "ID-JT", "JAWA TIMUR": "ID-JI",
-        "BANTEN": "ID-BT", "BALI": "ID-BA", "ACEH": "ID-AC", "SUMATERA UTARA": "ID-SU", "SUMATERA BARAT": "ID-SB",
-        "RIAU": "ID-RI", "KEPULAUAN RIAU": "ID-KR", "JAMBI": "ID-JA", "SUMATERA SELATAN": "ID-SS", "BENGKULU": "ID-BE",
-        "LAMPUNG": "ID-LA", "KEPULAUAN BANGKA BELITUNG": "ID-BB", "NUSA TENGGARA BARAT": "ID-NB", "NUSA TENGGARA TIMUR": "ID-NT",
-        "KALIMANTAN BARAT": "ID-KB", "KALIMANTAN TENGAH": "ID-KT", "KALIMANTAN SELATAN": "ID-KS", "KALIMANTAN TIMUR": "ID-KI",
-        "KALIMANTAN UTARA": "ID-KU", "SULAWESI UTARA": "ID-SA", "SULAWESI TENGAH": "ID-ST", "SULAWESI SELATAN": "ID-SN",
-        "SULAWESI TENGGARA": "ID-SG", "GORONTALO": "ID-GO", "SULAWESI BARAT": "ID-SR", "MALUKU": "ID-MA", "MALUKU UTARA": "ID-MU",
-        "PAPUA": "ID-PA", "PAPUA BARAT": "ID-PB", "PAPUA BARAT DAYA": "ID-PD", "PAPUA TENGAH": "ID-PT"
+        "DKI JAKARTA":"ID-JK","DI YOGYAKARTA":"ID-YO","JAWA BARAT":"ID-JB","JAWA TENGAH":"ID-JT","JAWA TIMUR":"ID-JI",
+        "BANTEN":"ID-BT","BALI":"ID-BA","ACEH":"ID-AC","SUMATERA UTARA":"ID-SU","SUMATERA BARAT":"ID-SB",
+        "RIAU":"ID-RI","KEPULAUAN RIAU":"ID-KR","JAMBI":"ID-JA","SUMATERA SELATAN":"ID-SS","BENGKULU":"ID-BE",
+        "LAMPUNG":"ID-LA","KEPULAUAN BANGKA BELITUNG":"ID-BB","NUSA TENGGARA BARAT":"ID-NB","NUSA TENGGARA TIMUR":"ID-NT",
+        "KALIMANTAN BARAT":"ID-KB","KALIMANTAN TENGAH":"ID-KT","KALIMANTAN SELATAN":"ID-KS","KALIMANTAN TIMUR":"ID-KI",
+        "KALIMANTAN UTARA":"ID-KU","SULAWESI UTARA":"ID-SA","SULAWESI TENGAH":"ID-ST","SULAWESI SELATAN":"ID-SN",
+        "SULAWESI TENGGARA":"ID-SG","GORONTALO":"ID-GO","SULAWESI BARAT":"ID-SR","MALUKU":"ID-MA","MALUKU UTARA":"ID-MU",
+        "PAPUA":"ID-PA","PAPUA BARAT":"ID-PB","PAPUA BARAT DAYA":"ID-PD","PAPUA TENGAH":"ID-PT"
       };
-
+      
       const mapDataCleaned = m.map_data.map(row => {
         const copy = [...row];
         if (typeof copy[0] === 'string' && copy[0] !== 'Provinsi') {
@@ -1274,51 +1179,72 @@
         }
         return copy;
       });
+      
+      let mapLightColor = '#ffddd1';
+      const tColor = themeColor.toUpperCase();
+      
+      if (tColor.includes('1A1A1A') || tColor.includes('000000')) {
+        mapLightColor = '#e5e7eb'; 
+      } else if (tColor.includes('43B449')) {
+        mapLightColor = '#dcfce7'; 
+      } else if (tColor.includes('EE4D2D')) {
+        mapLightColor = '#ffddd1'; 
+      } else {
+        mapLightColor = '#d3def5'; 
+      }
 
-      const data = google.visualization.arrayToDataTable(mapDataCleaned);
-      const chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
+      const data  = google.visualization.arrayToDataTable(mapDataCleaned);
+      const chart = new google.visualization.GeoChart(container);
       const options = {
         region: 'ID',
         displayMode: 'regions',
         resolution: 'provinces',
-        colorAxis: { colors: ['#f7e4e1', '#EA2F14'] },
+        colorAxis: { colors: [mapLightColor, themeColor] }, 
         backgroundColor: '#ffffff',
         datalessRegionColor: '#f8f7f4',
-        defaultColor: '#f3f4f6'
+        defaultColor: '#e5e7eb'
       };
-
+      
       chart.draw(data, options);
-      window.addEventListener('resize', () => chart.draw(data, options));
+
+      window.removeEventListener('resize', window._resizeMap);
+      window._resizeMap = () => chart.draw(data, options);
+      window.addEventListener('resize', window._resizeMap);
+      
+      console.log("V Map Chart berhasil digambar!");
     } catch (err) {
-      console.error('GeoChart error:', err);
-      document.getElementById('regions_div').innerHTML =
-        '<div style="color:red;padding:20px;font-size:12px;">Map error: ' + err.message + '</div>';
+      console.error('X Error saat menggambar Map Chart:', err);
+      container.innerHTML = '<div style="color:red;padding:20px;font-size:12px;text-align:center;">Map Error:<br>' + err.message + '</div>';
     }
   }
 
-  google.charts.load('current', { packages: ['geochart'], language: 'id' });
-  google.charts.setOnLoadCallback(() => {
-    setTimeout(drawRegionMap, 100);
-  });
-
+  try {
+    google.charts.load('current', { packages: ['geochart'], language: 'id' });
+    google.charts.setOnLoadCallback(() => {
+      console.log("Google Charts API termuat. Menunggu render Map...");
+      setTimeout(drawRegionMap, 100);
+    });
+  } catch(err) {
+    console.error("X Error memuat skrip Google Charts API:", err);
+  }
+  
   window.addEventListener('load', () => {
     setTimeout(() => {
-      if (document.getElementById('regions_div').children.length === 0) {
+      const container = document.getElementById('regions_div');
+      if (container && container.children.length === 0) {
+        console.log("Fallback: Memicu drawRegionMap() dari window onload.");
         drawRegionMap();
       }
     }, 800);
   });
 
+  // ── Date validation ──────────────────────────────────────────
   function validateAndSubmit() {
     const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;
-
+    const end   = document.getElementById('endDate').value;
     if (start && end && start > end) {
-      // Kembalikan input yang baru diubah ke value sebelumnya
-      // dengan menampilkan pesan, lalu batalkan submit
       const errEl = document.getElementById('dateError');
       errEl.style.display = 'flex';
-      // Reset input yang melanggar
       if (event?.target?.name === 'start_date') {
         document.getElementById('startDate').value = '';
       } else {
