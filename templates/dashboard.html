@@ -42,10 +42,10 @@
 
   .kpi-card.main {
     background: radial-gradient(circle at 0% 140%,
-      color-mix(in srgb, var(--t-c1) 22%, transparent) 0%,
-      color-mix(in srgb, var(--t-c1) 15%, transparent) 45%,
-      color-mix(in srgb, var(--t-c1)  8%, transparent) 55%,
-      #ffffff 70%);
+        color-mix(in srgb, var(--t-c1) 22%, transparent) 0%,
+        color-mix(in srgb, var(--t-c1) 15%, transparent) 45%,
+        color-mix(in srgb, var(--t-c1) 8%, transparent) 55%,
+        #ffffff 70%);
   }
 
   .kpi-bg-icon {
@@ -324,11 +324,11 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
 
-  .toggle-input:checked + .toggle-track {
+  .toggle-input:checked+.toggle-track {
     background: var(--t-c1);
   }
 
-  .toggle-input:checked + .toggle-track::after {
+  .toggle-input:checked+.toggle-track::after {
     transform: translateX(16px);
   }
 
@@ -429,69 +429,313 @@
     font-weight: 600;
   }
 
+  /* ── Image Lightbox ── */
+  .lightbox-overlay {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .lightbox-overlay.show {
+    display: block;
+    opacity: 1;
+  }
+
+  .lightbox-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 75vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+    object-fit: contain;
+  }
+
+  .lightbox-overlay.show .lightbox-content {
+    transform: scale(1);
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 24px;
+    right: 36px;
+    color: #f3f4f6;
+    font-size: 40px;
+    font-weight: 300;
+    transition: color 0.2s;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .lightbox-close:hover {
+    color: var(--t-c1);
+  }
+
+  .lightbox-caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #e5e7eb;
+    padding: 16px 0;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .zoomable-img {
+    cursor: zoom-in;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .zoomable-img:hover {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+
   /* ════════════════════
      RESPONSIVE
   ════════════════════ */
 
   @media (max-width: 1199px) {
-    .dash-wrapper { padding: 28px 28px; }
-    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-    .kpi-value { font-size: 24px; }
+    .dash-wrapper {
+      padding: 28px 28px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .kpi-value {
+      font-size: 24px;
+    }
   }
 
   @media (max-width: 991px) {
-    .dash-wrapper { padding: 24px 20px; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .kpi-card { padding: 18px; }
-    .kpi-value { font-size: 22px; }
-    .kpi-value[style*="font-size: 20px"] { font-size: 17px !important; }
-    .chart-row-2 { grid-template-columns: 1fr; }
-    .page-title { font-size: 22px; }
-    .filter-bar { padding: 16px 18px; gap: 12px; }
-    .filter-input { font-size: 13px; padding: 8px 12px; }
-    .avg-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-    .cmp-row { grid-template-columns: 1fr; }
-    .cmp-divider { display: none; }
-    .cmp-row.open { max-height: 400px; }
+    .dash-wrapper {
+      padding: 24px 20px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .kpi-card {
+      padding: 18px;
+    }
+
+    .kpi-value {
+      font-size: 22px;
+    }
+
+    .kpi-value[style*="font-size: 20px"] {
+      font-size: 17px !important;
+    }
+
+    .chart-row-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .page-title {
+      font-size: 22px;
+    }
+
+    .filter-bar {
+      padding: 16px 18px;
+      gap: 12px;
+    }
+
+    .filter-input {
+      font-size: 13px;
+      padding: 8px 12px;
+    }
+
+    .avg-grid {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+    }
+
+    .cmp-row {
+      grid-template-columns: 1fr;
+    }
+
+    .cmp-divider {
+      display: none;
+    }
+
+    .cmp-row.open {
+      max-height: 400px;
+    }
   }
 
   @media (max-width: 767px) {
-    .dash-wrapper { padding: 20px 14px; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .kpi-card { padding: 16px; border-radius: 12px; }
-    .kpi-value { font-size: 20px; }
-    .kpi-value[style*="font-size: 20px"] { font-size: 15px !important; }
-    .kpi-bg-icon { display: none; }
-    .page-title { font-size: 20px; text-align: center; }
-    .page-sub { font-size: 12px; }
-    .section-divider { font-size: 10px; }
-    .filter-bar { padding: 14px; gap: 10px; flex-direction: column; align-items: stretch; }
-    .filter-group { width: 100%; }
-    .filter-input { width: 100%; }
-    .btn-reset { width: 100%; text-align: center; }
-    .chart-card { padding: 18px 14px; border-radius: 12px; }
-    .chart-title { font-size: 14px; margin-bottom: 14px; }
-    .chart-row-1, .chart-row-2 { gap: 12px; margin-bottom: 12px; }
-    .dash-section-mb { margin-bottom: 12px !important; }
-    .page-header-wrap { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .toggle-wrap { flex-wrap: wrap; }
-    thead th { font-size: 10px; padding: 6px 8px; }
-    tbody td { font-size: 13px; padding: 10px 8px; }
-    .avg-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+    .dash-wrapper {
+      padding: 20px 14px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .kpi-card {
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    .kpi-value {
+      font-size: 20px;
+    }
+
+    .kpi-value[style*="font-size: 20px"] {
+      font-size: 15px !important;
+    }
+
+    .kpi-bg-icon {
+      display: none;
+    }
+
+    .page-title {
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .page-sub {
+      font-size: 12px;
+    }
+
+    .section-divider {
+      font-size: 10px;
+    }
+
+    .filter-bar {
+      padding: 14px;
+      gap: 10px;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .filter-group {
+      width: 100%;
+    }
+
+    .filter-input {
+      width: 100%;
+    }
+
+    .btn-reset {
+      width: 100%;
+      text-align: center;
+    }
+
+    .chart-card {
+      padding: 18px 14px;
+      border-radius: 12px;
+    }
+
+    .chart-title {
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .chart-row-1,
+    .chart-row-2 {
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .dash-section-mb {
+      margin-bottom: 12px !important;
+    }
+
+    .page-header-wrap {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .toggle-wrap {
+      flex-wrap: wrap;
+    }
+
+    thead th {
+      font-size: 10px;
+      padding: 6px 8px;
+    }
+
+    tbody td {
+      font-size: 13px;
+      padding: 10px 8px;
+    }
+
+    .avg-grid {
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+    }
   }
 
   @media (max-width: 575px) {
-    .dash-wrapper { padding: 16px 10px; }
-    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .kpi-card { padding: 14px; border-radius: 10px; }
-    .kpi-value { font-size: 18px; }
-    .kpi-label { font-size: 9.5px; gap: 5px; }
-    .kpi-label .icon-wrap { width: 22px; height: 22px; }
-    .kpi-sub { font-size: 10px; }
-    .chart-card { padding: 14px 12px; }
-    .chart-title { font-size: 13px; }
-    .page-title { font-size: 18px; text-align: center; }
-    .filter-bar { border-radius: 12px; }
+    .dash-wrapper {
+      padding: 16px 10px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .kpi-card {
+      padding: 14px;
+      border-radius: 10px;
+    }
+
+    .kpi-value {
+      font-size: 18px;
+    }
+
+    .kpi-label {
+      font-size: 9.5px;
+      gap: 5px;
+    }
+
+    .kpi-label .icon-wrap {
+      width: 22px;
+      height: 22px;
+    }
+
+    .kpi-sub {
+      font-size: 10px;
+    }
+
+    .chart-card {
+      padding: 14px 12px;
+    }
+
+    .chart-title {
+      font-size: 13px;
+    }
+
+    .page-title {
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .filter-bar {
+      border-radius: 12px;
+    }
   }
 </style>
 
@@ -548,14 +792,16 @@
     <div class="kpi-card main">
       <div class="kpi-bg-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <path
+            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
           <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
           <line x1="12" y1="22.08" x2="12" y2="12" />
         </svg>
       </div>
       <div class="kpi-label">
         <span class="icon-wrap"><svg viewBox="0 0 24 24">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
             <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
             <line x1="12" y1="22.08" x2="12" y2="12" />
           </svg></span>
@@ -587,16 +833,22 @@
 
     <div class="kpi-card main">
       <div class="kpi-bg-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="1" x2="12" y2="23" />
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+          <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+          <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
         </svg>
       </div>
       <div class="kpi-label">
-        <span class="icon-wrap"><svg viewBox="0 0 24 24">
-            <line x1="12" y1="1" x2="12" y2="23" />
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg></span>
+        <span class="icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+          </svg>
+        </span>
         Total Pendapatan
       </div>
       <div class="kpi-value" style="font-size: 20px;">Rp {{ "{:,.0f}".format(m.revenue_month) }}</div>
@@ -677,7 +929,8 @@
 
       <div class="avg-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
         <div>
-          <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
+          <div
+            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
             Rata-rata Pendapatan / Hari</div>
           <div style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
             Rp {{ "{:,.0f}".format(m.overall_avg_revenue) }}</div>
@@ -687,7 +940,8 @@
           </div>
         </div>
         <div>
-          <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
+          <div
+            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
             Rata-rata Order / Hari</div>
           <div style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
             {{ "{:.1f}".format(m.overall_avg_orders) }}</div>
@@ -702,7 +956,8 @@
         <div>
           <div class="cmp-tag ramadhan">🌙 Ramadhan</div>
           <div style="margin-bottom: 14px;">
-            <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+            <div
+              style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
               Pendapatan / Hari</div>
             <div class="cmp-ramadhan-value" style="font-size: 18px; font-weight: 600; font-family: 'Lora', serif;">
               Rp {{ "{:,.0f}".format(m.ramadhan_avg_revenue) }}</div>
@@ -713,7 +968,8 @@
             </div>
           </div>
           <div>
-            <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+            <div
+              style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
               Order / Hari</div>
             <div class="cmp-ramadhan-value" style="font-size: 18px; font-weight: 600; font-family: 'Lora', serif;">
               {{ "{:.1f}".format(m.ramadhan_avg_orders) }}</div>
@@ -728,7 +984,8 @@
         <div>
           <div class="cmp-tag normal">☀️ Hari Biasa</div>
           <div style="margin-bottom: 14px;">
-            <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+            <div
+              style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
               Pendapatan / Hari</div>
             <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: 'Lora', serif;">
               Rp {{ "{:,.0f}".format(m.normal_avg_revenue) }}</div>
@@ -739,7 +996,8 @@
             </div>
           </div>
           <div>
-            <div style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+            <div
+              style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
               Order / Hari</div>
             <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: 'Lora', serif;">
               {{ "{:.1f}".format(m.normal_avg_orders) }}</div>
@@ -792,7 +1050,8 @@
             {% for model in m.top_products %}
             <tr>
               <td>
-                <span class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                <span
+                  class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
                   {{ loop.index }}
                 </span>
               </td>
@@ -800,12 +1059,14 @@
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <img src="/static/images/{{ model[0]|replace(' ', '%20') }}.jpg"
                     onerror="this.onerror=null; this.src='/static/images/UNKNOWN.jpg';" alt="{{ model[0].strip() }}"
+                    class="zoomable-img" onclick="openLightbox(this.src, this.alt)"
                     style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #f3f4f6;">
                   <span style="font-weight: 500; color: #111827;">{{ model[0] }}</span>
                 </div>
               </td>
               <td style="text-align: right; font-weight: 600; color: #374151;">
-                {{ "{:,}".format(model[1]) }} <span style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
+                {{ "{:,}".format(model[1]) }} <span
+                  style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
               </td>
             </tr>
             {% endfor %}
@@ -837,42 +1098,70 @@
     </div>
   </div>
 
+  <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img class="lightbox-content" id="lightboxImg">
+    <div id="lightboxCaption" class="lightbox-caption"></div>
+  </div>
 </div>
 
 <script id="dashboard-data" type="application/json">{{ m | tojson }}</script>
 
 <script>
+  function openLightbox(src, alt) {
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const caption = document.getElementById('lightboxCaption');
+
+    lightboxImg.src = src;
+    caption.textContent = alt;
+    lightbox.style.display = "block";
+
+    setTimeout(() => {
+      lightbox.classList.add('show');
+    }, 10);
+  }
+
+  function closeLightbox() {
+    const lightbox = document.getElementById('imageLightbox');
+
+    lightbox.classList.remove('show');
+
+    setTimeout(() => {
+      lightbox.style.display = "none";
+    }, 300);
+  }
 
   const rawDataContent = document.getElementById('dashboard-data').textContent;
   let m = {};
   try {
     m = JSON.parse(rawDataContent) || {};
-   
+
   } catch (err) {
     console.error("Gagal melakukan parse JSON dari #dashboard-data:", err);
   }
 
-  const rawLineData   = m.line_data || [];
+  const rawLineData = m.line_data || [];
   const paymentLabels = m.payment_labels || [];
   const paymentValues = m.payment_values || [];
-  const sizeLabels    = m.size_labels || [];
-  const sizeValues    = m.size_values || [];
-  const colorLabels   = m.color_labels || [];
-  const colorValues   = m.color_values || [];
-  
-  const dates     = [...new Set(rawLineData.map(d => d.date))];
+  const sizeLabels = m.size_labels || [];
+  const sizeValues = m.size_values || [];
+  const colorLabels = m.color_labels || [];
+  const colorValues = m.color_values || [];
+
+  const dates = [...new Set(rawLineData.map(d => d.date))];
   const platforms = [...new Set(rawLineData.map(d => d.platform))];
 
   // ── Platform colors ──
   const PLATFORM_COLORS = {
-    'Shopee':      '#EE4D2D',
-    'Tokopedia':   '#43B449',
+    'Shopee': '#EE4D2D',
+    'Tokopedia': '#43B449',
     'TikTok Shop': '#1a1a1a',
-    'TikTok':      '#1a1a1a'
+    'TikTok': '#1a1a1a'
   };
 
-  const T = window.THEME || { c1: '#E6521F', c2: '#F07A47' }; 
-  const themeColor  = T.c1;
+  const T = window.THEME || { c1: '#E6521F', c2: '#F07A47' };
+  const themeColor = T.c1;
   const themeColor2 = T.c2;
 
   function neutralPalette(count) {
@@ -1013,14 +1302,14 @@
   try {
     const dayCount = dates.length;
     const granularityOptions = [{ key: 'daily', label: 'Harian' }];
-    if (dayCount > 7)  granularityOptions.push({ key: 'weekly',  label: 'Mingguan' });
+    if (dayCount > 7) granularityOptions.push({ key: 'weekly', label: 'Mingguan' });
     if (dayCount > 60) granularityOptions.push({ key: 'monthly', label: 'Bulanan' });
 
     activeGranularity = dayCount > 90 ? 'monthly' : dayCount > 30 ? 'weekly' : 'daily';
     const btnContainer = document.getElementById('granularityBtns');
 
     function renderGranularityBtns() {
-      if(!btnContainer) return;
+      if (!btnContainer) return;
       btnContainer.innerHTML = '';
       granularityOptions.forEach(opt => {
         const btn = document.createElement('button');
@@ -1055,13 +1344,13 @@
       }
       const grouped = {};
       rawLineData.forEach(d => {
-        if(!d.date) return;
-        const dt  = new Date(d.date);
+        if (!d.date) return;
+        const dt = new Date(d.date);
         let key;
         if (granularity === 'monthly') {
           key = d.date.slice(0, 7);
         } else {
-          const day  = dt.getDay();
+          const day = dt.getDay();
           const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
           const monday = new Date(new Date(d.date).setDate(diff));
           key = monday.toISOString().slice(0, 10);
@@ -1088,7 +1377,7 @@
       }
     });
 
-    window.updateSalesChart = function() {
+    window.updateSalesChart = function () {
       const { labels, datasets } = getAggregatedData(activeGranularity);
       const showPoints = labels.length <= 60;
 
@@ -1104,8 +1393,8 @@
 
       const modeLabel = { daily: 'Harian', weekly: 'Mingguan', monthly: 'Bulanan' }[activeGranularity];
       const titleEl = document.getElementById('salesChartTitle');
-      if(titleEl) titleEl.textContent = `Tren Penjualan per Platform · ${modeLabel}`;
-      
+      if (titleEl) titleEl.textContent = `Tren Penjualan per Platform · ${modeLabel}`;
+
       salesChart.update();
     }
 
@@ -1121,20 +1410,20 @@
     const ramadhanToggle = document.getElementById('ramadhanToggle');
     if (ramadhanToggle) {
       ramadhanToggle.addEventListener('change', function () {
-        const cmp   = document.getElementById('cmpRow');
+        const cmp = document.getElementById('cmpRow');
         const label = document.getElementById('toggleLabel');
         if (!cmp) return;
-        
+
         if (this.checked) {
           cmp.classList.add('open');
-          if(label) { label.style.color = themeColor; label.style.fontWeight = '600'; }
+          if (label) { label.style.color = themeColor; label.style.fontWeight = '600'; }
         } else {
           cmp.classList.remove('open');
-          if(label) { label.style.color = '#6b7280'; label.style.fontWeight = '500'; }
+          if (label) { label.style.color = '#6b7280'; label.style.fontWeight = '500'; }
         }
       });
     }
-  } catch(err) {
+  } catch (err) {
     console.error("X Error pada Ramadhan Toggle:", err);
   }
 
@@ -1146,7 +1435,7 @@
       setTimeout(drawRegionMap, 200);
       return;
     }
-    
+
     const container = document.getElementById('regions_div');
     if (!container) {
       console.error("X Container div 'regions_div' tidak ditemukan di DOM!");
@@ -1158,19 +1447,19 @@
       container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:13px;width:100%;">Tidak ada data provinsi</div>';
       return;
     }
-    
+
     try {
       const isoMapping = {
-        "DKI JAKARTA":"ID-JK","DI YOGYAKARTA":"ID-YO","JAWA BARAT":"ID-JB","JAWA TENGAH":"ID-JT","JAWA TIMUR":"ID-JI",
-        "BANTEN":"ID-BT","BALI":"ID-BA","ACEH":"ID-AC","SUMATERA UTARA":"ID-SU","SUMATERA BARAT":"ID-SB",
-        "RIAU":"ID-RI","KEPULAUAN RIAU":"ID-KR","JAMBI":"ID-JA","SUMATERA SELATAN":"ID-SS","BENGKULU":"ID-BE",
-        "LAMPUNG":"ID-LA","KEPULAUAN BANGKA BELITUNG":"ID-BB","NUSA TENGGARA BARAT":"ID-NB","NUSA TENGGARA TIMUR":"ID-NT",
-        "KALIMANTAN BARAT":"ID-KB","KALIMANTAN TENGAH":"ID-KT","KALIMANTAN SELATAN":"ID-KS","KALIMANTAN TIMUR":"ID-KI",
-        "KALIMANTAN UTARA":"ID-KU","SULAWESI UTARA":"ID-SA","SULAWESI TENGAH":"ID-ST","SULAWESI SELATAN":"ID-SN",
-        "SULAWESI TENGGARA":"ID-SG","GORONTALO":"ID-GO","SULAWESI BARAT":"ID-SR","MALUKU":"ID-MA","MALUKU UTARA":"ID-MU",
-        "PAPUA":"ID-PA","PAPUA BARAT":"ID-PB","PAPUA BARAT DAYA":"ID-PD","PAPUA TENGAH":"ID-PT"
+        "DKI JAKARTA": "ID-JK", "DI YOGYAKARTA": "ID-YO", "JAWA BARAT": "ID-JB", "JAWA TENGAH": "ID-JT", "JAWA TIMUR": "ID-JI",
+        "BANTEN": "ID-BT", "BALI": "ID-BA", "ACEH": "ID-AC", "SUMATERA UTARA": "ID-SU", "SUMATERA BARAT": "ID-SB",
+        "RIAU": "ID-RI", "KEPULAUAN RIAU": "ID-KR", "JAMBI": "ID-JA", "SUMATERA SELATAN": "ID-SS", "BENGKULU": "ID-BE",
+        "LAMPUNG": "ID-LA", "KEPULAUAN BANGKA BELITUNG": "ID-BB", "NUSA TENGGARA BARAT": "ID-NB", "NUSA TENGGARA TIMUR": "ID-NT",
+        "KALIMANTAN BARAT": "ID-KB", "KALIMANTAN TENGAH": "ID-KT", "KALIMANTAN SELATAN": "ID-KS", "KALIMANTAN TIMUR": "ID-KI",
+        "KALIMANTAN UTARA": "ID-KU", "SULAWESI UTARA": "ID-SA", "SULAWESI TENGAH": "ID-ST", "SULAWESI SELATAN": "ID-SN",
+        "SULAWESI TENGGARA": "ID-SG", "GORONTALO": "ID-GO", "SULAWESI BARAT": "ID-SR", "MALUKU": "ID-MA", "MALUKU UTARA": "ID-MU",
+        "PAPUA": "ID-PA", "PAPUA BARAT": "ID-PB", "PAPUA BARAT DAYA": "ID-PD", "PAPUA TENGAH": "ID-PT"
       };
-      
+
       const mapDataCleaned = m.map_data.map(row => {
         const copy = [...row];
         if (typeof copy[0] === 'string' && copy[0] !== 'Provinsi') {
@@ -1179,38 +1468,38 @@
         }
         return copy;
       });
-      
+
       let mapLightColor = '#ffddd1';
       const tColor = themeColor.toUpperCase();
-      
+
       if (tColor.includes('1A1A1A') || tColor.includes('000000')) {
-        mapLightColor = '#e5e7eb'; 
+        mapLightColor = '#e5e7eb';
       } else if (tColor.includes('42B549')) {
-        mapLightColor = '#dcfce7'; 
+        mapLightColor = '#dcfce7';
       } else if (tColor.includes('EE4D2D')) {
-        mapLightColor = '#ffddd1'; 
+        mapLightColor = '#ffddd1';
       } else {
-        mapLightColor = '#d3def5'; 
+        mapLightColor = '#d3def5';
       }
 
-      const data  = google.visualization.arrayToDataTable(mapDataCleaned);
+      const data = google.visualization.arrayToDataTable(mapDataCleaned);
       const chart = new google.visualization.GeoChart(container);
       const options = {
         region: 'ID',
         displayMode: 'regions',
         resolution: 'provinces',
-        colorAxis: { colors: [mapLightColor, themeColor] }, 
+        colorAxis: { colors: [mapLightColor, themeColor] },
         backgroundColor: '#ffffff',
         datalessRegionColor: '#f8f7f4',
         defaultColor: '#e5e7eb'
       };
-      
+
       chart.draw(data, options);
 
       window.removeEventListener('resize', window._resizeMap);
       window._resizeMap = () => chart.draw(data, options);
       window.addEventListener('resize', window._resizeMap);
-      
+
       console.log("V Map Chart berhasil digambar!");
     } catch (err) {
       console.error('X Error saat menggambar Map Chart:', err);
@@ -1224,10 +1513,10 @@
       console.log("Google Charts API termuat. Menunggu render Map...");
       setTimeout(drawRegionMap, 100);
     });
-  } catch(err) {
+  } catch (err) {
     console.error("X Error memuat skrip Google Charts API:", err);
   }
-  
+
   window.addEventListener('load', () => {
     setTimeout(() => {
       const container = document.getElementById('regions_div');
@@ -1241,7 +1530,7 @@
   // ── Date validation ──────────────────────────────────────────
   function validateAndSubmit() {
     const start = document.getElementById('startDate').value;
-    const end   = document.getElementById('endDate').value;
+    const end = document.getElementById('endDate').value;
     if (start && end && start > end) {
       const errEl = document.getElementById('dateError');
       errEl.style.display = 'flex';

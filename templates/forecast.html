@@ -1,5 +1,5 @@
-{% extends 'base.html' %} 
-{% block title %}Lamiah Analytics{% endblock %} 
+{% extends 'base.html' %}
+{% block title %}Lamiah Analytics{% endblock %}
 
 {% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,11 +39,11 @@
     }
 
     .kpi-card.main {
-        background: radial-gradient(circle at 0% 140%, 
-            color-mix(in srgb, var(--t-c1) 22%, transparent) 0%, 
-            color-mix(in srgb, var(--t-c1) 15%, transparent) 45%, 
-            color-mix(in srgb, var(--t-c1) 8%, transparent) 55%, 
-            #ffffff 70%);
+        background: radial-gradient(circle at 0% 140%,
+                color-mix(in srgb, var(--t-c1) 22%, transparent) 0%,
+                color-mix(in srgb, var(--t-c1) 15%, transparent) 45%,
+                color-mix(in srgb, var(--t-c1) 8%, transparent) 55%,
+                #ffffff 70%);
     }
 
     .kpi-bg-icon {
@@ -231,48 +231,217 @@
         margin-bottom: 20px;
     }
 
+    /* ── Image Lightbox ── */
+    .lightbox-overlay {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        padding-top: 60px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: rgba(17, 24, 39, 0.85);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .lightbox-overlay.show {
+        display: block;
+        opacity: 1;
+    }
+
+    .lightbox-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 75vh;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+        object-fit: contain;
+    }
+
+    .lightbox-overlay.show .lightbox-content {
+        transform: scale(1);
+    }
+
+    .lightbox-close {
+        position: absolute;
+        top: 24px;
+        right: 36px;
+        color: #f3f4f6;
+        font-size: 40px;
+        font-weight: 300;
+        transition: color 0.2s;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .lightbox-close:hover {
+        color: var(--t-c1);
+    }
+
+    .lightbox-caption {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+        text-align: center;
+        color: #e5e7eb;
+        padding: 16px 0;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .zoomable-img {
+        cursor: zoom-in;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .zoomable-img:hover {
+        opacity: 0.85;
+        transform: scale(1.05);
+    }
+
 
     /* ════════════════════
      RESPONSIVE
     ════════════════════ */
     @media (max-width: 1199px) {
-        .dash-wrapper { padding: 28px 28px; }
-        .kpi-value { font-size: 24px; }
+        .dash-wrapper {
+            padding: 28px 28px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+        }
     }
 
     @media (max-width: 991px) {
-        .dash-wrapper { padding: 24px 20px; }
-        .kpi-value { font-size: 22px; }
-        .chart-row-2 { grid-template-columns: 1fr; }
-        .page-title { font-size: 22px; }
+        .dash-wrapper {
+            padding: 24px 20px;
+        }
+
+        .kpi-value {
+            font-size: 22px;
+        }
+
+        .chart-row-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .page-title {
+            font-size: 22px;
+        }
     }
 
     @media (max-width: 767px) {
-        .dash-wrapper { padding: 20px 14px; }
-        .kpi-card { padding: 16px; border-radius: 12px; }
-        .kpi-value { font-size: 20px; }
-        .kpi-bg-icon { display: none; }
-        .page-title { font-size: 20px; text-align: center; }
-        .page-sub { font-size: 12px; }
-        .section-divider { font-size: 10px; }
-        .chart-card { padding: 18px 14px; border-radius: 12px; }
-        .chart-title { font-size: 14px; margin-bottom: 14px; }
-        .chart-row-1, .chart-row-2 { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
-        .chart-row-2 .chart-card { height: 100%; }
-        thead th { font-size: 10px; padding: 6px 8px; }
-        tbody td { font-size: 13px; padding: 10px 8px; }
+        .dash-wrapper {
+            padding: 20px 14px;
+        }
+
+        .kpi-card {
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .kpi-value {
+            font-size: 20px;
+        }
+
+        .kpi-bg-icon {
+            display: none;
+        }
+
+        .page-title {
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .page-sub {
+            font-size: 12px;
+        }
+
+        .section-divider {
+            font-size: 10px;
+        }
+
+        .chart-card {
+            padding: 18px 14px;
+            border-radius: 12px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+
+        .chart-row-1,
+        .chart-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: stretch;
+        }
+
+        .chart-row-2 .chart-card {
+            height: 100%;
+        }
+
+        thead th {
+            font-size: 10px;
+            padding: 6px 8px;
+        }
+
+        tbody td {
+            font-size: 13px;
+            padding: 10px 8px;
+        }
     }
 
     @media (max-width: 575px) {
-        .dash-wrapper { padding: 16px 10px; }
-        .kpi-card { padding: 14px; border-radius: 10px; }
-        .kpi-value { font-size: 18px; }
-        .kpi-label { font-size: 9.5px; gap: 5px; }
-        .kpi-label .icon-wrap { width: 22px; height: 22px; }
-        .kpi-sub { font-size: 10px; }
-        .chart-card { padding: 14px 12px; }
-        .chart-title { font-size: 13px; }
-        .page-title { font-size: 18px; text-align: center; }
+        .dash-wrapper {
+            padding: 16px 10px;
+        }
+
+        .kpi-card {
+            padding: 14px;
+            border-radius: 10px;
+        }
+
+        .kpi-value {
+            font-size: 18px;
+        }
+
+        .kpi-label {
+            font-size: 9.5px;
+            gap: 5px;
+        }
+
+        .kpi-label .icon-wrap {
+            width: 22px;
+            height: 22px;
+        }
+
+        .kpi-sub {
+            font-size: 10px;
+        }
+
+        .chart-card {
+            padding: 14px 12px;
+        }
+
+        .chart-title {
+            font-size: 13px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            text-align: center;
+        }
     }
 </style>
 
@@ -356,12 +525,11 @@
                             </td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 12px;">
-
-                                    <img src="/static/images/{{ model.name }}.jpg"
+                                    <img src="/static/images/{{ model.name|replace(' ', '%20') }}.jpg"
                                         onerror="this.onerror=null; this.src='/static/images/UNKNOWN.jpg';"
-                                        alt="{{ model.name }}"
+                                        alt="{{ model.name }}" class="zoomable-img"
+                                        onclick="openLightbox(this.src, this.alt)"
                                         style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #f3f4f6;">
-
                                     <span style="font-weight: 500; color: #111827;">{{ model.name }}</span>
                                 </div>
                             </td>
@@ -401,7 +569,8 @@
                             <td style="font-weight: 500; color: #111827;">{{ color.name }}</td>
                             <td style="text-align: right; font-weight: 600; color: #374151;">{{
                                 "{:,}".format(color.forecast_qty) }} <span
-                                    style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span></td>
+                                    style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -410,8 +579,40 @@
         </div>
     </div>
 
+    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightboxImg">
+        <div id="lightboxCaption" class="lightbox-caption"></div>
+    </div>
+
     {% endif %}
 </div>
+
+<script>
+    function openLightbox(src, alt) {
+        const lightbox = document.getElementById('imageLightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const caption = document.getElementById('lightboxCaption');
+
+        lightboxImg.src = src;
+        caption.textContent = alt;
+        lightbox.style.display = "block";
+
+        setTimeout(() => {
+            lightbox.classList.add('show');
+        }, 10);
+    }
+
+    function closeLightbox() {
+        const lightbox = document.getElementById('imageLightbox');
+
+        lightbox.classList.remove('show');
+
+        setTimeout(() => {
+            lightbox.style.display = "none";
+        }, 300);
+    }
+</script>
 
 {% if forecast_daily %}
 <script id="forecast-data" type="application/json">{{ forecast_daily | tojson }}</script>
@@ -421,7 +622,6 @@
         const labels = rawData.map(item => item.date);
         const dataPoints = rawData.map(item => item.predicted_qty);
         const themeColor = window.THEME ? window.THEME.c1 : '#E6521F';
-        
         const ctx = document.getElementById('forecastLineChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
