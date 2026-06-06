@@ -876,7 +876,7 @@
   const themeColor2 = T.c2;
 
   function neutralPalette(count) {
-    const stops = [T.c1, T.c2, T.c3, T.c4, T.c5];
+    const stops = [T.c1, T.c2, T.c3, T.c4, T.c5, T.c6, T.c7];
     return Array.from({ length: count }, (_, i) => stops[i % stops.length] || themeColor);
   }
 
@@ -908,7 +908,7 @@
         datasets: [{
           label: 'Rata-rata Nilai Belanja (Rp)',
           data: paymentValues,
-          backgroundColor: themeColor + 'CC',
+          backgroundColor: neutralPalette(paymentValues.length),
           borderRadius: 6,
           borderSkipped: false
         }]
@@ -1185,7 +1185,7 @@
       
       if (tColor.includes('1A1A1A') || tColor.includes('000000')) {
         mapLightColor = '#e5e7eb'; 
-      } else if (tColor.includes('43B449')) {
+      } else if (tColor.includes('42B549')) {
         mapLightColor = '#dcfce7'; 
       } else if (tColor.includes('EE4D2D')) {
         mapLightColor = '#ffddd1'; 

@@ -15,49 +15,59 @@
   {% set active_platform = request.args.get('platform') %}
 
   {% if active_platform == 'Shopee' %}
-    {% set theme = {
-      'name':    'shopee',
-      'c1':      '#EE4D2D',
-      'c2':      '#F97048',
-      'c3':      '#FBAB91',
-      'c4':      '#FDD9CE',
-      'c5':      '#FEF0EB',
-      'nav_active_text': '#fff'
-    } %}
+  {% set theme = {
+  'name': 'shopee',
+  'c1': '#EE4D2D',
+  'c2': '#FB6B3A',
+  'c3': '#FF9A62',
+  'c4': '#34C759',
+  'c5': '#FFB020',
+  'c6': '#4DA3FF',
+  'c7': '#E53935',
+  'nav_active_text': '#fff'
+  } %}
   {% elif active_platform == 'Tokopedia' %}
-    {% set theme = {
-      'name':    'tokopedia',
-      'c1':      '#43B449',
-      'c2':      '#68C56D',
-      'c3':      '#96D999',
-      'c4':      '#C8EDCA',
-      'c5':      '#EBF7EB',
-      'nav_active_text': '#fff'
-    } %}
+  {% set theme = {
+  'name': 'tokopedia',
+  'c1': '#42B549',
+  'c2': '#5CCB63',
+  'c3': '#87E08C',
+  'c4': '#10B981',
+  'c5': '#F59E0B',
+  'c6': '#06B6D4',
+  'c7': '#EF4444',
+  'nav_active_text': '#fff'
+  } %}
   {% elif active_platform == 'TikTok Shop' or active_platform == 'TikTok' or active_platform == 'tiktok' %}
-    {% set theme = {
-      'name':    'tiktok',
-      'c1':      '#1a1a1a',
-      'c2':      '#444444',
-      'c3':      '#777777',
-      'c4':      '#bbbbbb',
-      'c5':      '#ebebeb',
-      'nav_active_text': '#fff'
-    } %}
+  {% set theme = {
+  'name': 'tiktok',
+  'c1': '#111827',
+  'c2': '#25F4EE',
+  'c3': '#FE2C55',
+  'c4': '#22C55E',
+  'c5': '#F59E0B',
+  'c6': '#38BDF8',
+  'c7': '#EF4444',
+  'nav_active_text': '#fff'
+  } %}
   {% else %}
-    {% set theme = {
-      'name':    'default',
-      'c1':      '#401FE6',
-      'c2':      '#5638EB',
-      'c3':      '#6D52F2',
-      'c4':      '#B3A6F7',
-      'c5':      '#D0C9F5',
-      'nav_active_text': '#fff'
-    } %}
+  {% set theme = {
+  'name': 'default',
+  'c1': '#4F46E5',
+  'c2': '#7C3AED',
+  'c3': '#EC4899',
+  'c4': '#10B981',
+  'c5': '#F59E0B',
+  'c6': '#06B6D4',
+  'c7': '#EF4444',
+  'nav_active_text': '#fff'
+  } %}
   {% endif %}
 
   <style>
-    html { overflow-y: scroll; }
+    html {
+      overflow-y: scroll;
+    }
 
     :root {
       --t-c1: {{ theme.c1 }};
@@ -65,41 +75,58 @@
       --t-c3: {{ theme.c3 }};
       --t-c4: {{ theme.c4 }};
       --t-c5: {{ theme.c5 }};
-
+      --t-c6: {{ theme.c6 }};
+      --t-c7: {{ theme.c7 }};
       --primary-color: {{ theme.c1 }};
     }
 
     .btn-primary,
     .btn-primary:active {
       background-color: var(--t-c1) !important;
-      border-color:     var(--t-c1) !important;
+      border-color: var(--t-c1) !important;
       color: {{ theme.nav_active_text }};
     }
+
     .btn-primary:hover {
       background-color: var(--t-c2) !important;
-      border-color:     var(--t-c2) !important;
+      border-color: var(--t-c2) !important;
     }
-    .text-primary  { color: var(--t-c1) !important; }
-    .card-header   { border-top: 3px solid var(--t-c1); }
-    a              { color: var(--t-c1); }
+
+    .text-primary {
+      color: var(--t-c1) !important;
+    }
+
+    .card-header {
+      border-top: 3px solid var(--t-c1);
+    }
+
+    a {
+      color: var(--t-c1);
+    }
 
     .kpi-card.main {
-      background: radial-gradient(
-        circle at 0% 140%,
-        color-mix(in srgb, var(--t-c1) 22%, transparent) 0%,
-        color-mix(in srgb, var(--t-c1) 15%, transparent) 45%,
-        color-mix(in srgb, var(--t-c1)  8%, transparent) 55%,
-        #ffffff 70%
-      ) !important;
+      background: radial-gradient(circle at 0% 140%,
+          color-mix(in srgb, var(--t-c1) 22%, transparent) 0%,
+          color-mix(in srgb, var(--t-c1) 15%, transparent) 45%,
+          color-mix(in srgb, var(--t-c1) 8%, transparent) 55%,
+          #ffffff 70%) !important;
     }
 
     .kpi-label .icon-wrap {
       background: color-mix(in srgb, var(--t-c1) 12%, transparent) !important;
     }
-    .kpi-label .icon-wrap svg { stroke: var(--t-c1) !important; }
 
-    .filter-input:focus  { border-color: var(--t-c1) !important; }
-    .form-select:focus   { border-color: var(--t-c1) !important; }
+    .kpi-label .icon-wrap svg {
+      stroke: var(--t-c1) !important;
+    }
+
+    .filter-input:focus {
+      border-color: var(--t-c1) !important;
+    }
+
+    .form-select:focus {
+      border-color: var(--t-c1) !important;
+    }
 
     .filter-active-badge {
       background: color-mix(in srgb, var(--t-c1) 12%, #fff);
@@ -110,26 +137,58 @@
       font-weight: 600;
     }
 
-    .toggle-input:checked + .toggle-track { background: var(--t-c1) !important; }
+    .toggle-input:checked+.toggle-track {
+      background: var(--t-c1) !important;
+    }
 
-    .fill-overall   { background: linear-gradient(90deg, var(--t-c1), var(--t-c2)) !important; }
-    .fill-ramadhan  { background: linear-gradient(90deg, var(--t-c2), var(--t-c1)) !important; }
+    .fill-overall {
+      background: linear-gradient(90deg, var(--t-c1), var(--t-c2)) !important;
+    }
 
-    .cmp-tag.ramadhan { background: color-mix(in srgb, var(--t-c1) 10%, #fff); color: var(--t-c1) !important; }
+    .fill-ramadhan {
+      background: linear-gradient(90deg, var(--t-c2), var(--t-c1)) !important;
+    }
 
-    .page-eyebrow { color: var(--t-c1) !important; }
+    .cmp-tag.ramadhan {
+      background: color-mix(in srgb, var(--t-c1) 10%, #fff);
+      color: var(--t-c1) !important;
+    }
+
+    .page-eyebrow {
+      color: var(--t-c1) !important;
+    }
 
     .btn-submit {
       background: var(--t-c1) !important;
     }
-    .btn-submit:hover:not(:disabled) { background: var(--t-c2) !important; }
 
-    .drop-zone:hover, .drop-zone.has-file { border-color: var(--t-c2) !important; background: color-mix(in srgb, var(--t-c1) 4%, #fff) !important; }
-    .drop-zone.dragover                   { border-color: var(--t-c1) !important; background: color-mix(in srgb, var(--t-c1) 6%, #fff) !important; }
-    .drop-zone:hover .drop-icon, .drop-zone.has-file .drop-icon { color: var(--t-c2) !important; }
-    .drop-zone.dragover .drop-icon        { color: var(--t-c1) !important; }
+    .btn-submit:hover:not(:disabled) {
+      background: var(--t-c2) !important;
+    }
 
-    .forecast-kpi-value { color: var(--t-c1) !important; }
+    .drop-zone:hover,
+    .drop-zone.has-file {
+      border-color: var(--t-c2) !important;
+      background: color-mix(in srgb, var(--t-c1) 4%, #fff) !important;
+    }
+
+    .drop-zone.dragover {
+      border-color: var(--t-c1) !important;
+      background: color-mix(in srgb, var(--t-c1) 6%, #fff) !important;
+    }
+
+    .drop-zone:hover .drop-icon,
+    .drop-zone.has-file .drop-icon {
+      color: var(--t-c2) !important;
+    }
+
+    .drop-zone.dragover .drop-icon {
+      color: var(--t-c1) !important;
+    }
+
+    .forecast-kpi-value {
+      color: var(--t-c1) !important;
+    }
   </style>
 
   <script id="__theme__" type="application/json">
@@ -139,7 +198,9 @@
     "c2":   "{{ theme.c2 }}",
     "c3":   "{{ theme.c3 }}",
     "c4":   "{{ theme.c4 }}",
-    "c5":   "{{ theme.c5 }}"
+    "c5":   "{{ theme.c5 }}",
+    "c6":   "{{ theme.c6 }}",
+    "c7":   "{{ theme.c7 }}"
   }
   </script>
   <script>
