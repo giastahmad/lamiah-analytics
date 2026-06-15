@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 from sqlalchemy import text
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -110,28 +111,48 @@ def run_retraining_pipeline():
         X_test[col] = X_test[col].astype(str)
         X_train[col] = X_train[col].astype("category")
         X_test[col] = pd.Categorical(X_test[col], categories=X_train[col].cat.categories)
-
-    challenger_model = lgb.LGBMRegressor(
-        n_estimators=500,
-        num_leaves=10,
-        max_depth=3,
-        min_child_samples=15,
-        learning_rate=0.01,
-        subsample=0.7,
-        colsample_bytree=0.7,
-        reg_alpha=1.5,
-        reg_lambda=1.5,
-        random_state=42,
+        
+    fixed_params = {
+        "n_estimators": 500,       
+        "learning_rate": 0.01,     
+        "subsample": 0.7,          
+        "colsample_bytree": 0.7,   
+        "reg_alpha": 1.5,      
+        "reg_lambda": 1.5,       
+        "random_state": 42,
+        "verbose": -1
+    }
+    
+    model_base = lgb.LGBMRegressor(**fixed_params)
+    
+    param_grid = {
+        "num_leaves": [7, 10, 15], 
+        "max_depth": [3, 4, 5],     
+        "min_child_samples": [10, 15, 20] 
+    }
+    
+    tscv = TimeSeriesSplit(n_splits=3)
+    
+    grid_search = GridSearchCV(
+        estimator=model_base,
+        param_grid=param_grid,
+        cv=tscv,
+        scoring="neg_root_mean_squared_error",
+        n_jobs=-1 
     )
+    
+    grid_search.fit(X_train, y_train)
+
+    challenger_model = grid_search.best_estimator_
     
     challenger_model.fit(
         X_train, y_train,
         eval_set=[(X_test, y_test), (X_train, y_train)],
         eval_metric="rmse",
-        callbacks=[lgb.early_stopping(stopping_rounds=15), lgb.log_evaluation(10)]
+        callbacks=[lgb.early_stopping(stopping_rounds=15, verbose=False), lgb.log_evaluation(0)]
     )
     
-    y_pred_challenger = challenger_model.predict(X_test)
+    y_pred_challenger = np.maximum(challenger_model.predict(X_test), 0)
     challenger_rmse = np.sqrt(mean_squared_error(y_test, y_pred_challenger))
     challenger_mae = mean_absolute_error(y_test, y_pred_challenger)
     print(f"Hasil Challenger -> RMSE: {challenger_rmse:.4f} | MAE: {challenger_mae:.4f}")
@@ -139,12 +160,12 @@ def run_retraining_pipeline():
     if os.path.exists(CHAMPION_PATH):
     
         champion_model = joblib.load(CHAMPION_PATH)
-        y_pred_champion = champion_model.predict(X_test)
+        y_pred_champion = np.maximum(champion_model.predict(X_test), 0)
         champion_rmse = np.sqrt(mean_squared_error(y_test, y_pred_champion))
         champion_mae = mean_absolute_error(y_test, y_pred_champion)
         print(f"Hasil Champion   -> RMSE: {champion_rmse:.4f} | MAE: {champion_mae:.4f}")
         
-        if challenger_rmse <= champion_rmse:
+        if challenger_rmse < champion_rmse:
             print("Challenger lebih baik. Memperbarui model...")
             export_model(challenger_model, CHAMPION_PATH)
         else:
