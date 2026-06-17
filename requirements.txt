@@ -11,3 +11,5 @@ scikit-learn
 lightgbm
 openpyxl
 gunicorn
+rapidfuzz
+hijri-converter
