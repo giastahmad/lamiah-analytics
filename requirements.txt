@@ -1,0 +1,13 @@
+Flask==3.0.0
+flask-cors
+joblib
+pandas
+numpy
+SQLAlchemy
+python-dotenv
+firebase-admin
+PyMySQL
+scikit-learn
+lightgbm
+openpyxl
+gunicorn
