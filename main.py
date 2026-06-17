@@ -101,6 +101,7 @@ def verify_token():
             )
 
     except Exception as e:
+        print(f"[AUTH ERROR] Gagal verifikasi token atau query DB: {e}")
         return (
             jsonify(
                 {"status": "error", "message": "Sesi tidak valid atau kadaluarsa."}
@@ -307,17 +308,25 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         total_all_status = (
             session.query(func.count(func.distinct(OrderFact.order_key)))
             .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .join(
+                PlatformDimension,
+                OrderFact.platform_id == PlatformDimension.platform_id,
+            )
             .filter(*base_filter)
-            .scalar() or 0
+            .scalar()
+            or 0
         )
-        
+
         total_cancelled = (
             session.query(func.count(func.distinct(OrderFact.order_key)))
             .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .join(
+                PlatformDimension,
+                OrderFact.platform_id == PlatformDimension.platform_id,
+            )
             .filter(*fact_batal_filter)
-            .scalar() or 0
+            .scalar()
+            or 0
         )
 
         cancellation_rate = (
@@ -331,8 +340,12 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # --------------------------------------------------
         num_models = (
             _base([func.count(func.distinct(ProductDimension.product_model))])
-            .join(ProductDimension, DailySalesSummary.product_id == ProductDimension.product_id)
-            .scalar() or 0
+            .join(
+                ProductDimension,
+                DailySalesSummary.product_id == ProductDimension.product_id,
+            )
+            .scalar()
+            or 0
         )
 
         # --------------------------------------------------
@@ -341,9 +354,13 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         num_orders = (
             session.query(func.count(func.distinct(OrderFact.order_key)))
             .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .join(
+                PlatformDimension,
+                OrderFact.platform_id == PlatformDimension.platform_id,
+            )
             .filter(*fact_success_filter)
-            .scalar() or 0
+            .scalar()
+            or 0
         )
 
         # --------------------------------------------------
@@ -356,8 +373,12 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # --------------------------------------------------
         num_cities = (
             _base([func.count(func.distinct(LocationDimension.city))])
-            .join(LocationDimension, DailySalesSummary.location_id == LocationDimension.location_id)
-            .scalar() or 0
+            .join(
+                LocationDimension,
+                DailySalesSummary.location_id == LocationDimension.location_id,
+            )
+            .scalar()
+            or 0
         )
 
         # --------------------------------------------------
@@ -375,46 +396,97 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         fact_normal_filter = fact_success_filter + [DateDimension.is_ramadhan == 0]
 
         def _ramadhan(cols):
-            return session.query(*cols).select_from(DailySalesSummary).join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id).join(PlatformDimension, DailySalesSummary.platform_id == PlatformDimension.platform_id).filter(*ramadhan_filter)
+            return (
+                session.query(*cols)
+                .select_from(DailySalesSummary)
+                .join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id)
+                .join(
+                    PlatformDimension,
+                    DailySalesSummary.platform_id == PlatformDimension.platform_id,
+                )
+                .filter(*ramadhan_filter)
+            )
 
         def _normal(cols):
-            return session.query(*cols).select_from(DailySalesSummary).join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id).join(PlatformDimension, DailySalesSummary.platform_id == PlatformDimension.platform_id).filter(*normal_filter)
+            return (
+                session.query(*cols)
+                .select_from(DailySalesSummary)
+                .join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id)
+                .join(
+                    PlatformDimension,
+                    DailySalesSummary.platform_id == PlatformDimension.platform_id,
+                )
+                .filter(*normal_filter)
+            )
 
-        ramadhan_days = _ramadhan([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        normal_days = _normal([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        total_days = _base([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        ramadhan_days = (
+            _ramadhan([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        )
+        normal_days = (
+            _normal([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        )
+        total_days = (
+            _base([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        )
 
-        ramadhan_revenue = _ramadhan([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
-        normal_revenue = _normal([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
+        ramadhan_revenue = (
+            _ramadhan([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
+        )
+        normal_revenue = (
+            _normal([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
+        )
 
         ramadhan_orders = (
             session.query(func.count(func.distinct(OrderFact.order_key)))
             .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .join(
+                PlatformDimension,
+                OrderFact.platform_id == PlatformDimension.platform_id,
+            )
             .filter(*fact_ramadhan_filter)
-            .scalar() or 0
+            .scalar()
+            or 0
         )
-        
+
         normal_orders = (
             session.query(func.count(func.distinct(OrderFact.order_key)))
             .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+            .join(
+                PlatformDimension,
+                OrderFact.platform_id == PlatformDimension.platform_id,
+            )
             .filter(*fact_normal_filter)
-            .scalar() or 0
+            .scalar()
+            or 0
         )
 
-        overall_avg_revenue = ((float(revenue_total) / float(total_days)) if total_days > 0 else 0)
-        overall_avg_orders = (float(num_orders) / float(total_days)) if total_days > 0 else 0
+        overall_avg_revenue = (
+            (float(revenue_total) / float(total_days)) if total_days > 0 else 0
+        )
+        overall_avg_orders = (
+            (float(num_orders) / float(total_days)) if total_days > 0 else 0
+        )
 
-        ramadhan_avg_revenue = ((float(ramadhan_revenue) / float(ramadhan_days)) if ramadhan_days > 0 else 0)
-        normal_avg_revenue = ((float(normal_revenue) / float(normal_days)) if normal_days > 0 else 0)
-        ramadhan_avg_orders = ((float(ramadhan_orders) / float(ramadhan_days)) if ramadhan_days > 0 else 0)
-        normal_avg_orders = ((float(normal_orders) / float(normal_days)) if normal_days > 0 else 0)
+        ramadhan_avg_revenue = (
+            (float(ramadhan_revenue) / float(ramadhan_days)) if ramadhan_days > 0 else 0
+        )
+        normal_avg_revenue = (
+            (float(normal_revenue) / float(normal_days)) if normal_days > 0 else 0
+        )
+        ramadhan_avg_orders = (
+            (float(ramadhan_orders) / float(ramadhan_days)) if ramadhan_days > 0 else 0
+        )
+        normal_avg_orders = (
+            (float(normal_orders) / float(normal_days)) if normal_days > 0 else 0
+        )
 
         has_comparison = ramadhan_days > 0 and normal_days > 0
         if has_comparison and normal_avg_revenue > 0:
             ramadhan_lift = round(
-                (float(ramadhan_avg_revenue) - float(normal_avg_revenue)) / float(normal_avg_revenue) * 100, 1
+                (float(ramadhan_avg_revenue) - float(normal_avg_revenue))
+                / float(normal_avg_revenue)
+                * 100,
+                1,
             )
         else:
             ramadhan_lift = None
@@ -621,7 +693,7 @@ def get_db_state():
 
 
 def generate_recursive_forecast(model, days_ahead=14):
-   
+
     query_hist = """
         SELECT 
             dd.date AS order_date, 
@@ -670,41 +742,67 @@ def generate_recursive_forecast(model, days_ahead=14):
     cat_cols = ["days_name", "month"]
     for col in cat_cols:
         combined_df[col] = combined_df[col].astype("category")
-        
+
     feature_cols = [
-        "rolling_mean_7_qty", "rolling_mean_14_qty", "rolling_mean_30_qty",
-        "rolling_std_3_qty", "rolling_std_7_qty",
-        "lag_1_qty", "lag_3_qty", "lag_7_qty", "lag_21_qty", "lag_28_qty",
-        "lag_7_rolling_mean", "lag_14_rolling_mean",
-        "payday_weekend", "ramadhan_twin", 
-        "day_of_year", "week_of_year", "is_month_end", "is_month_start"
+        "rolling_mean_7_qty",
+        "rolling_mean_14_qty",
+        "rolling_mean_30_qty",
+        "rolling_std_3_qty",
+        "rolling_std_7_qty",
+        "lag_1_qty",
+        "lag_3_qty",
+        "lag_7_qty",
+        "lag_21_qty",
+        "lag_28_qty",
+        "lag_7_rolling_mean",
+        "lag_14_rolling_mean",
+        "payday_weekend",
+        "ramadhan_twin",
+        "day_of_year",
+        "week_of_year",
+        "is_month_end",
+        "is_month_start",
     ]
     for col in feature_cols:
         combined_df[col] = 0.0
 
     forecast_results = []
     start_idx = len(hist_df)
-    
+
     qty_history = hist_df["quantity"].tolist()
 
     for i in range(start_idx, len(combined_df)):
         current_date = combined_df.at[i, "order_date"]
-        
+
         lag_1 = qty_history[-1] if len(qty_history) >= 1 else 0
         lag_3 = qty_history[-3] if len(qty_history) >= 3 else 0
         lag_7 = qty_history[-7] if len(qty_history) >= 7 else 0
         lag_21 = qty_history[-21] if len(qty_history) >= 21 else 0
         lag_28 = qty_history[-28] if len(qty_history) >= 28 else 0
 
-        rolling_7 = np.mean(qty_history[-7:]) if len(qty_history) >= 7 else np.mean(qty_history)
-        rolling_14 = np.mean(qty_history[-14:]) if len(qty_history) >= 14 else np.mean(qty_history)
-        rolling_30 = np.mean(qty_history[-30:]) if len(qty_history) >= 30 else np.mean(qty_history)
- 
+        rolling_7 = (
+            np.mean(qty_history[-7:]) if len(qty_history) >= 7 else np.mean(qty_history)
+        )
+        rolling_14 = (
+            np.mean(qty_history[-14:])
+            if len(qty_history) >= 14
+            else np.mean(qty_history)
+        )
+        rolling_30 = (
+            np.mean(qty_history[-30:])
+            if len(qty_history) >= 30
+            else np.mean(qty_history)
+        )
+
         std_3 = np.std(qty_history[-3:], ddof=1) if len(qty_history) >= 2 else 0.0
         std_7 = np.std(qty_history[-7:], ddof=1) if len(qty_history) >= 2 else 0.0
 
-        lag_7_rolling_mean = np.mean(qty_history[-14:-7]) if len(qty_history) >= 14 else 0
-        lag_14_rolling_mean = np.mean(qty_history[-28:-14]) if len(qty_history) >= 28 else 0
+        lag_7_rolling_mean = (
+            np.mean(qty_history[-14:-7]) if len(qty_history) >= 14 else 0
+        )
+        lag_14_rolling_mean = (
+            np.mean(qty_history[-28:-14]) if len(qty_history) >= 28 else 0
+        )
 
         combined_df.at[i, "rolling_mean_7_qty"] = rolling_7
         combined_df.at[i, "rolling_mean_14_qty"] = rolling_14
@@ -718,16 +816,22 @@ def generate_recursive_forecast(model, days_ahead=14):
         combined_df.at[i, "lag_28_qty"] = lag_28
         combined_df.at[i, "lag_7_rolling_mean"] = lag_7_rolling_mean
         combined_df.at[i, "lag_14_rolling_mean"] = lag_14_rolling_mean
-        
-        combined_df.at[i, "payday_weekend"] = combined_df.at[i, "is_payday"] * combined_df.at[i, "is_weekend"]
-        combined_df.at[i, "ramadhan_twin"] = combined_df.at[i, "is_ramadhan"] * combined_df.at[i, "is_twin_date"]
-        
+
+        combined_df.at[i, "payday_weekend"] = (
+            combined_df.at[i, "is_payday"] * combined_df.at[i, "is_weekend"]
+        )
+        combined_df.at[i, "ramadhan_twin"] = (
+            combined_df.at[i, "is_ramadhan"] * combined_df.at[i, "is_twin_date"]
+        )
+
         combined_df.at[i, "day_of_year"] = current_date.dayofyear
         combined_df.at[i, "week_of_year"] = current_date.isocalendar().week
         combined_df.at[i, "is_month_end"] = int(current_date.is_month_end)
         combined_df.at[i, "is_month_start"] = int(current_date.is_month_start)
 
-        current_features = combined_df.iloc[[i]].drop(columns=["order_date", "quantity"])
+        current_features = combined_df.iloc[[i]].drop(
+            columns=["order_date", "quantity"]
+        )
 
         pred_qty = model.predict(current_features)[0]
         pred_qty = max(0, np.round(pred_qty))
