@@ -8,7 +8,7 @@ from models import PlatformDimension
 
 def seed_platform_dimension():
     platforms = {
-        'platform_name': ['Shopee', 'Tokopedia', 'Tiktok Shop']
+        'platform_name': ['Shopee', 'Tokopedia', 'TikTok']
     }
     platforms_df = pd.DataFrame(platforms)
     db = SessionLocal()
