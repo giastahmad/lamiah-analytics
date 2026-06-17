@@ -6,6 +6,7 @@ import numpy as np
 import threading
 from sqlalchemy import func, text
 import os
+import json
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, auth
@@ -29,7 +30,14 @@ app = Flask(__name__)
 
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
-cred = credentials.Certificate("firebase-key.json")
+firebase_secret = os.environ.get("FIREBASE_KEY_JSON")
+
+if firebase_secret:
+    cred_dict = json.loads(firebase_secret)
+    cred = credentials.Certificate(cred_dict)
+else:
+    cred = credentials.Certificate("firebase-key.json")
+
 firebase_admin.initialize_app(cred)
 
 MODEL_PATH = os.path.join(
