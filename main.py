@@ -752,6 +752,7 @@ def generate_recursive_forecast(model, days_ahead=14):
         combined_df[col] = combined_df[col].astype("category")
 
     feature_cols = [
+        "rolling_mean_3_qty",
         "rolling_mean_7_qty",
         "rolling_mean_14_qty",
         "rolling_mean_30_qty",
@@ -787,7 +788,10 @@ def generate_recursive_forecast(model, days_ahead=14):
         lag_7 = qty_history[-7] if len(qty_history) >= 7 else 0
         lag_21 = qty_history[-21] if len(qty_history) >= 21 else 0
         lag_28 = qty_history[-28] if len(qty_history) >= 28 else 0
-
+        
+        rolling_3 = (
+            np.mean(qty_history[-3:]) if len(qty_history) >= 3 else np.mean(qty_history)
+        )
         rolling_7 = (
             np.mean(qty_history[-7:]) if len(qty_history) >= 7 else np.mean(qty_history)
         )
@@ -812,6 +816,7 @@ def generate_recursive_forecast(model, days_ahead=14):
             np.mean(qty_history[-28:-14]) if len(qty_history) >= 28 else 0
         )
 
+        combined_df.at[i, "rolling_mean_3_qty"] = rolling_3
         combined_df.at[i, "rolling_mean_7_qty"] = rolling_7
         combined_df.at[i, "rolling_mean_14_qty"] = rolling_14
         combined_df.at[i, "rolling_mean_30_qty"] = rolling_30
