@@ -219,7 +219,7 @@ def load_data_warehouse(df_transformed):
     })
  
     # ── Unknown SKU quality gate ────────────────────────────────────────────────
-    UNKNOWN_PRODUCT_ID = 27
+    UNKNOWN_PRODUCT_ID = 47
 
     total_rows    = len(df_order_fact)
     unknown_rows  = len(df_order_fact[df_order_fact['product_id'] == UNKNOWN_PRODUCT_ID])
