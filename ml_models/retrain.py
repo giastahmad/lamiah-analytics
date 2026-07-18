@@ -21,11 +21,11 @@ def fetch_and_engineer_features() -> pd.DataFrame:
         SELECT 
             dd.date AS order_date, 
             pr.is_muslim_fashion, 
-            oc.quantity
-        FROM order_fact oc
-        JOIN date_dimension dd ON dd.date_id = oc.date_id
-        JOIN product_dimension pr ON pr.product_id = oc.product_id
-        WHERE oc.status = 'SELESAI'
+            fa.total_quantity AS quantity
+        FROM fact_daily_agregat fa
+        JOIN date_dimension dd ON dd.date_id = fa.date_id
+        JOIN product_dimension pr ON pr.product_id = fa.product_id
+        WHERE fa.status = 'SELESAI'
     """
     with engine.connect() as conn:
         df = pd.read_sql(text(query), conn)
