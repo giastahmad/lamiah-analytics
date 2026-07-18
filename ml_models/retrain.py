@@ -137,19 +137,19 @@ def run_retraining_pipeline():
         )
 
     fixed_params = {
-    "n_estimators": 100,       
-    "learning_rate": 0.1,   
-    "random_state": 42,   
-    "verbose": -1
-}
+        "n_estimators": 100,
+        "learning_rate": 0.1,
+        "random_state": 42,
+        "verbose": -1,
+    }
 
     model_base = lgb.LGBMRegressor(**fixed_params)
 
-    param_grid = {
-        "num_leaves": [7, 10, 15],
-        "max_depth": [3, 4, 5],
-        "min_child_samples": [10, 15, 20],
-    }
+    param_grid = [
+        {"max_depth": [3], "num_leaves": [5, 7], "min_child_samples": [10, 15, 20]},
+        {"max_depth": [4, 5], "num_leaves": [7, 10, 15], "min_child_samples": [10, 15, 20],
+        },
+    ]
 
     tscv = TimeSeriesSplit(n_splits=3)
 
@@ -159,12 +159,12 @@ def run_retraining_pipeline():
         cv=tscv,
         scoring="neg_root_mean_squared_error",
         n_jobs=-1,
-        refit=False
+        refit=False,
     )
 
     grid_search.fit(X_train, y_train)
     challenger_params = grid_search.best_params_
-    
+
     val_size = int(len(X_train) * 0.15)
     X_tr, X_val = X_train.iloc[:-val_size], X_train.iloc[-val_size:]
     y_tr, y_val = y_train.iloc[:-val_size], y_train.iloc[-val_size:]
@@ -175,18 +175,14 @@ def run_retraining_pipeline():
         y_tr,
         eval_set=[(X_val, y_val), (X_train, y_train)],
         eval_metric="rmse",
-        callbacks=[
-            lgb.early_stopping(stopping_rounds=15, verbose=False)
-        ],
+        callbacks=[lgb.early_stopping(stopping_rounds=15, verbose=False)],
     )
-    
+
     best_n_estimators = challenger_model.best_iteration_ or fixed_params["n_estimators"]
-    challenger_model = lgb.LGBMRegressor(**{**fixed_params, **challenger_params, "n_estimators": best_n_estimators})
-    challenger_model.fit(
-        X_train,
-        y_train,
-        eval_metric="rmse"
+    challenger_model = lgb.LGBMRegressor(
+        **{**fixed_params, **challenger_params, "n_estimators": best_n_estimators}
     )
+    challenger_model.fit(X_train, y_train, eval_metric="rmse")
 
     y_pred_challenger = np.maximum(challenger_model.predict(X_test), 0)
     challenger_rmse = np.sqrt(mean_squared_error(y_test, y_pred_challenger))

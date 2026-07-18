@@ -128,6 +128,7 @@ def logout():
 # INDEX
 # ==========================================
 @app.route("/", methods=["GET"])
+@login_required
 def index():
     return jsonify({"message": "API Backend Aktif dan Berjalan!"}), 200
 
@@ -275,6 +276,9 @@ def upload_data():
 def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
     session = SessionLocal()
     try:
+        # --------------------------------------------------
+        # FILTER UTAMA
+        # --------------------------------------------------
         base_filter = []
         if start_date:
             base_filter.append(DateDimension.date >= start_date)
@@ -283,16 +287,18 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         if platform:
             base_filter.append(PlatformDimension.platform_name == platform)
 
-        success_filter = base_filter + [DailySalesSummary.status == "SELESAI"]
+        success_filter = base_filter + [OrderFact.status == "SELESAI"]
+        batal_filter = base_filter + [OrderFact.status == "BATAL"]
 
+        # FUNGSI BASE SEKARANG MENGGUNAKAN order_fact
         def _base(cols):
             return (
                 session.query(*cols)
-                .select_from(DailySalesSummary)
-                .join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id)
+                .select_from(OrderFact)
+                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
                 .join(
                     PlatformDimension,
-                    DailySalesSummary.platform_id == PlatformDimension.platform_id,
+                    OrderFact.platform_id == PlatformDimension.platform_id,
                 )
                 .filter(*success_filter)
             )
@@ -306,9 +312,6 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
             .all()
         )
         platform_options = [p[0] for p in all_platforms]
-
-        fact_success_filter = base_filter + [OrderFact.status == "SELESAI"]
-        fact_batal_filter = base_filter + [OrderFact.status == "BATAL"]
 
         # --------------------------------------------------
         # 2. KPI: Persentase Pembatalan
@@ -332,7 +335,7 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
                 PlatformDimension,
                 OrderFact.platform_id == PlatformDimension.platform_id,
             )
-            .filter(*fact_batal_filter)
+            .filter(*batal_filter)
             .scalar()
             or 0
         )
@@ -344,149 +347,82 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         )
 
         # --------------------------------------------------
-        # 3. KPI: Jumlah Model (Tetap pakai Summary)
+        # 3. KPI: Jumlah Model
         # --------------------------------------------------
         num_models = (
             _base([func.count(func.distinct(ProductDimension.product_model))])
-            .join(
-                ProductDimension,
-                DailySalesSummary.product_id == ProductDimension.product_id,
-            )
+            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
             .scalar()
             or 0
         )
 
         # --------------------------------------------------
-        # 4. KPI: Total Order (Kembali ke OrderFact)
+        # 4. KPI: Total Order
         # --------------------------------------------------
-        num_orders = (
-            session.query(func.count(func.distinct(OrderFact.order_key)))
-            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(
-                PlatformDimension,
-                OrderFact.platform_id == PlatformDimension.platform_id,
-            )
-            .filter(*fact_success_filter)
-            .scalar()
-            or 0
-        )
+        num_orders = _base([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
 
         # --------------------------------------------------
-        # 5. KPI: Total Pendapatan (Tetap pakai Summary - Amount Additive)
+        # 5. KPI: Total Pendapatan
         # --------------------------------------------------
-        revenue_total = _base([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
+        revenue_total = _base([func.sum(OrderFact.total_amount)]).scalar() or 0
 
         # --------------------------------------------------
-        # 6. KPI: Jumlah Kota (Tetap pakai Summary)
+        # 6. KPI: Jumlah Kota
         # --------------------------------------------------
         num_cities = (
             _base([func.count(func.distinct(LocationDimension.city))])
-            .join(
-                LocationDimension,
-                DailySalesSummary.location_id == LocationDimension.location_id,
-            )
+            .join(LocationDimension, OrderFact.location_id == LocationDimension.location_id)
             .scalar()
             or 0
         )
 
         # --------------------------------------------------
-        # 7. KPI: AOV
+        # 7. KPI: AOV (Average Order Value)
         # --------------------------------------------------
         aov = (float(revenue_total) / float(num_orders)) if num_orders > 0 else 0
 
         # --------------------------------------------------
         # 8. KPI: Ramadhan vs Normal
         # --------------------------------------------------
-        ramadhan_filter = base_filter + [DateDimension.is_ramadhan == 1]
-        normal_filter = base_filter + [DateDimension.is_ramadhan == 0]
-
-        fact_ramadhan_filter = fact_success_filter + [DateDimension.is_ramadhan == 1]
-        fact_normal_filter = fact_success_filter + [DateDimension.is_ramadhan == 0]
+        ramadhan_filter = success_filter + [DateDimension.is_ramadhan == 1]
+        normal_filter = success_filter + [DateDimension.is_ramadhan == 0]
 
         def _ramadhan(cols):
             return (
                 session.query(*cols)
-                .select_from(DailySalesSummary)
-                .join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id)
-                .join(
-                    PlatformDimension,
-                    DailySalesSummary.platform_id == PlatformDimension.platform_id,
-                )
+                .select_from(OrderFact)
+                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+                .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
                 .filter(*ramadhan_filter)
             )
 
         def _normal(cols):
             return (
                 session.query(*cols)
-                .select_from(DailySalesSummary)
-                .join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id)
-                .join(
-                    PlatformDimension,
-                    DailySalesSummary.platform_id == PlatformDimension.platform_id,
-                )
+                .select_from(OrderFact)
+                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
+                .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
                 .filter(*normal_filter)
             )
 
-        ramadhan_days = (
-            _ramadhan([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        )
-        normal_days = (
-            _normal([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        )
-        total_days = (
-            _base([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        )
+        ramadhan_days = _ramadhan([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        normal_days = _normal([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        total_days = _base([func.count(func.distinct(DateDimension.date))]).scalar() or 0
 
-        ramadhan_revenue = (
-            _ramadhan([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
-        )
-        normal_revenue = (
-            _normal([func.sum(DailySalesSummary.total_amount)]).scalar() or 0
-        )
+        ramadhan_revenue = _ramadhan([func.sum(OrderFact.total_amount)]).scalar() or 0
+        normal_revenue = _normal([func.sum(OrderFact.total_amount)]).scalar() or 0
 
-        ramadhan_orders = (
-            session.query(func.count(func.distinct(OrderFact.order_key)))
-            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(
-                PlatformDimension,
-                OrderFact.platform_id == PlatformDimension.platform_id,
-            )
-            .filter(*fact_ramadhan_filter)
-            .scalar()
-            or 0
-        )
+        ramadhan_orders = _ramadhan([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
+        normal_orders = _normal([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
 
-        normal_orders = (
-            session.query(func.count(func.distinct(OrderFact.order_key)))
-            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(
-                PlatformDimension,
-                OrderFact.platform_id == PlatformDimension.platform_id,
-            )
-            .filter(*fact_normal_filter)
-            .scalar()
-            or 0
-        )
+        overall_avg_revenue = (float(revenue_total) / float(total_days)) if total_days > 0 else 0
+        overall_avg_orders = (float(num_orders) / float(total_days)) if total_days > 0 else 0
 
-        overall_avg_revenue = (
-            (float(revenue_total) / float(total_days)) if total_days > 0 else 0
-        )
-        overall_avg_orders = (
-            (float(num_orders) / float(total_days)) if total_days > 0 else 0
-        )
+        ramadhan_avg_revenue = (float(ramadhan_revenue) / float(ramadhan_days)) if ramadhan_days > 0 else 0
+        normal_avg_revenue = (float(normal_revenue) / float(normal_days)) if normal_days > 0 else 0
 
-        ramadhan_avg_revenue = (
-            (float(ramadhan_revenue) / float(ramadhan_days)) if ramadhan_days > 0 else 0
-        )
-        normal_avg_revenue = (
-            (float(normal_revenue) / float(normal_days)) if normal_days > 0 else 0
-        )
-        ramadhan_avg_orders = (
-            (float(ramadhan_orders) / float(ramadhan_days)) if ramadhan_days > 0 else 0
-        )
-        normal_avg_orders = (
-            (float(normal_orders) / float(normal_days)) if normal_days > 0 else 0
-        )
+        ramadhan_avg_orders = (float(ramadhan_orders) / float(ramadhan_days)) if ramadhan_days > 0 else 0
+        normal_avg_orders = (float(normal_orders) / float(normal_days)) if normal_days > 0 else 0
 
         has_comparison = ramadhan_days > 0 and normal_days > 0
         if has_comparison and normal_avg_revenue > 0:
@@ -503,18 +439,10 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # 9. Chart: Bar — Quantity per Warna
         # --------------------------------------------------
         color_data = (
-            _base(
-                [
-                    ProductDimension.product_color,
-                    func.sum(DailySalesSummary.total_quantity),
-                ]
-            )
-            .join(
-                ProductDimension,
-                DailySalesSummary.product_id == ProductDimension.product_id,
-            )
+            _base([ProductDimension.product_color, func.sum(OrderFact.quantity)])
+            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
             .group_by(ProductDimension.product_color)
-            .order_by(func.sum(DailySalesSummary.total_quantity).desc())
+            .order_by(func.sum(OrderFact.quantity).desc())
             .all()
         )
 
@@ -522,13 +450,7 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # 10. Chart: Line — Penjualan per Platform per Tanggal
         # --------------------------------------------------
         line_data = (
-            _base(
-                [
-                    DateDimension.date,
-                    PlatformDimension.platform_name,
-                    func.sum(DailySalesSummary.total_amount),
-                ]
-            )
+            _base([DateDimension.date, PlatformDimension.platform_name, func.sum(OrderFact.total_amount)])
             .group_by(DateDimension.date, PlatformDimension.platform_name)
             .order_by(DateDimension.date)
             .all()
@@ -538,18 +460,10 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # 11. Top 5 Best Selling Models
         # --------------------------------------------------
         top_products = (
-            _base(
-                [
-                    ProductDimension.product_model,
-                    func.sum(DailySalesSummary.total_quantity),
-                ]
-            )
-            .join(
-                ProductDimension,
-                DailySalesSummary.product_id == ProductDimension.product_id,
-            )
+            _base([ProductDimension.product_model, func.sum(OrderFact.quantity)])
+            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
             .group_by(ProductDimension.product_model)
-            .order_by(func.sum(DailySalesSummary.total_quantity).desc())
+            .order_by(func.sum(OrderFact.quantity).desc())
             .limit(5)
             .all()
         )
@@ -557,53 +471,24 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # --------------------------------------------------
         # 12. Map: Persebaran per Provinsi
         # --------------------------------------------------
-        map_loc_filter = []
-        if start_date:
-            map_loc_filter.append(DateDimension.date >= start_date)
-        if end_date:
-            map_loc_filter.append(DateDimension.date <= end_date)
-        if platform:
-            map_loc_filter.append(PlatformDimension.platform_name == platform)
-        map_loc_filter.append(DailySalesSummary.status == "SELESAI")
-
         map_query = (
-            session.query(
-                LocationDimension.province, func.sum(DailySalesSummary.total_quantity)
-            )
-            .select_from(DailySalesSummary)
-            .join(DateDimension, DailySalesSummary.date_id == DateDimension.date_id)
-            .join(
-                PlatformDimension,
-                DailySalesSummary.platform_id == PlatformDimension.platform_id,
-            )
-            .join(
-                LocationDimension,
-                DailySalesSummary.location_id == LocationDimension.location_id,
-            )
-            .filter(*map_loc_filter)
+            _base([LocationDimension.province, func.sum(OrderFact.quantity)])
+            .join(LocationDimension, OrderFact.location_id == LocationDimension.location_id)
             .group_by(LocationDimension.province)
             .all()
         )
 
+        map_data = [["Provinsi", "Total Terjual"]]
+        for row in map_query:
+            map_data.append([row[0], int(row[1])])
+
         # --------------------------------------------------
         # 13. Chart: Avg Basket Size per Payment Method
         # --------------------------------------------------
-        avg_basket_formula = func.sum(DailySalesSummary.total_amount) / func.sum(
-            DailySalesSummary.total_orders
-        )
-
+        avg_basket_formula = func.sum(OrderFact.total_amount) / func.count(func.distinct(OrderFact.order_key))
         payment_data = (
-            _base(
-                [
-                    PaymentMethodDimension.payment_method_name,
-                    avg_basket_formula,
-                ]
-            )
-            .join(
-                PaymentMethodDimension,
-                DailySalesSummary.payment_method_id
-                == PaymentMethodDimension.payment_method_id,
-            )
+            _base([PaymentMethodDimension.payment_method_name, avg_basket_formula])
+            .join(PaymentMethodDimension, OrderFact.payment_method_id == PaymentMethodDimension.payment_method_id)
             .group_by(PaymentMethodDimension.payment_method_name)
             .order_by(avg_basket_formula.desc())
             .all()
@@ -613,24 +498,12 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         # 14. Chart: Product Size Distribution
         # --------------------------------------------------
         size_data = (
-            _base(
-                [
-                    ProductDimension.product_size,
-                    func.sum(DailySalesSummary.total_quantity),
-                ]
-            )
-            .join(
-                ProductDimension,
-                DailySalesSummary.product_id == ProductDimension.product_id,
-            )
+            _base([ProductDimension.product_size, func.sum(OrderFact.quantity)])
+            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
             .group_by(ProductDimension.product_size)
-            .order_by(func.sum(DailySalesSummary.total_quantity).desc())
+            .order_by(func.sum(OrderFact.quantity).desc())
             .all()
         )
-
-        map_data = [["Provinsi", "Total Terjual"]]
-        for row in map_query:
-            map_data.append([row[0], int(row[1])])
 
         # --------------------------------------------------
         # Return
