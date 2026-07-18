@@ -34,7 +34,7 @@ def fetch_and_engineer_features() -> pd.DataFrame:
     df = df[df["quantity"] > 0]
     df = (
         df.groupby("order_date")
-        .agg({"quantity": "sum", "is_muslim_fashion": "max"})
+        .agg({"quantity": "sum", "is_muslim_fashion": "mean"})
         .reset_index()
     )
 

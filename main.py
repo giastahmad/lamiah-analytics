@@ -574,16 +574,15 @@ def get_db_state():
 
 
 def generate_recursive_forecast(model, days_ahead=14):
-
     query_hist = """
         SELECT 
             dd.date AS order_date, 
             MAX(pr.is_muslim_fashion) as is_muslim_fashion, 
-            SUM(oc.quantity) as quantity
-        FROM order_fact oc
-        JOIN date_dimension dd ON dd.date_id = oc.date_id
-        JOIN product_dimension pr ON pr.product_id = oc.product_id
-        WHERE oc.status = 'SELESAI'
+            SUM(fa.total_quantity) as quantity
+        FROM fact_daily_agregat fa
+        JOIN date_dimension dd ON dd.date_id = fa.date_id
+        JOIN product_dimension pr ON pr.product_id = fa.product_id
+        WHERE fa.status = 'SELESAI'
         GROUP BY dd.date
         ORDER BY dd.date DESC
         LIMIT 60
