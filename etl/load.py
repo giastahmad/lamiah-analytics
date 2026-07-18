@@ -270,14 +270,14 @@ def load_data_warehouse(df_transformed):
             date_ids_str = ','.join(map(str, unique_date_ids))
             
             summary_sql = f"""
-                INSERT INTO daily_sales_summary 
-                (date_id, platform_id, product_id, location_id, payment_method_id, status, total_orders, total_quantity, total_amount)
+                INSERT INTO fact_daily_agregat 
+                (date_id, product_id, status, total_orders, total_quantity, total_amount)
                 SELECT 
-                    date_id, platform_id, product_id, location_id, payment_method_id, status,
+                    date_id, product_id, status,
                     COUNT(DISTINCT order_key), SUM(quantity), SUM(total_amount)
                 FROM order_fact
                 WHERE date_id IN ({date_ids_str})
-                GROUP BY date_id, platform_id, product_id, location_id, payment_method_id, status
+                GROUP BY date_id, product_id, status
                 ON DUPLICATE KEY UPDATE
                     total_orders = VALUES(total_orders),
                     total_quantity = VALUES(total_quantity),
