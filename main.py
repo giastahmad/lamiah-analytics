@@ -20,7 +20,7 @@ from models import (
     LocationDimension,
     PaymentMethodDimension,
     User,
-    DailySalesSummary,
+    FactDailyAgregat,
     ForecastCache,
 )
 from config import SessionLocal, engine
@@ -603,8 +603,8 @@ def generate_recursive_forecast(model, days_ahead=14):
 
     query_dates = f"""
         SELECT 
-            date AS order_date, days_name, month, is_weekend, 
-            is_twin_date, is_payday, is_ramadhan
+            date AS order_date, month,
+            is_twin_date, is_ramadhan
         FROM date_dimension
         WHERE date BETWEEN '{start_date_str}' AND '{end_date_str}'
     """
@@ -619,29 +619,19 @@ def generate_recursive_forecast(model, days_ahead=14):
     combined_df = pd.concat([hist_df, future_df], ignore_index=True)
     combined_df = combined_df.merge(date_dim, on="order_date", how="left")
 
-    cat_cols = ["days_name", "month"]
+    cat_cols = ["month"]
     for col in cat_cols:
         combined_df[col] = combined_df[col].astype("category")
 
     feature_cols = [
         "rolling_mean_3_qty",
         "rolling_mean_7_qty",
-        "rolling_mean_14_qty",
-        "rolling_mean_30_qty",
-        "rolling_std_3_qty",
         "rolling_std_7_qty",
         "lag_1_qty",
         "lag_3_qty",
         "lag_7_qty",
-        "lag_21_qty",
-        "lag_28_qty",
         "lag_7_rolling_mean",
-        "lag_14_rolling_mean",
-        "payday_weekend",
-        "ramadhan_twin",
         "day_of_year",
-        "week_of_year",
-        "is_month_end",
         "is_month_start",
     ]
     for col in feature_cols:
@@ -658,8 +648,6 @@ def generate_recursive_forecast(model, days_ahead=14):
         lag_1 = qty_history[-1] if len(qty_history) >= 1 else 0
         lag_3 = qty_history[-3] if len(qty_history) >= 3 else 0
         lag_7 = qty_history[-7] if len(qty_history) >= 7 else 0
-        lag_21 = qty_history[-21] if len(qty_history) >= 21 else 0
-        lag_28 = qty_history[-28] if len(qty_history) >= 28 else 0
         
         rolling_3 = (
             np.mean(qty_history[-3:]) if len(qty_history) >= 3 else np.mean(qty_history)
@@ -667,51 +655,22 @@ def generate_recursive_forecast(model, days_ahead=14):
         rolling_7 = (
             np.mean(qty_history[-7:]) if len(qty_history) >= 7 else np.mean(qty_history)
         )
-        rolling_14 = (
-            np.mean(qty_history[-14:])
-            if len(qty_history) >= 14
-            else np.mean(qty_history)
-        )
-        rolling_30 = (
-            np.mean(qty_history[-30:])
-            if len(qty_history) >= 30
-            else np.mean(qty_history)
-        )
-
-        std_3 = np.std(qty_history[-3:], ddof=1) if len(qty_history) >= 2 else 0.0
+       
         std_7 = np.std(qty_history[-7:], ddof=1) if len(qty_history) >= 2 else 0.0
 
         lag_7_rolling_mean = (
             np.mean(qty_history[-14:-7]) if len(qty_history) >= 14 else 0
         )
-        lag_14_rolling_mean = (
-            np.mean(qty_history[-28:-14]) if len(qty_history) >= 28 else 0
-        )
 
         combined_df.at[i, "rolling_mean_3_qty"] = rolling_3
         combined_df.at[i, "rolling_mean_7_qty"] = rolling_7
-        combined_df.at[i, "rolling_mean_14_qty"] = rolling_14
-        combined_df.at[i, "rolling_mean_30_qty"] = rolling_30
-        combined_df.at[i, "rolling_std_3_qty"] = std_3
         combined_df.at[i, "rolling_std_7_qty"] = std_7
         combined_df.at[i, "lag_1_qty"] = lag_1
         combined_df.at[i, "lag_3_qty"] = lag_3
         combined_df.at[i, "lag_7_qty"] = lag_7
-        combined_df.at[i, "lag_21_qty"] = lag_21
-        combined_df.at[i, "lag_28_qty"] = lag_28
         combined_df.at[i, "lag_7_rolling_mean"] = lag_7_rolling_mean
-        combined_df.at[i, "lag_14_rolling_mean"] = lag_14_rolling_mean
-
-        combined_df.at[i, "payday_weekend"] = (
-            combined_df.at[i, "is_payday"] * combined_df.at[i, "is_weekend"]
-        )
-        combined_df.at[i, "ramadhan_twin"] = (
-            combined_df.at[i, "is_ramadhan"] * combined_df.at[i, "is_twin_date"]
-        )
 
         combined_df.at[i, "day_of_year"] = current_date.dayofyear
-        combined_df.at[i, "week_of_year"] = current_date.isocalendar().week
-        combined_df.at[i, "is_month_end"] = int(current_date.is_month_end)
         combined_df.at[i, "is_month_start"] = int(current_date.is_month_start)
 
         current_features = combined_df.iloc[[i]].drop(
@@ -751,14 +710,14 @@ def update_forecast_cache_background():
             SELECT 
                 pr.product_model, 
                 pr.product_color, 
-                SUM(ds.total_quantity) as qty
-            FROM daily_sales_summary ds
-            JOIN date_dimension dd ON dd.date_id = ds.date_id
-            JOIN product_dimension pr ON pr.product_id = ds.product_id
-            WHERE ds.status = 'SELESAI' 
+                SUM(fd.total_quantity) as qty
+            FROM fact_daily_agregat fd
+            JOIN date_dimension dd ON dd.date_id = fd.date_id
+            JOIN product_dimension pr ON pr.product_id = fd.product_id
+            WHERE fd.status = 'SELESAI' 
             AND dd.date >= (SELECT DATE_SUB(MAX(dd2.date), INTERVAL 90 DAY) 
-                            FROM daily_sales_summary ds2 
-                            JOIN date_dimension dd2 ON ds2.date_id = dd2.date_id)
+                            FROM fact_daily_agregat fd2 
+                            JOIN date_dimension dd2 ON fd2.date_id = dd2.date_id)
             GROUP BY pr.product_model, pr.product_color
         """
         with engine.connect() as conn:

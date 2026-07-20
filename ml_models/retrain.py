@@ -40,8 +40,8 @@ def fetch_and_engineer_features() -> pd.DataFrame:
 
     query_dates = """
         SELECT 
-            date AS order_date, days_name, month, is_weekend, 
-            is_twin_date, is_payday, is_ramadhan
+            date AS order_date, month,
+            is_twin_date, is_ramadhan
         FROM date_dimension
         WHERE date BETWEEN '2024-01-01' AND '2026-12-31'
     """
@@ -70,16 +70,7 @@ def fetch_and_engineer_features() -> pd.DataFrame:
     df["rolling_mean_7_qty"] = (
         df["quantity"].rolling(window=7, min_periods=1, closed="left").mean()
     )
-    df["rolling_mean_14_qty"] = (
-        df["quantity"].rolling(window=14, min_periods=1, closed="left").mean()
-    )
-    df["rolling_mean_30_qty"] = (
-        df["quantity"].rolling(window=30, min_periods=1, closed="left").mean()
-    )
-
-    df["rolling_std_3_qty"] = (
-        df["quantity"].rolling(window=3, min_periods=1, closed="left").std()
-    )
+    
     df["rolling_std_7_qty"] = (
         df["quantity"].rolling(window=7, min_periods=1, closed="left").std()
     )
@@ -88,21 +79,13 @@ def fetch_and_engineer_features() -> pd.DataFrame:
     df["lag_1_qty"] = df["quantity"].shift(1)
     df["lag_3_qty"] = df["quantity"].shift(3)
     df["lag_7_qty"] = df["quantity"].shift(7)
-    df["lag_21_qty"] = df["quantity"].shift(21)
-    df["lag_28_qty"] = df["quantity"].shift(28)
 
     df["lag_7_rolling_mean"] = df["rolling_mean_7_qty"].shift(7)
-    df["lag_14_rolling_mean"] = df["rolling_mean_14_qty"].shift(14)
 
     df = df.dropna().reset_index(drop=True)
 
     # ---- Fitur Interaksi & Waktu  ----
-    df["payday_weekend"] = df["is_payday"] * df["is_weekend"]
-    df["ramadhan_twin"] = df["is_ramadhan"] * df["is_twin_date"]
-
     df["day_of_year"] = df["order_date"].dt.dayofyear
-    df["week_of_year"] = df["order_date"].dt.isocalendar().week.astype(int)
-    df["is_month_end"] = df["order_date"].dt.is_month_end.astype(int)
     df["is_month_start"] = df["order_date"].dt.is_month_start.astype(int)
 
     return df
@@ -127,14 +110,10 @@ def run_retraining_pipeline():
     )
     y_train, y_test = target.iloc[:split_index].copy(), target.iloc[split_index:].copy()
 
-    cat_cols = ["days_name", "month"]
-    for col in cat_cols:
-        X_train[col] = X_train[col].astype(str)
-        X_test[col] = X_test[col].astype(str)
-        X_train[col] = X_train[col].astype("category")
-        X_test[col] = pd.Categorical(
-            X_test[col], categories=X_train[col].cat.categories
-        )
+    X_train["month"] = X_train["month"].astype(str)
+    X_test["month"] = X_test["month"].astype(str)
+    X_train["month"] = X_train["month"].astype("category")
+    X_test["month"] = pd.Categorical(X_test["month"], categories=X_train["month"].cat.categories)
 
     fixed_params = {
         "n_estimators": 100,
@@ -147,8 +126,7 @@ def run_retraining_pipeline():
 
     param_grid = [
         {"max_depth": [3], "num_leaves": [5, 7], "min_child_samples": [10, 15, 20]},
-        {"max_depth": [4, 5], "num_leaves": [7, 10, 15], "min_child_samples": [10, 15, 20],
-        },
+        {"max_depth": [4, 5], "num_leaves": [7, 10, 15], "min_child_samples": [10, 15, 20]},
     ]
 
     tscv = TimeSeriesSplit(n_splits=3)
