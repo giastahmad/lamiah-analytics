@@ -3,6 +3,8 @@
 {% block title %}Lamiah Analytics{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap"
@@ -505,6 +507,90 @@
     transform: scale(1.05);
   }
 
+  /* --- Heatmap Styles --- */
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: 40px repeat(12, minmax(30px, 45px));
+    gap: 6px;
+    margin-top: 16px;
+    width: 100%;
+    justify-content: start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .heatmap-cell {
+    width: 100%;
+    height: 45px;
+    /* Ukuran tetap */
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    transition: transform 0.1s;
+    cursor: pointer;
+    flex-shrink: 0;
+    /* Mencegah sel menyusut */
+  }
+
+  .heatmap-cell:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+
+  .heatmap-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .heatmap-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+
+  .heatmap-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .heatmap-tooltip-content {
+    background: #111827;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  .choices {
+    margin-bottom: 0 !important;
+    min-width: 160px;
+  }
+
+  .choices__inner {
+    min-height: 38px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    background: #fafafa !important;
+    padding: 2.5px 7px !important;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .choices[data-type*="select-multiple"] .choices__button {
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
   /* ════════════════════
      RESPONSIVE
   ════════════════════ */
@@ -757,34 +843,133 @@
   <form method="GET" action="/dashboard" id="filterForm">
     <input type="hidden" name="key" value="{{ request.args.get('key') }}">
     <div class="filter-bar">
+
       <div class="filter-group">
-        <label class="filter-label">Dari Tanggal</label>
-        <input type="date" name="start_date" class="filter-input" value="{{ request.args.get('start_date', '') }}"
-          id="startDate" onchange="validateAndSubmit()">
+        <label class="filter-label">Tanggal (Single)</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="date" name="start_date" class="filter-input" value="{{ request.args.get('start_date', '') }}"
+            id="startDate" onchange="validateAndSubmit()">
+          <input type="date" name="end_date" class="filter-input" value="{{ request.args.get('end_date', '') }}"
+            id="endDate" onchange="validateAndSubmit()">
+        </div>
       </div>
+
       <div class="filter-group">
-        <label class="filter-label">Sampai Tanggal</label>
-        <input type="date" name="end_date" class="filter-input" value="{{ request.args.get('end_date', '') }}"
-          id="endDate" onchange="validateAndSubmit()">
+        <label class="filter-label">Momen Spesial (Single)</label>
+        <select name="is_twin_date" class="filter-input" onchange="this.form.submit()">
+          <option value="">Semua Hari</option>
+          <option value="1" {% if request.args.get('is_twin_date')=='1' %}selected{% endif %}>Hari Kembar (Promo)
+          </option>
+          <option value="0" {% if request.args.get('is_twin_date')=='0' %}selected{% endif %}>Bukan Hari Kembar</option>
+        </select>
       </div>
+
       <div class="filter-group">
-        <label class="filter-label">Platform</label>
-        <select name="platform" class="filter-input" onchange="this.form.submit()"
-          style="min-width: 160px; cursor: pointer;">
-          <option value="">Semua Platform</option>
+        <label class="filter-label">Range Harga</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="number" name="min_price" class="filter-input" placeholder="Min"
+            value="{{ request.args.get('min_price', '') }}" style="width: 90px;">
+          <input type="number" name="max_price" class="filter-input" placeholder="Max"
+            value="{{ request.args.get('max_price', '') }}" style="width: 90px;">
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Platform (Multi)</label>
+        <!-- Pindah class multi-select ke sini -->
+        <select name="platform" class="filter-input multi-select" multiple>
           {% for p in m.platform_options %}
-          <option value="{{ p }}" {% if request.args.get('platform')==p %}selected{% endif %}>{{ p }}</option>
+          <option value="{{ p }}" {% if p in request.args.getlist('platform') %}selected{% endif %}>{{ p }}</option>
           {% endfor %}
         </select>
       </div>
-      <button type="button" class="btn-reset"
-        onclick="window.location.href='/dashboard?key={{ request.args.get('key') }}'">↺ Reset</button>
+
+      <div class="filter-group">
+        <label class="filter-label">Model (Multi)</label>
+        <!-- Pindah class multi-select ke sini -->
+        <select name="model" class="filter-input multi-select" multiple>
+          {% for model in m.model_options %}
+          <option value="{{ model }}" {% if model in request.args.getlist('model') %}selected{% endif %}>{{ model }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Kategori Bayar (Multi)</label>
+        <!-- Pindah class multi-select ke sini -->
+        <select name="payment_category" class="filter-input multi-select" multiple>
+          {% for pc in m.payment_cat_options %}
+          <option value="{{ pc }}" {% if pc in request.args.getlist('payment_category') %}selected{% endif %}>{{ pc }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Provinsi (Multi)</label>
+        <!-- Pindah class multi-select ke sini -->
+        <select name="province" class="filter-input multi-select" multiple>
+          {% for p in m.province_options %}
+          <option value="{{ p }}" {% if p in request.args.getlist('province') %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Kota/Kabupaten (Multi)</label>
+        <select name="city" id="citySelect" class="filter-input multi-select" multiple>
+          {% for c in m.city_options %}
+          <option value="{{ c }}" {% if c in request.args.getlist('city') %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Warna (Multi)</label>
+        <!-- Pindah class multi-select ke sini -->
+        <select name="color" class="filter-input multi-select" multiple>
+          {% for c in m.color_options %}
+          <option value="{{ c }}" {% if c in request.args.getlist('color') %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Ukuran (Multi)</label>
+        <!-- Pindah class multi-select ke sini -->
+        <select name="size" class="filter-input multi-select" multiple>
+          {% for s in m.size_options %}
+          <option value="{{ s }}" {% if s in request.args.getlist('size') %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Status Pesanan (Multi)</label>
+        <select name="status" class="filter-input multi-select" multiple>
+          {% for s in m.status_options %}
+          <option value="{{ s }}" {% if s in request.args.getlist('status') %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="gap: 12px; flex-direction: column; justify-content: flex-end; padding-bottom: 2px;">
+        <button type="submit" class="btn-reset"
+          style="background: var(--t-c1); color: #fff; border-color: var(--t-c1);">Terapkan Filter</button>
+        <button type="button" class="btn-reset"
+          onclick="window.location.href='/dashboard?key={{ request.args.get('key') }}'">↺ Reset</button>
+      </div>
+
       <div id="dateError"
-        style="display: none; align-items: center; gap: 8px; background: #fff1f0; border: 1px solid #fca5a5; color: #dc2626; font-size: 12px; font-weight: 500; padding: 8px 14px; border-radius: 10px; width: 100%;">
+        style="display: none; align-items: center; gap: 8px; background: #fff1f0; border: 1px solid #fca5a5; color: #dc2626; font-size: 12px; font-weight: 500; padding: 8px 14px; border-radius: 10px; width: 100%; margin-top: 8px;">
         Tanggal mulai tidak boleh lebih besar dari tanggal akhir.
       </div>
     </div>
   </form>
+
+  {% set selected_statuses = request.args.getlist('status') %}
+  {% set is_only_batal = (selected_statuses | length == 1) and (selected_statuses[0] == 'BATAL') %}
 
   <div class="section-divider">Ringkasan Utama</div>
   <div class="kpi-grid">
@@ -828,7 +1013,9 @@
         Total Order
       </div>
       <div class="kpi-value">{{ "{:,}".format(m.num_orders) }}</div>
-      <div class="kpi-sub">Transaksi unik</div>
+      <div class="kpi-sub">
+        {% if is_only_batal %}Transaksi dibatalkan{% else %}Transaksi unik{% endif %}
+      </div>
     </div>
 
     <div class="kpi-card main">
@@ -849,10 +1036,12 @@
             <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
           </svg>
         </span>
-        Total Pendapatan
+        {% if is_only_batal %}Potensi Rugi (Batal){% else %}Total Pendapatan{% endif %}
       </div>
       <div class="kpi-value" style="font-size: 20px;">Rp {{ "{:,.0f}".format(m.revenue_month) }}</div>
-      <div class="kpi-sub">Total amount terjual</div>
+      <div class="kpi-sub">
+        {% if is_only_batal %}Nominal pendapatan yang hilang{% else %}Total amount terjual{% endif %}
+      </div>
     </div>
 
     <div class="kpi-card main">
@@ -886,7 +1075,9 @@
         Rata-rata Order
       </div>
       <div class="kpi-value" style="font-size: 20px;">Rp {{ "{:,.0f}".format(m.aov) }}</div>
-      <div class="kpi-sub">Nilai rata-rata per transaksi</div>
+      <div class="kpi-sub">
+        {% if is_only_batal %}Rata-rata nominal gagal per transaksi{% else %}Nilai rata-rata per transaksi{% endif %}
+      </div>
     </div>
 
     <div class="kpi-card main">
@@ -912,6 +1103,11 @@
     </div>
 
   </div>
+
+  {% set selected_statuses = request.args.getlist('status') %}
+  {% set is_only_batal = (selected_statuses | length == 1) and (selected_statuses[0] == 'BATAL') %}
+
+  {% if not is_only_batal %}
 
   <div style="margin-bottom: 28px;" class="dash-section-mb">
     <div class="chart-card" style="padding: 20px 24px;">
@@ -1098,6 +1294,140 @@
     </div>
   </div>
 
+  <div class="chart-row-2">
+    <div class="chart-card" style="display: flex; flex-direction: column;">
+      <div class="chart-title" title="10 model dengan total pendapatan Rupiah tertinggi">Top 10 Model (Pendapatan)</div>
+      <div style="position: relative; height: 350px;">
+        <canvas id="topRevenueChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title" title="Kepadatan pesanan berdasarkan Hari dan Bulan">Heatmap Kepadatan Transaksi</div>
+      <div id="heatmapWrapper" style="width: 95%; min-height: 250px;">
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+
+  <div class="chart-row-2">
+    <div class="chart-card">
+      <div class="chart-title">5 Model Terbanyak Dibatalkan</div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;">#</th>
+              <th>Nama Model</th>
+              <th style="text-align: right;">Qty Batal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for model in m.top_products %}
+            <tr>
+              <td>
+                <span
+                  class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                  {{ loop.index }}
+                </span>
+              </td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <img src="/static/images/{{ model[0]|replace(' ', '%20') }}.jpg"
+                    onerror="this.onerror=null; this.src='/static/images/UNKNOWN.jpg';" alt="{{ model[0].strip() }}"
+                    class="zoomable-img" onclick="openLightbox(this.src, this.alt)"
+                    style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #f3f4f6;">
+                  <span style="font-weight: 500; color: #111827;">{{ model[0] }}</span>
+                </div>
+              </td>
+              <td style="text-align: right; font-weight: 600; color: #ef4444;"> <!-- Sengaja diberi warna merah -->
+                {{ "{:,}".format(model[1]) }} <span
+                  style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-card" style="display: flex; flex-direction: column;">
+      <div class="chart-title">Platform dengan Pembatalan Terbanyak</div>
+      <div style="flex-grow: 1; position: relative; min-height: 220px;">
+        <canvas id="cancelPlatformBarChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+
+  <div class="section-divider" style="margin-top: 36px; margin-bottom: 12px;">Detail Data Transaksi</div>
+  <div class="chart-row-1">
+    <div class="chart-card">
+      <div class="chart-title">Detail Pesanan</div>
+      <div
+        style="overflow-x: auto; max-height: 450px; overflow-y: auto; border: 1px solid #f3f4f6; border-radius: 12px;">
+        <table style="min-width: 1000px;">
+          <thead
+            style="position: sticky; top: 0; background: #f9fafb; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <tr>
+              <th style="padding-left: 20px;">Order Key</th>
+              <th>Status</th>
+              <th>Model</th>
+              <th>Warna</th>
+              <th>Ukuran</th>
+              <th style="text-align: right;">Harga Satuan</th>
+              <th>Provinsi</th>
+              <th>Kota</th>
+              <th style="width: 220px; padding-right: 20px;">Cancel Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in m.raw_table_data %}
+            <tr>
+              <td style="font-family: monospace; font-size: 13px; color: #6b7280; padding-left: 20px;">{{ row.order_key
+                }}</td>
+              <td>
+                {% if row.status == 'SELESAI' %}
+                <span
+                  style="background: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700;">{{
+                  row.status }}</span>
+                {% else %}
+                <span
+                  style="background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700;">{{
+                  row.status }}</span>
+                {% endif %}
+              </td>
+              <td style="font-weight: 500; color: #111827;">{{ row.model }}</td>
+              <td style="width: 150px;">{{ row.color }}</td>
+              <td style="width: 100px;">{{ row.size }}</td>
+              <td style="text-align: right; font-weight: 500;">Rp {{ "{:,.0f}".format(row.price) }}</td>
+              <td>{{ row.province }}</td>
+              <td>{{ row.city }}</td>
+              <td style="padding-right: 20px;">
+                <div style="color: {% if row.cancel_reason == '-' %}#d1d5db{% else %}#ef4444{% endif %}; 
+              font-size: 12px; 
+              font-style: {% if row.cancel_reason == '-' %}normal{% else %}italic{% endif %}; 
+              width: 220px; 
+              white-space: normal; 
+              word-wrap: break-word; 
+              line-height: 1.4;">
+                  {{ row.cancel_reason }}
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="9" style="text-align: center; color: #9ca3af; padding: 40px;">Tidak ada data yang sesuai
+                dengan filter.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
     <span class="lightbox-close">&times;</span>
     <img class="lightbox-content" id="lightboxImg">
@@ -1108,6 +1438,120 @@
 <script id="dashboard-data" type="application/json">{{ m | tojson }}</script>
 
 <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const multipleSelects = document.querySelectorAll('.multi-select');
+
+    multipleSelects.forEach(function (select) {
+      new Choices(select, {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholderValue: 'Pilih...',
+        searchPlaceholderValue: 'Cari...',
+        itemSelectText: '',
+        shouldSort: false
+      });
+    });
+  });
+
+  function setupMapDrillDown(chart, data) {
+    google.visualization.events.addListener(chart, 'select', function () {
+      const selection = chart.getSelection();
+      if (selection.length > 0) {
+        const provinceName = data.getValue(selection[0].row, 0);
+        const actualProvince = (typeof provinceName === 'string') ? provinceName : m.map_data[selection[0].row + 1][0];
+
+        fetch(`/api/metrics/location/cities?province=${encodeURIComponent(actualProvince)}`)
+          .then(res => res.json())
+          .then(cities => {
+            let text = `Breakdown Kota di ${actualProvince}:\n\n`;
+            cities.forEach(c => text += `- ${c.city}: ${c.quantity} pcs\n`);
+            alert(text); 
+          })
+          .catch(err => console.error("Drill-down error:", err));
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const modelRows = document.querySelectorAll("table tbody tr");
+
+    modelRows.forEach(row => {
+      const modelNameEl = row.querySelector("span:nth-of-type(2)");
+      if (!modelNameEl) return;
+
+      row.style.cursor = 'pointer';
+      row.title = "Klik untuk melihat detail Warna & Ukuran";
+
+      row.addEventListener("click", function (e) {
+        if (e.target.tagName.toLowerCase() === 'img') return;
+
+        const modelName = modelNameEl.textContent.trim();
+
+        fetch(`/api/metrics/product/breakdown?model=${encodeURIComponent(modelName)}`)
+          .then(res => res.json())
+          .then(details => {
+            let text = `Breakdown Model [${modelName}]:\n\nWARNA:\n`;
+            details.colors.forEach(c => text += `- ${c.color}: ${c.qty} pcs\n`);
+            text += `\nUKURAN:\n`;
+            details.sizes.forEach(s => text += `- ${s.size}: ${s.qty} pcs\n`);
+            alert(text); 
+          })
+          .catch(err => console.error("Product drill-down error:", err));
+      });
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const choiceInstances = {};
+    const multipleSelects = document.querySelectorAll('.multi-select');
+
+    multipleSelects.forEach(function (select) {
+      const instance = new Choices(select, {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholderValue: 'Pilih...',
+        searchPlaceholderValue: 'Cari...',
+        itemSelectText: '',
+        shouldSort: false
+      });
+      choiceInstances[select.name] = instance; 
+    });
+
+    const provSelect = document.getElementById('provinceSelect');
+    if (provSelect && choiceInstances['province'] && choiceInstances['city']) {
+      provSelect.addEventListener('change', function () {
+        const provinceCityMap = m.province_city_map || {};
+        const selectedProvinces = choiceInstances['province'].getValue(true); 
+        const cityInstance = choiceInstances['city'];
+        
+        const currentCities = cityInstance.getValue(true); 
+
+        let validCities = [];
+
+        if (selectedProvinces && selectedProvinces.length > 0) {
+          selectedProvinces.forEach(p => {
+            if (provinceCityMap[p]) {
+              validCities.push(...provinceCityMap[p]);
+            }
+          });
+        } else {
+          Object.values(provinceCityMap).forEach(cities => validCities.push(...cities));
+        }
+
+        validCities = [...new Set(validCities)].sort();
+
+        const newChoices = validCities.map(c => ({
+          value: c,
+          label: c,
+          selected: currentCities.includes(c) 
+        }));
+
+        cityInstance.clearChoices();
+        cityInstance.setChoices(newChoices, 'value', 'label', true);
+      });
+    }
+  });
+
   function openLightbox(src, alt) {
     const lightbox = document.getElementById('imageLightbox');
     const lightboxImg = document.getElementById('lightboxImg');
@@ -1187,6 +1631,170 @@
       y: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { family: 'DM Sans', size: 11 } } }
     }
   };
+
+  // ── Top 3 Cancel Platform Bar Chart (Mode Batal) ─────────────
+  try {
+    const cplatLabels = m.cancel_platform_labels || [];
+    const cplatValues = m.cancel_platform_values || [];
+
+    if (cplatLabels.length > 0 && document.getElementById('cancelPlatformBarChart')) {
+      // Kode Warna: Gold, Silver, Bronze
+      const medalColors = ['#f59e0b', '#94a3b8', '#b45309']; 
+
+      new Chart(document.getElementById('cancelPlatformBarChart'), {
+        type: 'bar',
+        data: {
+          labels: cplatLabels,
+          datasets: [{
+            label: 'Pesanan Dibatalkan',
+            data: cplatValues,
+            backgroundColor: cplatLabels.map((_, i) => medalColors[i] || '#e5e7eb'),
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true, 
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { 
+              callbacks: { label: ctx => ' ' + (ctx.raw || 0).toLocaleString('id-ID') + ' Pesanan' } 
+            }
+          },
+          scales: {
+            x: { 
+              grid: { display: false }, 
+              ticks: { font: { family: 'DM Sans', size: 12 }, color: '#374151', font: { weight: '600' } } 
+            },
+            y: { 
+              grid: { color: 'rgba(0,0,0,0.04)' }, 
+              ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9ca3af' } 
+            }
+          }
+        }
+      });
+      console.log("V Cancel Platform Bar Chart OK");
+    }
+  } catch (err) {
+    console.error("X Error pada Cancel Platform Chart:", err);
+  }
+
+  // ── Top 10 Revenue Chart (Pengganti Pareto) ─────────────────
+  try {
+    // Ambil hanya 10 data teratas dari data pareto yang sudah diurutkan backend
+    const top10Data = (m.pareto_data || []).slice(0, 10);
+
+    const topLabels = top10Data.map(d => d.model);
+    const topRevenue = top10Data.map(d => d.revenue);
+
+    new Chart(document.getElementById('topRevenueChart'), {
+      type: 'bar',
+      data: {
+        labels: topLabels,
+        datasets: [{
+          label: 'Pendapatan (Rp)',
+          data: topRevenue,
+          backgroundColor: neutralPalette(topRevenue.length),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => `Rp ${ctx.raw.toLocaleString('id-ID')}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: GRID_COLOR },
+            ticks: {
+              callback: val => 'Rp ' + (val / 1000000).toFixed(0) + 'M',
+              font: { size: 10 }
+            }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { font: { size: 11, family: 'DM Sans' } }
+          }
+        }
+      }
+    });
+    console.log("V Top Revenue Chart OK");
+  } catch (err) {
+    console.error("X Error pada Top Revenue Chart:", err);
+  }
+
+  // ── Heatmap Generator ─────────────────────────────────────
+  try {
+    const hw = document.getElementById('heatmapWrapper');
+    if (hw && m.heatmap_data && m.heatmap_data.length > 0) {
+
+      const monthOrder = {
+        'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'mei': 5, 'jun': 6,
+        'jul': 7, 'aug': 8, 'agu': 8, 'sep': 9, 'oct': 10, 'okt': 10, 'nov': 11, 'dec': 12, 'des': 12
+      };
+
+      let monthsSet = [...new Set(m.heatmap_data.map(d => d.month))];
+      monthsSet.sort((a, b) => {
+        const numA = monthOrder[a.substring(0, 3).toLowerCase()] || 99;
+        const numB = monthOrder[b.substring(0, 3).toLowerCase()] || 99;
+        return numA - numB;
+      });
+
+      const maxOrders = Math.max(...m.heatmap_data.map(d => d.total_orders), 1);
+
+      let gridHTML = `<div class="heatmap-grid" style="grid-template-columns: 40px repeat(${monthsSet.length}, 45px);">`;
+
+      // Header Baris (Bulan)
+      gridHTML += `<div></div>`;
+      monthsSet.forEach(month => {
+        gridHTML += `<div class="heatmap-header">${month.substring(0, 3)}</div>`;
+      });
+
+      const dayMap = [
+        { label: 'Sen', keys: ['senin', 'monday'] },
+        { label: 'Sel', keys: ['selasa', 'tuesday'] },
+        { label: 'Rab', keys: ['rabu', 'wednesday'] },
+        { label: 'Kam', keys: ['kamis', 'thursday'] },
+        { label: 'Jum', keys: ['jumat', 'friday'] },
+        { label: 'Sab', keys: ['sabtu', 'saturday'] },
+        { label: 'Min', keys: ['minggu', 'sunday'] }
+      ];
+
+      dayMap.forEach(dayInfo => {
+        gridHTML += `<div class="heatmap-label">${dayInfo.label}</div>`;
+        monthsSet.forEach(month => {
+          // Cari kecocokan entri secara fleksibel (EN/ID)
+          const entry = m.heatmap_data.find(d =>
+            dayInfo.keys.includes(String(d.day).toLowerCase()) && d.month === month
+          );
+
+          const val = entry ? entry.total_orders : 0;
+          const opacity = val === 0 ? 0 : 0.15 + (val / maxOrders) * 0.85;
+
+          gridHTML += `<div class="heatmap-cell" 
+                            title="${dayInfo.label}, ${month}: ${val} Order" 
+                            style="background-color: ${themeColor}; opacity: ${opacity};">
+                       </div>`;
+        });
+      });
+
+      gridHTML += `</div>`;
+      hw.innerHTML = gridHTML;
+      console.log("V Heatmap Rendered OK");
+    } else if (hw) {
+      hw.innerHTML = `<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#9ca3af;font-size:13px;">Data tidak cukup untuk Heatmap</div>`;
+    }
+  } catch (err) {
+    console.error("X Error pada Heatmap:", err);
+  }
 
   // ── Payment Bar Chart ────────────────────────────────────────
   try {
@@ -1493,6 +2101,7 @@
         datalessRegionColor: '#f8f7f4',
         defaultColor: '#e5e7eb'
       };
+      setupMapDrillDown(chart, data);
 
       chart.draw(data, options);
 

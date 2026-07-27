@@ -18,7 +18,8 @@ COLUMN_MAPPING = {
     "province" : ["Provinsi", "Province"],
     "city" : ["Kota/Kabupaten", "Regency and City", "City"],
     "channel" : ["Purchase Channel"],
-    "notes" : ["Catatan dari Pembeli", "Buyer Message"]
+    "notes" : ["Catatan dari Pembeli", "Buyer Message"],
+    "cancel_reason" : ["Alasan Pembatalan", "Cancel Reason"]
 }
 
 REQUIRED_COLUMNS_SHOPEE = [
@@ -35,7 +36,8 @@ REQUIRED_COLUMNS_SHOPEE = [
     "total_amount",
     "province",
     "city",
-    "notes"
+    "notes",
+    "cancel_reason"
 ]
 
 REQUIRED_COLUMNS_TOKOPEDIA = [
@@ -54,7 +56,8 @@ REQUIRED_COLUMNS_TOKOPEDIA = [
     "province",
     "city",
     "channel",
-    "notes"
+    "notes",
+    "cancel_reason"
 ]
 
 PAYMENT_METHOD = {
@@ -254,7 +257,13 @@ def transform_shopee(df):
     df_standard = map_columns(df)
     df_standard = df_standard[REQUIRED_COLUMNS_SHOPEE]
     
-    df_standard['status'] = df_standard['status'].astype(str).str.upper().str.strip()
+    original_status = df_standard['status'].astype(str).str.upper().str.strip()
+    
+    df_standard['cancel_reason'] = df_standard['cancel_reason'].where(
+        original_status.isin(['BATAL', 'DIBATALKAN']), None
+    )
+    
+    df_standard['status'] = original_status
     
     df_standard.loc[df_standard['status'] != 'SELESAI', 'status'] = 'BATAL'
     
@@ -321,7 +330,7 @@ def transform_shopee(df):
     df_standard.loc[df_standard[variant].isna().any(axis=1), 'is_muslim_fashion'] = False
     df_standard.loc[df_standard[variant].isna().any(axis=1), variant] = 'UNKNOWN'
     
-    df_standard = df_standard[['order_key', 'status', 'date', 'SKU', 'color', 'size', 'is_muslim_fashion', 'payment_method', 'payment_category', 'province', 'city', 'platform', 'price', 'discount', 'quantity', 'total_amount']]
+    df_standard = df_standard[['order_key', 'status', 'cancel_reason', 'date', 'SKU', 'color', 'size', 'is_muslim_fashion', 'payment_method', 'payment_category', 'province', 'city', 'platform', 'price', 'discount', 'quantity', 'total_amount']]
     
     return df_standard
 
@@ -329,7 +338,13 @@ def transform_tokopedia(df):
     df_standard = map_columns(df)
     df_standard = df_standard[REQUIRED_COLUMNS_TOKOPEDIA]
     
-    df_standard['status'] = df_standard['status'].astype(str).str.upper().str.strip()
+    original_status = df_standard['status'].astype(str).str.upper().str.strip()
+    
+    df_standard['cancel_reason'] = df_standard['cancel_reason'].where(
+        original_status.isin(['BATAL', 'DIBATALKAN']), None
+    )
+    
+    df_standard['status'] = original_status
     
     df_standard.loc[df_standard['status'] != 'SELESAI', 'status'] = 'BATAL'
         
@@ -397,5 +412,5 @@ def transform_tokopedia(df):
     df_standard.loc[df_standard[variant].isna().any(axis=1), 'is_muslim_fashion'] = False
     df_standard.loc[df_standard[variant].isna().any(axis=1), variant] = 'UNKNOWN'
     
-    df_standard = df_standard[['order_key', 'status', 'date', 'SKU', 'color', 'size', 'is_muslim_fashion', 'payment_method', 'payment_category', 'province', 'city', 'platform', 'price', 'discount', 'quantity', 'total_amount']]
+    df_standard = df_standard[['order_key', 'status', 'cancel_reason', 'date', 'SKU', 'color', 'size', 'is_muslim_fashion', 'payment_method', 'payment_category', 'province', 'city', 'platform', 'price', 'discount', 'quantity', 'total_amount']]
     return df_standard

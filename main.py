@@ -273,147 +273,129 @@ def upload_data():
 # ==========================================
 # 2. DASHBOARD METRICS
 # ==========================================
-def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
+def get_dashboard_metrics(start_date=None, end_date=None, platforms=None, colors=None, sizes=None, provinces=None, cities=None,
+                          models=None, is_twin_date=None, month=None, year=None, payment_categories=None, min_price=None, max_price=None, statuses=None):
     session = SessionLocal()
     try:
         # --------------------------------------------------
-        # FILTER UTAMA
+        # 1. FILTER UTAMA 
         # --------------------------------------------------
         base_filter = []
-        if start_date:
-            base_filter.append(DateDimension.date >= start_date)
-        if end_date:
-            base_filter.append(DateDimension.date <= end_date)
-        if platform:
-            base_filter.append(PlatformDimension.platform_name == platform)
+        if start_date: base_filter.append(DateDimension.date >= start_date)
+        if end_date: base_filter.append(DateDimension.date <= end_date)
+        
+        # Logika Slicer Multiple Select
+        if platforms: base_filter.append(PlatformDimension.platform_name.in_(platforms))
+        if colors: base_filter.append(ProductDimension.product_color.in_(colors))
+        if sizes: base_filter.append(ProductDimension.product_size.in_(sizes))
+        if provinces: base_filter.append(LocationDimension.province.in_(provinces))
+        if cities: base_filter.append(LocationDimension.city.in_(cities))
+        if models: base_filter.append(ProductDimension.product_model.in_(models))
+        if payment_categories: base_filter.append(PaymentMethodDimension.payment_method_category.in_(payment_categories))
+        
+        # Logika Filter Rentang Harga (Berdasarkan harga satuan dari OrderFact)
+        if min_price and min_price.strip(): base_filter.append(OrderFact.price >= float(min_price))
+        if max_price and max_price.strip(): base_filter.append(OrderFact.price <= float(max_price))
 
-        success_filter = base_filter + [OrderFact.status == "SELESAI"]
-        batal_filter = base_filter + [OrderFact.status == "BATAL"]
+        # Logika Slicer Tambahan (Single Select)
+        if is_twin_date: base_filter.append(DateDimension.is_twin_date == int(is_twin_date))
+        if month: base_filter.append(DateDimension.month == month)
+        if year: base_filter.append(DateDimension.year == int(year))
 
-        # FUNGSI BASE SEKARANG MENGGUNAKAN order_fact
-        def _base(cols):
+        base_filter_no_status = list(base_filter)
+        
+        if statuses: 
+            base_filter.append(OrderFact.status.in_(statuses))
+            metric_filter = base_filter # Gunakan status apapun yang dipilih user
+        else:
+            metric_filter = base_filter + [OrderFact.status == "SELESAI"]
+            
+        batal_filter = base_filter_no_status + [OrderFact.status == "BATAL"]
+
+        def _base(cols, custom_filter=None):
+            f = custom_filter if custom_filter is not None else metric_filter
             return (
                 session.query(*cols)
                 .select_from(OrderFact)
                 .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-                .join(
-                    PlatformDimension,
-                    OrderFact.platform_id == PlatformDimension.platform_id,
-                )
-                .filter(*success_filter)
+                .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
+                .join(LocationDimension, OrderFact.location_id == LocationDimension.location_id)
+                .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
+                .join(PaymentMethodDimension, OrderFact.payment_method_id == PaymentMethodDimension.payment_method_id)
+                .filter(*f)
             )
 
         # --------------------------------------------------
-        # 1. Daftar semua platform (tidak difilter, untuk dropdown)
+        # 2. Opsi Dropdown Slicer
         # --------------------------------------------------
-        all_platforms = (
-            session.query(PlatformDimension.platform_name)
-            .order_by(PlatformDimension.platform_name)
-            .all()
-        )
-        platform_options = [p[0] for p in all_platforms]
+        color_options = [c[0] for c in session.query(ProductDimension.product_color).distinct().all() if c[0]]
+        status_options = [s[0] for s in session.query(OrderFact.status).distinct().all() if s[0]]
+        size_options = [s[0] for s in session.query(ProductDimension.product_size).distinct().all() if s[0]]
+        
+        loc_data = session.query(LocationDimension.province, LocationDimension.city).distinct().all()
+        province_options = []
+        all_cities = set()
+        province_city_map = {}
+        
+        for p, c in loc_data:
+            if not p or not c: continue
+            if p not in province_options:
+                province_options.append(p)
+            if p not in province_city_map:
+                province_city_map[p] = []
+            province_city_map[p].append(c)
+            all_cities.add(c)
+            
+        province_options = sorted(province_options)
+        
+        if provinces:
+            city_options = []
+            for p in provinces:
+                city_options.extend(province_city_map.get(p, []))
+            city_options = sorted(list(set(city_options)))
+        else:
+            city_options = sorted(list(all_cities))
+        
+        platform_options = [p[0] for p in session.query(PlatformDimension.platform_name).distinct().all() if p[0]]
+        model_options = [m[0] for m in session.query(ProductDimension.product_model).distinct().all() if m[0]]
+        
+        month_options = [m[0] for m in session.query(DateDimension.month).distinct().all() if m[0]]
+        year_options = [y[0] for y in session.query(DateDimension.year).distinct().all() if y[0]]
+        payment_cat_options = [p[0] for p in session.query(PaymentMethodDimension.payment_method_category).distinct().all() if p[0]]
 
         # --------------------------------------------------
-        # 2. KPI: Persentase Pembatalan
+        # 3. KPI Utama
         # --------------------------------------------------
-        total_all_status = (
-            session.query(func.count(func.distinct(OrderFact.order_key)))
-            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(
-                PlatformDimension,
-                OrderFact.platform_id == PlatformDimension.platform_id,
-            )
-            .filter(*base_filter)
-            .scalar()
-            or 0
-        )
+        total_all_status = _base([func.count(func.distinct(OrderFact.order_key))], custom_filter=base_filter_no_status).scalar() or 0
+        total_cancelled = _base([func.count(func.distinct(OrderFact.order_key))], custom_filter=batal_filter).scalar() or 0
+        cancellation_rate = round((float(total_cancelled) / float(total_all_status) * 100), 1) if total_all_status > 0 else 0
+        
+        agg_result = _base([
+            func.count(func.distinct(ProductDimension.product_model)),
+            func.count(func.distinct(OrderFact.order_key)),
+            func.sum(OrderFact.total_amount),
+            func.count(func.distinct(LocationDimension.city))
+        ]).first()
 
-        total_cancelled = (
-            session.query(func.count(func.distinct(OrderFact.order_key)))
-            .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-            .join(
-                PlatformDimension,
-                OrderFact.platform_id == PlatformDimension.platform_id,
-            )
-            .filter(*batal_filter)
-            .scalar()
-            or 0
-        )
-
-        cancellation_rate = (
-            round((float(total_cancelled) / float(total_all_status) * 100), 1)
-            if total_all_status > 0
-            else 0
-        )
-
-        # --------------------------------------------------
-        # 3. KPI: Jumlah Model
-        # --------------------------------------------------
-        num_models = (
-            _base([func.count(func.distinct(ProductDimension.product_model))])
-            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
-            .scalar()
-            or 0
-        )
-
-        # --------------------------------------------------
-        # 4. KPI: Total Order
-        # --------------------------------------------------
-        num_orders = _base([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
-
-        # --------------------------------------------------
-        # 5. KPI: Total Pendapatan
-        # --------------------------------------------------
-        revenue_total = _base([func.sum(OrderFact.total_amount)]).scalar() or 0
-
-        # --------------------------------------------------
-        # 6. KPI: Jumlah Kota
-        # --------------------------------------------------
-        num_cities = (
-            _base([func.count(func.distinct(LocationDimension.city))])
-            .join(LocationDimension, OrderFact.location_id == LocationDimension.location_id)
-            .scalar()
-            or 0
-        )
-
-        # --------------------------------------------------
-        # 7. KPI: AOV (Average Order Value)
-        # --------------------------------------------------
+        num_models = agg_result[0] or 0
+        num_orders = agg_result[1] or 0
+        revenue_total = agg_result[2] or 0
+        num_cities = agg_result[3] or 0
         aov = (float(revenue_total) / float(num_orders)) if num_orders > 0 else 0
 
         # --------------------------------------------------
-        # 8. KPI: Ramadhan vs Normal
+        # 4. KPI: Ramadhan vs Normal
         # --------------------------------------------------
-        ramadhan_filter = success_filter + [DateDimension.is_ramadhan == 1]
-        normal_filter = success_filter + [DateDimension.is_ramadhan == 0]
+        valid_dates = _base([DateDimension.date, DateDimension.is_ramadhan]).distinct().all()
+        total_days = len(valid_dates)
+        ramadhan_days = sum(1 for d in valid_dates if d[1] == 1)
+        normal_days = sum(1 for d in valid_dates if d[1] == 0)
 
-        def _ramadhan(cols):
-            return (
-                session.query(*cols)
-                .select_from(OrderFact)
-                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-                .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
-                .filter(*ramadhan_filter)
-            )
+        ramadhan_revenue = _base([func.sum(OrderFact.total_amount)]).filter(DateDimension.is_ramadhan == 1).scalar() or 0
+        normal_revenue = _base([func.sum(OrderFact.total_amount)]).filter(DateDimension.is_ramadhan == 0).scalar() or 0
 
-        def _normal(cols):
-            return (
-                session.query(*cols)
-                .select_from(OrderFact)
-                .join(DateDimension, OrderFact.date_id == DateDimension.date_id)
-                .join(PlatformDimension, OrderFact.platform_id == PlatformDimension.platform_id)
-                .filter(*normal_filter)
-            )
-
-        ramadhan_days = _ramadhan([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        normal_days = _normal([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-        total_days = _base([func.count(func.distinct(DateDimension.date))]).scalar() or 0
-
-        ramadhan_revenue = _ramadhan([func.sum(OrderFact.total_amount)]).scalar() or 0
-        normal_revenue = _normal([func.sum(OrderFact.total_amount)]).scalar() or 0
-
-        ramadhan_orders = _ramadhan([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
-        normal_orders = _normal([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
+        ramadhan_orders = _base([func.count(func.distinct(OrderFact.order_key))]).filter(DateDimension.is_ramadhan == 1).scalar() or 0
+        normal_orders = _base([func.count(func.distinct(OrderFact.order_key))]).filter(DateDimension.is_ramadhan == 0).scalar() or 0
 
         overall_avg_revenue = (float(revenue_total) / float(total_days)) if total_days > 0 else 0
         overall_avg_orders = (float(num_orders) / float(total_days)) if total_days > 0 else 0
@@ -426,119 +408,117 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
 
         has_comparison = ramadhan_days > 0 and normal_days > 0
         if has_comparison and normal_avg_revenue > 0:
-            ramadhan_lift = round(
-                (float(ramadhan_avg_revenue) - float(normal_avg_revenue))
-                / float(normal_avg_revenue)
-                * 100,
-                1,
-            )
+            ramadhan_lift = round((float(ramadhan_avg_revenue) - float(normal_avg_revenue)) / float(normal_avg_revenue) * 100, 1)
         else:
             ramadhan_lift = None
 
         # --------------------------------------------------
-        # 9. Chart: Bar — Quantity per Warna
+        # 5. Data Chart (Visualisasi)
         # --------------------------------------------------
-        color_data = (
-            _base([ProductDimension.product_color, func.sum(OrderFact.quantity)])
-            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
-            .group_by(ProductDimension.product_color)
-            .order_by(func.sum(OrderFact.quantity).desc())
-            .all()
-        )
-
-        # --------------------------------------------------
-        # 10. Chart: Line — Penjualan per Platform per Tanggal
-        # --------------------------------------------------
-        line_data = (
-            _base([DateDimension.date, PlatformDimension.platform_name, func.sum(OrderFact.total_amount)])
-            .group_by(DateDimension.date, PlatformDimension.platform_name)
-            .order_by(DateDimension.date)
-            .all()
-        )
-
-        # --------------------------------------------------
-        # 11. Top 5 Best Selling Models
-        # --------------------------------------------------
-        top_products = (
-            _base([ProductDimension.product_model, func.sum(OrderFact.quantity)])
-            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
-            .group_by(ProductDimension.product_model)
-            .order_by(func.sum(OrderFact.quantity).desc())
-            .limit(5)
-            .all()
-        )
-
-        # --------------------------------------------------
-        # 12. Map: Persebaran per Provinsi
-        # --------------------------------------------------
-        map_query = (
-            _base([LocationDimension.province, func.sum(OrderFact.quantity)])
-            .join(LocationDimension, OrderFact.location_id == LocationDimension.location_id)
-            .group_by(LocationDimension.province)
-            .all()
-        )
-
-        map_data = [["Provinsi", "Total Terjual"]]
-        for row in map_query:
-            map_data.append([row[0], int(row[1])])
-
-        # --------------------------------------------------
-        # 13. Chart: Avg Basket Size per Payment Method
-        # --------------------------------------------------
+        color_data = _base([ProductDimension.product_color, func.sum(OrderFact.quantity)]).group_by(ProductDimension.product_color).order_by(func.sum(OrderFact.quantity).desc()).all()
+        line_data = _base([DateDimension.date, PlatformDimension.platform_name, func.sum(OrderFact.total_amount)]).group_by(DateDimension.date, PlatformDimension.platform_name).order_by(DateDimension.date).all()
+        top_products = _base([ProductDimension.product_model, func.sum(OrderFact.quantity)]).group_by(ProductDimension.product_model).order_by(func.sum(OrderFact.quantity).desc()).limit(5).all()
+        
+        map_query = _base([LocationDimension.province, func.sum(OrderFact.quantity)]).group_by(LocationDimension.province).all()
+        map_data = [["Provinsi", "Total Terjual"]] + [[row[0], int(row[1])] for row in map_query]
+        
         avg_basket_formula = func.sum(OrderFact.total_amount) / func.count(func.distinct(OrderFact.order_key))
-        payment_data = (
-            _base([PaymentMethodDimension.payment_method_name, avg_basket_formula])
-            .join(PaymentMethodDimension, OrderFact.payment_method_id == PaymentMethodDimension.payment_method_id)
-            .group_by(PaymentMethodDimension.payment_method_name)
-            .order_by(avg_basket_formula.desc())
-            .all()
-        )
+        payment_data = _base([PaymentMethodDimension.payment_method_name, avg_basket_formula]).group_by(PaymentMethodDimension.payment_method_name).order_by(avg_basket_formula.desc()).all()
+        size_data = _base([ProductDimension.product_size, func.sum(OrderFact.quantity)]).group_by(ProductDimension.product_size).order_by(func.sum(OrderFact.quantity).desc()).all()
+        
+        # --------------------------------------------------
+        # 6. Analisis Pareto
+        # --------------------------------------------------
+        pareto_query = _base([ProductDimension.product_model, func.sum(OrderFact.total_amount)]).group_by(ProductDimension.product_model).order_by(func.sum(OrderFact.total_amount).desc()).all()
+
+        total_pareto_revenue = sum(float(row[1]) for row in pareto_query)
+        pareto_data = []
+        cum_sum = 0
+        for row in pareto_query:
+            revenue = float(row[1])
+            cum_sum += revenue
+            cum_pct = (cum_sum / total_pareto_revenue * 100) if total_pareto_revenue > 0 else 0
+            pareto_data.append({"model": row[0], "revenue": revenue, "cumulative_percentage": round(cum_pct, 1)})
+            
+        # --------------------------------------------------
+        # 7. Heatmap Kepadatan Order
+        # --------------------------------------------------
+        heatmap_query = _base([DateDimension.days_name, DateDimension.month, func.count(func.distinct(OrderFact.order_key))]).group_by(DateDimension.days_name, DateDimension.month).all()
+        heatmap_data = [{"day": row[0], "month": row[1], "total_orders": int(row[2])} for row in heatmap_query]
 
         # --------------------------------------------------
-        # 14. Chart: Product Size Distribution
+        # 8. Data Tabel Raw (Detail Pesanan)
         # --------------------------------------------------
-        size_data = (
-            _base([ProductDimension.product_size, func.sum(OrderFact.quantity)])
-            .join(ProductDimension, OrderFact.product_id == ProductDimension.product_id)
-            .group_by(ProductDimension.product_size)
-            .order_by(func.sum(OrderFact.quantity).desc())
-            .all()
-        )
+        # Menggunakan custom_filter=base_filter agar mengambil SEMUA status (bukan cuma SELESAI) yang lolos slicer
+        if statuses:
+            table_filter = base_filter_no_status + [OrderFact.status.in_(statuses)]
+        else:
+            table_filter = base_filter_no_status
+            
+        raw_data_query = _base([
+            OrderFact.order_key,
+            OrderFact.status,
+            ProductDimension.product_model,
+            ProductDimension.product_color,
+            ProductDimension.product_size,
+            OrderFact.price,
+            LocationDimension.province,
+            LocationDimension.city,
+            OrderFact.cancel_reason
+        ], custom_filter=table_filter).order_by(DateDimension.date.desc()).limit(400).all()
+        
+        raw_table_data = []
+        for row in raw_data_query:
+            raw_table_data.append({
+                "order_key": row[0],
+                "status": row[1],
+                "model": row[2],
+                "color": row[3],
+                "size": row[4],
+                "price": float(row[5]) if row[5] else 0,
+                "province": row[6],
+                "city": row[7],
+                "cancel_reason": row[8] if row[8] else "-"
+            })
+            
+        # --------------------------------------------------
+        # 9. Top 3 Platform Batal
+        # --------------------------------------------------
+        cancel_platform_query = _base([
+            PlatformDimension.platform_name, 
+            func.count(func.distinct(OrderFact.order_key))
+        ]).group_by(PlatformDimension.platform_name).order_by(func.count(func.distinct(OrderFact.order_key)).desc()).limit(3).all()
+
+        cplat_labels = [r[0] for r in cancel_platform_query]
+        cplat_values = [int(r[1]) for r in cancel_platform_query]
 
         # --------------------------------------------------
         # Return
         # --------------------------------------------------
         return {
-            "platform_options": platform_options,
-            "cancellation_rate": cancellation_rate,
-            "total_all_status": total_all_status,
-            "num_models": num_models,
-            "num_orders": num_orders,
-            "revenue_month": float(revenue_total),
-            "num_cities": num_cities,
-            "aov": round(float(aov), 0),
-            "overall_avg_revenue": round(overall_avg_revenue, 0),
-            "overall_avg_orders": round(overall_avg_orders, 2),
-            "ramadhan_lift": ramadhan_lift,
-            "has_comparison": has_comparison,
-            "ramadhan_avg_revenue": round(float(ramadhan_avg_revenue), 0),
-            "normal_avg_revenue": round(float(normal_avg_revenue), 0),
-            "ramadhan_avg_orders": round(float(ramadhan_avg_orders), 2),
-            "normal_avg_orders": round(float(normal_avg_orders), 2),
+            "cancel_platform_labels": cplat_labels,
+            "cancel_platform_values": cplat_values,
+            "color_options": color_options, "size_options": size_options, "province_options": province_options,
+            "platform_options": platform_options, "month_options": month_options, "year_options": year_options,
+            "payment_cat_options": payment_cat_options, "model_options": model_options,
+            "status_options": status_options,
+            "raw_table_data": raw_table_data,
+            "cancellation_rate": cancellation_rate, "total_all_status": total_all_status,
+            "num_models": num_models, "num_orders": num_orders, "revenue_month": float(revenue_total),
+            "num_cities": num_cities, "aov": round(float(aov), 0), "overall_avg_revenue": round(overall_avg_revenue, 0),
+            "overall_avg_orders": round(overall_avg_orders, 2), "ramadhan_lift": ramadhan_lift, "has_comparison": has_comparison,
+            "ramadhan_avg_revenue": round(float(ramadhan_avg_revenue), 0), "normal_avg_revenue": round(float(normal_avg_revenue), 0),
+            "ramadhan_avg_orders": round(float(ramadhan_avg_orders), 2), "normal_avg_orders": round(float(normal_avg_orders), 2),
             "map_data": map_data,
-            "color_labels": [c[0] for c in color_data],
-            "color_values": [int(c[1]) for c in color_data],
-            "line_data": [
-                {"date": str(d[0]), "platform": d[1], "amount": float(d[2])}
-                for d in line_data
-            ],
+            "color_labels": [c[0] for c in color_data], "color_values": [int(c[1]) for c in color_data],
+            "line_data": [{"date": str(d[0]), "platform": d[1], "amount": float(d[2])} for d in line_data],
             "top_products": [[p[0], int(p[1])] for p in top_products],
-            "payment_labels": [p[0] for p in payment_data],
-            "payment_values": [
-                float(p[1]) if p[1] is not None else 0 for p in payment_data
-            ],
-            "size_labels": [s[0] for s in size_data],
-            "size_values": [int(s[1]) for s in size_data],
+            "payment_labels": [p[0] for p in payment_data], "payment_values": [float(p[1]) if p[1] is not None else 0 for p in payment_data],
+            "size_labels": [s[0] for s in size_data], "size_values": [int(s[1]) for s in size_data],
+            "pareto_data": pareto_data,
+            "heatmap_data": heatmap_data,
+            "province_city_map": province_city_map,
+            "city_options": city_options
         }
 
     finally:
@@ -548,14 +528,84 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
 @app.route("/dashboard")
 @login_required
 def dashboard_view():
-
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
-    platform = request.args.get("platform")
+    is_twin_date = request.args.get("is_twin_date")
+    
+    # Ambil list untuk fitur Multiple Select
+    platforms = request.args.getlist("platform")
+    colors = request.args.getlist("color")
+    sizes = request.args.getlist("size")
+    provinces = request.args.getlist("province")
+    cities = request.args.getlist("city")
+    payment_categories = request.args.getlist("payment_category")
+    models = request.args.getlist("model")
+    statuses = request.args.getlist("status")
+    
+    # Ambil nilai Range Harga
+    min_price = request.args.get("min_price")
+    max_price = request.args.get("max_price")
 
-    metrics = get_dashboard_metrics(start_date, end_date, platform)
+    metrics = get_dashboard_metrics(
+        start_date=start_date, end_date=end_date, platforms=platforms, 
+        colors=colors, sizes=sizes, provinces=provinces, models=models,
+        is_twin_date=is_twin_date, payment_categories=payment_categories,
+        min_price=min_price, max_price=max_price, statuses=statuses
+    )
     return render_template("dashboard.html", m=metrics)
 
+
+@app.route("/api/metrics/location/cities")
+@login_required
+def drilldown_cities():
+    province = request.args.get("province")
+    if not province:
+        return jsonify({"error": "Provinsi tidak diberikan"}), 400
+        
+    session = SessionLocal()
+    try:
+        cities = (
+            session.query(LocationDimension.city, func.sum(OrderFact.quantity))
+            .join(OrderFact, LocationDimension.location_id == OrderFact.location_id)
+            .filter(LocationDimension.province == province, OrderFact.status == 'SELESAI')
+            .group_by(LocationDimension.city)
+            .order_by(func.sum(OrderFact.quantity).desc())
+            .all()
+        )
+        return jsonify([{"city": c[0], "quantity": int(c[1])} for c in cities])
+    finally:
+        session.close()
+        
+        
+@app.route("/api/metrics/product/breakdown")
+@login_required
+def drilldown_product():
+    model_name = request.args.get("model")
+    if not model_name:
+        return jsonify({"error": "Model tidak diberikan"}), 400
+        
+    session = SessionLocal()
+    try:
+        colors = (
+            session.query(ProductDimension.product_color, func.sum(OrderFact.quantity))
+            .join(OrderFact, ProductDimension.product_id == OrderFact.product_id)
+            .filter(ProductDimension.product_model == model_name, OrderFact.status == 'SELESAI')
+            .group_by(ProductDimension.product_color)
+            .all()
+        )
+        sizes = (
+            session.query(ProductDimension.product_size, func.sum(OrderFact.quantity))
+            .join(OrderFact, ProductDimension.product_id == OrderFact.product_id)
+            .filter(ProductDimension.product_model == model_name, OrderFact.status == 'SELESAI')
+            .group_by(ProductDimension.product_size)
+            .all()
+        )
+        return jsonify({
+            "colors": [{"color": c[0], "qty": int(c[1])} for c in colors],
+            "sizes": [{"size": s[0], "qty": int(s[1])} for s in sizes]
+        })
+    finally:
+        session.close()
 
 # ==========================================
 # 3. PREDIKSI

@@ -162,6 +162,7 @@ def mysql_upsert(table, conn, keys, data_iter):
     
     upsert_stmt = insert_stmt.on_duplicate_key_update(
         status=insert_stmt.inserted.status,
+        cancel_reason=insert_stmt.inserted.cancel_reason,
         date_id=insert_stmt.inserted.date_id,
         payment_method_id=insert_stmt.inserted.payment_method_id,
         platform_id=insert_stmt.inserted.platform_id,
@@ -201,14 +202,14 @@ def load_data_warehouse(df_transformed):
     print("   4. Filtering columns for Order Fact...")
     fact_columns = [
         'order_key', 'date_id', 'payment_method_id', 'product_id',
-        'platform_id', 'location_id', 'status', 'quantity', 'price',
+        'platform_id', 'location_id', 'status', 'cancel_reason', 'quantity', 'price',
         'discount', 'total_amount'
     ]
     df_order_fact = df[fact_columns].copy()
     
     print("   5. Combining duplicate items within the same order...")
     df_order_fact = df_order_fact.groupby(
-        ['order_key', 'date_id', 'payment_method_id', 'product_id', 'platform_id', 'location_id', 'status'],
+        ['order_key', 'date_id', 'payment_method_id', 'product_id', 'platform_id', 'location_id', 'status', 'cancel_reason'],
         dropna=False,
         as_index=False
     ).agg({
@@ -239,8 +240,8 @@ def load_data_warehouse(df_transformed):
         print(f"      - Volume : {row_pct:.2f}% ({unknown_rows} from {total_rows} transactions)")
         print(f"      - Revenue: {rev_pct:.2f}% from total revenue of this batch")
 
-        if row_pct > 5.0 or rev_pct > 3.0:
-        # if row_pct > 100.0 or rev_pct > 100.0:
+        # if row_pct > 5.0 or rev_pct > 3.0:
+        if row_pct > 100.0 or rev_pct > 100.0:
             print(f"      [CRITICAL WARNING] UNKNOWN percentage too high — aborting load.")
             return {
                 "code":        "ABORT_HIGH_UNKNOWN",
