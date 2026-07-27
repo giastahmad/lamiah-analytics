@@ -15,6 +15,7 @@
 
     body {
         background: #f8f7f4;
+        overflow-x: hidden;
     }
 
     .dash-wrapper {
@@ -122,6 +123,7 @@
         border: 1px solid #e8e5df;
         border-radius: 16px;
         padding: 28px;
+        min-width: 0;
     }
 
     .chart-title {
@@ -355,6 +357,20 @@
         transform: scale(1.05);
     }
 
+    .scroll-x-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        padding-bottom: 4px;
+    }
+    
+    .scroll-x-inner {
+        min-width: 700px; 
+        height: 320px;  
+        position: relative;
+    }
+
 
     /* ════════════════════
      RESPONSIVE
@@ -543,7 +559,11 @@
     <div class="chart-row-1">
         <div class="chart-card">
             <div class="chart-title">Tren Permintaan Harian</div>
-            <canvas id="forecastLineChart" height="70"></canvas>
+            <div class="scroll-x-wrapper">
+                <div class="scroll-x-inner">
+                    <canvas id="forecastLineChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -688,6 +708,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: {

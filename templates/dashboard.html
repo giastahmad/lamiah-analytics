@@ -19,6 +19,7 @@
 
   body {
     background: #f8f7f4;
+    overflow-x: hidden;
   }
 
   .dash-wrapper {
@@ -126,6 +127,7 @@
     border: 1px solid #e8e5df;
     border-radius: 16px;
     padding: 28px;
+    min-width: 0;
   }
 
   .chart-title {
@@ -523,7 +525,6 @@
   .heatmap-cell {
     width: 100%;
     height: 45px;
-    /* Ukuran tetap */
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -534,7 +535,6 @@
     transition: transform 0.1s;
     cursor: pointer;
     flex-shrink: 0;
-    /* Mencegah sel menyusut */
   }
 
   .heatmap-cell:hover {
@@ -589,6 +589,21 @@
 
   .choices[data-type*="select-multiple"] .choices__button {
     border-left: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  /* Scrollable Chart Wrappers */
+  .scroll-x-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+  }
+
+  .scroll-x-inner {
+    min-width: 700px;
+    height: 320px;
+    position: relative;
   }
 
   /* ════════════════════
@@ -722,8 +737,13 @@
       width: 100%;
     }
 
-    .btn-reset {
+    .filter-actions {
+      flex-direction: row;
       width: 100%;
+    }
+
+    .filter-actions .btn-reset {
+      flex: 1;
       text-align: center;
     }
 
@@ -1216,11 +1236,19 @@
         <div class="chart-title" style="margin-bottom: 0;" id="salesChartTitle">Tren Penjualan per Platform</div>
         <div id="granularityBtns" style="display: flex; gap: 6px;"></div>
       </div>
-      <canvas id="salesLineChart" height="90"></canvas>
+      <div class="scroll-x-wrapper">
+        <div class="scroll-x-inner">
+          <canvas id="salesLineChart"></canvas>
+        </div>
+      </div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Kuantitas Terjual per Warna Produk</div>
-      <canvas id="colorBarChart" height="90"></canvas>
+      <div class="scroll-x-wrapper">
+        <div class="scroll-x-inner">
+          <canvas id="colorBarChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1297,14 +1325,14 @@
   <div class="chart-row-2">
     <div class="chart-card" style="display: flex; flex-direction: column;">
       <div class="chart-title" title="10 model dengan total pendapatan Rupiah tertinggi">Top 10 Model (Pendapatan)</div>
-      <div style="position: relative; height: 350px;">
+      <div style="position: relative; height: 350px; width: 100%;">
         <canvas id="topRevenueChart"></canvas>
       </div>
     </div>
 
     <div class="chart-card">
       <div class="chart-title" title="Kepadatan pesanan berdasarkan Hari dan Bulan">Heatmap Kepadatan Transaksi</div>
-      <div id="heatmapWrapper" style="width: 95%; min-height: 250px;">
+      <div id="heatmapWrapper" style="width: 95%; min-height: 250px; overflow-x: auto;">
       </div>
     </div>
   </div>
@@ -1465,7 +1493,7 @@
           .then(cities => {
             let text = `Breakdown Kota di ${actualProvince}:\n\n`;
             cities.forEach(c => text += `- ${c.city}: ${c.quantity} pcs\n`);
-            alert(text); 
+            alert(text);
           })
           .catch(err => console.error("Drill-down error:", err));
       }
@@ -1494,7 +1522,7 @@
             details.colors.forEach(c => text += `- ${c.color}: ${c.qty} pcs\n`);
             text += `\nUKURAN:\n`;
             details.sizes.forEach(s => text += `- ${s.size}: ${s.qty} pcs\n`);
-            alert(text); 
+            alert(text);
           })
           .catch(err => console.error("Product drill-down error:", err));
       });
@@ -1514,17 +1542,17 @@
         itemSelectText: '',
         shouldSort: false
       });
-      choiceInstances[select.name] = instance; 
+      choiceInstances[select.name] = instance;
     });
 
     const provSelect = document.getElementById('provinceSelect');
     if (provSelect && choiceInstances['province'] && choiceInstances['city']) {
       provSelect.addEventListener('change', function () {
         const provinceCityMap = m.province_city_map || {};
-        const selectedProvinces = choiceInstances['province'].getValue(true); 
+        const selectedProvinces = choiceInstances['province'].getValue(true);
         const cityInstance = choiceInstances['city'];
-        
-        const currentCities = cityInstance.getValue(true); 
+
+        const currentCities = cityInstance.getValue(true);
 
         let validCities = [];
 
@@ -1543,7 +1571,7 @@
         const newChoices = validCities.map(c => ({
           value: c,
           label: c,
-          selected: currentCities.includes(c) 
+          selected: currentCities.includes(c)
         }));
 
         cityInstance.clearChoices();
@@ -1639,7 +1667,7 @@
 
     if (cplatLabels.length > 0 && document.getElementById('cancelPlatformBarChart')) {
       // Kode Warna: Gold, Silver, Bronze
-      const medalColors = ['#f59e0b', '#94a3b8', '#b45309']; 
+      const medalColors = ['#f59e0b', '#94a3b8', '#b45309'];
 
       new Chart(document.getElementById('cancelPlatformBarChart'), {
         type: 'bar',
@@ -1654,22 +1682,22 @@
           }]
         },
         options: {
-          responsive: true, 
+          responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            tooltip: { 
-              callbacks: { label: ctx => ' ' + (ctx.raw || 0).toLocaleString('id-ID') + ' Pesanan' } 
+            tooltip: {
+              callbacks: { label: ctx => ' ' + (ctx.raw || 0).toLocaleString('id-ID') + ' Pesanan' }
             }
           },
           scales: {
-            x: { 
-              grid: { display: false }, 
-              ticks: { font: { family: 'DM Sans', size: 12 }, color: '#374151', font: { weight: '600' } } 
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'DM Sans', size: 12 }, color: '#374151', font: { weight: '600' } }
             },
-            y: { 
-              grid: { color: 'rgba(0,0,0,0.04)' }, 
-              ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9ca3af' } 
+            y: {
+              grid: { color: 'rgba(0,0,0,0.04)' },
+              ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9ca3af' }
             }
           }
         }
@@ -1896,7 +1924,7 @@
           borderRadius: 6, borderSkipped: false
         }]
       },
-      options: { ...baseChartOpts, responsive: true, plugins: { ...baseChartOpts.plugins, legend: { display: false } } }
+      options: { ...baseChartOpts, responsive: true, maintainAspectRatio: false, plugins: { ...baseChartOpts.plugins, legend: { display: false } } }
     });
     console.log("V Color Bar Chart OK");
   } catch (err) {
@@ -1980,7 +2008,7 @@
       type: 'line',
       data: { labels: [], datasets: [] },
       options: {
-        ...baseChartOpts, responsive: true,
+        ...baseChartOpts, responsive: true, maintainAspectRatio: false,
         plugins: { ...baseChartOpts.plugins, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': Rp ' + (ctx.raw || 0).toLocaleString('id-ID') } } }
       }
     });

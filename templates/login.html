@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lamiah Analytics</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='lamiah-blue.png') }}">
@@ -16,6 +17,8 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .login-card {
@@ -26,6 +29,7 @@
             text-align: center;
             max-width: 350px;
             width: 100%;
+            box-sizing: border-box;
         }
 
         .title {
@@ -69,6 +73,15 @@
             font-size: 13px;
             margin-top: 20px;
             display: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 20px;
+            }
+            .title {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
