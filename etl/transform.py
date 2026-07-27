@@ -1,5 +1,6 @@
-import pandas as pd
 import re
+
+import pandas as pd
 
 COLUMN_MAPPING = {
     "order_key" : ["order_id", "nomor_pesanan", "No. Pesanan", "Order ID", "no_pesanan"],
@@ -243,7 +244,7 @@ def fix_indonesian_price(val):
         val = val.replace('Rp', '').replace(' ', '').replace('.', '')
         try:
             return float(val)
-        except:
+        except:  # noqa: E722
             return 0
             
     elif isinstance(val, (int, float)):
