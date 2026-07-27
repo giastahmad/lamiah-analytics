@@ -1,9 +1,12 @@
 import re
+
 import pandas as pd
-from rapidfuzz import process, fuzz
-from sqlalchemy.dialects.mysql import insert
+from rapidfuzz import fuzz, process
 from sqlalchemy import text
-from config import engine 
+from sqlalchemy.dialects.mysql import insert
+
+from config import engine
+
 
 def clean_and_override_province(province_str):
     if pd.isna(province_str): return province_str
@@ -131,7 +134,7 @@ def load_product_dimension(engine_conn, df_transformed):
             "SELECT product_id, product_model, product_color, product_size FROM product_dimension", 
             engine_conn
         )
-    except Exception:
+    except Exception:  # noqa: BLE001
         existing_products = pd.DataFrame(columns=['product_id', 'product_model', 'product_color', 'product_size'])
 
     merged = df_unique.merge(existing_products, on=['product_model', 'product_color', 'product_size'], how='left', indicator=True)
@@ -236,13 +239,13 @@ def load_data_warehouse(df_transformed):
         row_pct = (unknown_rows / total_rows) * 100
         rev_pct = (unknown_revenue / total_revenue) * 100
 
-        print(f"   [DATA QUALITY] Product Status UNKNOWN:")
+        print("   [DATA QUALITY] Product Status UNKNOWN:")
         print(f"      - Volume : {row_pct:.2f}% ({unknown_rows} from {total_rows} transactions)")
         print(f"      - Revenue: {rev_pct:.2f}% from total revenue of this batch")
 
-        # if row_pct > 5.0 or rev_pct > 3.0:
-        if row_pct > 100.0 or rev_pct > 100.0:
-            print(f"      [CRITICAL WARNING] UNKNOWN percentage too high — aborting load.")
+        if row_pct > 5.0 or rev_pct > 3.0:
+        # if row_pct > 100.0 or rev_pct > 100.0:
+            print("      [CRITICAL WARNING] UNKNOWN percentage too high — aborting load.")
             return {
                 "code":        "ABORT_HIGH_UNKNOWN",
                 "rows_loaded": 0,
