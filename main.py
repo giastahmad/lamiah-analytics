@@ -1,30 +1,30 @@
-from flask import Flask, request, jsonify, render_template, session, redirect, url_for
-from flask_cors import CORS
-import joblib
-import pandas as pd
-import numpy as np
-import threading
-from sqlalchemy import func, text
-import os
 import json
-from dotenv import load_dotenv
-import firebase_admin
-from firebase_admin import credentials, auth
+import os
+import threading
 from functools import wraps
 
-from models import (
-    OrderFact,
-    ProductDimension,
-    PlatformDimension,
-    DateDimension,
-    LocationDimension,
-    PaymentMethodDimension,
-    User,
-    FactDailyAgregat,
-    ForecastCache,
-)
+import firebase_admin
+import joblib
+import numpy as np
+import pandas as pd
+from dotenv import load_dotenv
+from firebase_admin import auth, credentials
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+from flask_cors import CORS
+from sqlalchemy import func, text
+
 from config import SessionLocal, engine
-from etl import extract, transform, load
+from etl import extract, load, transform
+from models import (
+    DateDimension,
+    ForecastCache,
+    LocationDimension,
+    OrderFact,
+    PaymentMethodDimension,
+    PlatformDimension,
+    ProductDimension,
+    User,
+)
 
 app = Flask(__name__)
 
@@ -108,7 +108,7 @@ def verify_token():
                 403,
             )
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"[AUTH ERROR] Gagal verifikasi token atau query DB: {e}")
         return (
             jsonify(
@@ -227,8 +227,8 @@ def upload_data():
                     "duplicate_count", 0
                 )
 
-        except Exception as e:
-            file_errors.append(f"{file.filename} ({str(e)})")
+        except Exception as e:  # noqa: BLE001
+            file_errors.append(f"{file.filename} ({str(e)})")  # noqa: RUF010
 
     if len(file_errors) == len(files) and len(files) > 0:
         return (
@@ -306,7 +306,7 @@ def get_dashboard_metrics(start_date=None, end_date=None, platforms=None, colors
         
         if statuses: 
             base_filter.append(OrderFact.status.in_(statuses))
-            metric_filter = base_filter # Gunakan status apapun yang dipilih user
+            metric_filter = base_filter
         else:
             metric_filter = base_filter + [OrderFact.status == "SELESAI"]
             
@@ -352,9 +352,9 @@ def get_dashboard_metrics(start_date=None, end_date=None, platforms=None, colors
             city_options = []
             for p in provinces:
                 city_options.extend(province_city_map.get(p, []))
-            city_options = sorted(list(set(city_options)))
+            city_options = sorted(set(city_options))
         else:
-            city_options = sorted(list(all_cities))
+            city_options = sorted(all_cities)
         
         platform_options = [p[0] for p in session.query(PlatformDimension.platform_name).distinct().all() if p[0]]
         model_options = [m[0] for m in session.query(ProductDimension.product_model).distinct().all() if m[0]]
@@ -550,7 +550,7 @@ def dashboard_view():
         start_date=start_date, end_date=end_date, platforms=platforms, 
         colors=colors, sizes=sizes, provinces=provinces, models=models,
         is_twin_date=is_twin_date, payment_categories=payment_categories,
-        min_price=min_price, max_price=max_price, statuses=statuses
+        min_price=min_price, max_price=max_price, statuses=statuses, cities=cities
     )
     return render_template("dashboard.html", m=metrics)
 
@@ -619,7 +619,7 @@ def get_db_state():
         with engine.connect() as conn:
             result = conn.execute(text(query)).fetchone()
             return f"{result[0]}_{result[1]}"
-    except Exception:
+    except Exception:  # noqa: BLE001
         return None
 
 
@@ -744,7 +744,6 @@ def generate_recursive_forecast(model, days_ahead=14):
 
 
 def update_forecast_cache_background():
-    global FORECAST_CACHE
     try:
 
         if not os.path.exists(MODEL_PATH):
@@ -780,16 +779,14 @@ def update_forecast_cache_background():
         top_models_forecast = [
             {
                 "name": row["product_model"],
-                "forecast_qty": int(
-                    round(
+                "forecast_qty": round(
                         total_forecast_qty
                         * (
                             row["qty"] / model_weight_total
                             if model_weight_total > 0
                             else 0
                         )
-                    )
-                ),
+                    ),
             }
             for _, row in top_models.iterrows()
         ]
@@ -801,16 +798,14 @@ def update_forecast_cache_background():
         top_colors_forecast = [
             {
                 "name": row["product_color"],
-                "forecast_qty": int(
-                    round(
+                "forecast_qty": round(
                         total_forecast_qty
                         * (
                             row["qty"] / color_weight_total
                             if color_weight_total > 0
                             else 0
                         )
-                    )
-                ),
+                    ),
             }
             for _, row in top_colors.iterrows()
         ]
@@ -829,7 +824,7 @@ def update_forecast_cache_background():
         session.commit()
         session.close()
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"[ERROR] Forecast background gagal: {e}")
 
 
@@ -872,9 +867,9 @@ def forecast_view():
             top_colors=cache.top_colors,
         )
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return render_template(
-            "forecast.html", error=f"Terjadi kesalahan teknis: {str(e)}"
+            "forecast.html", error=f"Terjadi kesalahan teknis: {str(e)}"  # noqa: RUF010
         )
 
 
