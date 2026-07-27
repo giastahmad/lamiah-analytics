@@ -1,6 +1,17 @@
-from sqlalchemy import Integer, String, Float, Boolean, Date, ForeignKey, Column, UniqueConstraint, DateTime, JSON
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
 
@@ -74,7 +85,7 @@ class OrderFact(Base):
     
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = {'schema': 'lamiah_app'}
+    __table_args__ = {'schema': 'lamiah_app'}  # noqa: RUF012
     
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, nullable=False)
@@ -99,7 +110,7 @@ class FactDailyAgregat(Base):
 
 class ForecastCache(Base):
     __tablename__ = 'forecast_cache'
-    __table_args__ = {'schema': 'lamiah_app'}
+    __table_args__ = {'schema': 'lamiah_app'}  # noqa: RUF012
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     created_at = Column(DateTime, default=func.now())
