@@ -20,6 +20,7 @@
   body {
     background: #f8f7f4;
     overflow-x: hidden;
+    margin-top: 60px;
   }
 
   .dash-wrapper {
@@ -69,7 +70,7 @@
   .kpi-label {
     font-size: 11px;
     font-weight: 600;
-    color: #9ca3af;
+    color: #000000;
     letter-spacing: 0.07em;
     text-transform: uppercase;
     display: flex;
@@ -110,7 +111,7 @@
 
   .kpi-sub {
     font-size: 12px;
-    color: #9ca3af;
+    color: #000000;
     margin-top: 6px;
   }
 
@@ -210,14 +211,14 @@
 
   .page-sub {
     font-size: 13px;
-    color: #9ca3af;
+    color: #000000;
     margin-top: 2px;
   }
 
   .section-divider {
     font-size: 11px;
     font-weight: 600;
-    color: #9ca3af;
+    color: #000000;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: 0 4px;
@@ -823,7 +824,7 @@
     }
 
     .kpi-sub {
-      font-size: 10px;
+      font-size: 12px;
     }
 
     .chart-card {
@@ -1009,7 +1010,8 @@
               d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
             <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
             <line x1="12" y1="22.08" x2="12" y2="12" />
-          </svg></span>
+          </svg>
+        </span>
         Total Model
       </div>
       <div class="kpi-value">{{ m.num_models }}</div>
@@ -1146,22 +1148,22 @@
       <div class="avg-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
         <div>
           <div
-            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
+            style="font-size: 11px; color: #000000; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
             Rata-rata Pendapatan / Hari</div>
           <div style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
             Rp {{ "{:,.0f}".format(m.overall_avg_revenue) }}</div>
-          <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">rata-rata keseluruhan periode</div>
+          <div style="font-size: 14px; color: #000000; margin-top: 4px;">rata-rata keseluruhan periode</div>
           <div class="avg-bar">
             <div class="avg-bar-fill fill-overall" style="width: 72%;"></div>
           </div>
         </div>
         <div>
           <div
-            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
+            style="font-size: 11px; color: #000000; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
             Rata-rata Order / Hari</div>
           <div style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
             {{ "{:.1f}".format(m.overall_avg_orders) }}</div>
-          <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">rata-rata keseluruhan periode</div>
+          <div style="font-size: 14px; color: #000000; margin-top: 4px;">rata-rata keseluruhan periode</div>
           <div class="avg-bar">
             <div class="avg-bar-fill fill-overall" style="width: 60%;"></div>
           </div>
@@ -1646,7 +1648,7 @@
   });
 
   const GRID_COLOR = 'rgba(0,0,0,0.04)';
-  const TICK_COLOR = '#9ca3af';
+  const TICK_COLOR = '#000000';
 
   const baseChartOpts = {
     plugins: {
@@ -1655,8 +1657,8 @@
       }
     },
     scales: {
-      x: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { family: 'DM Sans', size: 11 } } },
-      y: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { family: 'DM Sans', size: 11 } } }
+      x: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { family: 'DM Sans', size: 13 } } },
+      y: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { family: 'DM Sans', size: 13 } } }
     }
   };
 
@@ -1693,11 +1695,11 @@
           scales: {
             x: {
               grid: { display: false },
-              ticks: { font: { family: 'DM Sans', size: 12 }, color: '#374151', font: { weight: '600' } }
+              ticks: { font: { family: 'DM Sans', size: 13 }, color: '#374151', font: { weight: '600' } }
             },
             y: {
               grid: { color: 'rgba(0,0,0,0.04)' },
-              ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9ca3af' }
+              ticks: { font: { family: 'DM Sans', size: 13 }, color: '#000000' }
             }
           }
         }
@@ -1744,7 +1746,7 @@
             grid: { color: GRID_COLOR },
             ticks: {
               callback: val => 'Rp ' + (val / 1000000).toFixed(0) + 'M',
-              font: { size: 10 }
+              font: { size: 13 }
             }
           },
           y: {

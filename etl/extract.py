@@ -1,6 +1,8 @@
-import pandas as pd
-import openpyxl
 import os
+
+import openpyxl
+import pandas as pd
+
 
 def extract_data(file_path, platform):
     _, file_extension = os.path.splitext(file_path)

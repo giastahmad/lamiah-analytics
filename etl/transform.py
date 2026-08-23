@@ -3,24 +3,24 @@ import re
 import pandas as pd
 
 COLUMN_MAPPING = {
-    "order_key" : ["order_id", "nomor_pesanan", "No. Pesanan", "Order ID", "no_pesanan"],
-    "product_name" : ["Nama Produk", "Product Name"],
-    "status" : ["Status Pesanan", "Order Status", "status_pesanan", "Status"],
-    "date" : ["Waktu Pesanan Dibuat", "Created Time", "Order Created"],
-    "payment_method" : ["Metode Pembayaran", "Payment Method"],
-    "SKU" : ["SKU Induk", "Seller SKU", "sku"],
-    "variant" : ["Nama Variasi", "Variation"],
-    "price" : ["Harga Awal", "SKU Unit Original Price", "Unit Price"],
-    "price_after_discount" : ["Harga Setelah Diskon", "Price After Discount"],
-    "SKU_platform_disc" : ["SKU Platform Discount"],
-    "SKU_seller_disc" : ["SKU Seller Discount"],
-    "quantity" : ["Jumlah", "Quantity"],
-    "total_amount" : ["Total Pembayaran", "Total payment", "Order Amount"],
-    "province" : ["Provinsi", "Province"],
-    "city" : ["Kota/Kabupaten", "Regency and City", "City"],
-    "channel" : ["Purchase Channel"],
-    "notes" : ["Catatan dari Pembeli", "Buyer Message"],
-    "cancel_reason" : ["Alasan Pembatalan", "Cancel Reason"]
+    "order_key": ["order_id", "nomor_pesanan", "No. Pesanan", "Order ID", "no_pesanan"],
+    "product_name": ["Nama Produk", "Product Name"],
+    "status": ["Status Pesanan", "Order Status", "status_pesanan", "Status"],
+    "date": ["Waktu Pesanan Dibuat", "Created Time", "Order Created"],
+    "payment_method": ["Metode Pembayaran", "Payment Method"],
+    "SKU": ["SKU Induk", "Seller SKU", "sku"],
+    "variant": ["Nama Variasi", "Variation"],
+    "price": ["Harga Awal", "SKU Unit Original Price", "Unit Price"],
+    "price_after_discount": ["Harga Setelah Diskon", "Price After Discount"],
+    "SKU_platform_disc": ["SKU Platform Discount"],
+    "SKU_seller_disc": ["SKU Seller Discount"],
+    "quantity": ["Jumlah", "Quantity"],
+    "total_amount": ["Total Pembayaran", "Total payment", "Order Amount"],
+    "province": ["Provinsi", "Province"],
+    "city": ["Kota/Kabupaten", "Regency and City", "City"],
+    "channel": ["Purchase Channel"],
+    "notes": ["Catatan dari Pembeli", "Buyer Message"],
+    "cancel_reason": ["Alasan Pembatalan", "Cancel Reason"],
 }
 
 REQUIRED_COLUMNS_SHOPEE = [
@@ -38,7 +38,7 @@ REQUIRED_COLUMNS_SHOPEE = [
     "province",
     "city",
     "notes",
-    "cancel_reason"
+    "cancel_reason",
 ]
 
 REQUIRED_COLUMNS_TOKOPEDIA = [
@@ -58,18 +58,69 @@ REQUIRED_COLUMNS_TOKOPEDIA = [
     "city",
     "channel",
     "notes",
-    "cancel_reason"
+    "cancel_reason",
 ]
 
 PAYMENT_METHOD = {
-    "COD" : [["cod (bayar di tempat)", "cod", "bayar di tempat (cod)", "bayar di tempat", "cash"],"MANUAL"],
-    "PAYLATER" : [["spaylater", "gopay later", "paylater", "later", "paylater + tiktok shop balance"], "LEVERAGE"],
-    "E-WALLET" : [["shopeepay", "dana", "gopay", "ovo", "linkaja", "ewallet", "e wallet", "dana + tiktok shop balance", "ovo + tiktok shop balance", "gopay + tiktok shop balance", "tiktok shop balance + qris"], "LIQUID"],
-    "BANK_TRANSFER" : [["seabank", "jago", "transfer bank", "online payment", "qris", "bank transfer", "bank", "seabank bayar instan"], "LIQUID"],
-    "CREDIT_CARD" : [["kartu kredit/debit", "credit card", "debit", "cicilan kartu kredit"], "LEVERAGE"],
-    "STORE_BALANCE" : [["saldo penjual", "tiktok shop balance", "balance", "saldo shopeepay"], "LIQUID"],
-    "OFFLIBE_AGENT" : [["mitra shopee"], "MANUAL"],
-    "RETAIL_OUTLET": [["alfamart/alfamidi/dan+dan", "indomaret/i.saku"], "MANUAL"]
+    "COD": [
+        [
+            "cod (bayar di tempat)",
+            "cod",
+            "bayar di tempat (cod)",
+            "bayar di tempat",
+            "cash",
+        ],
+        "MANUAL",
+    ],
+    "PAYLATER": [
+        [
+            "spaylater",
+            "gopay later",
+            "paylater",
+            "later",
+            "paylater + tiktok shop balance",
+        ],
+        "LEVERAGE",
+    ],
+    "E-WALLET": [
+        [
+            "shopeepay",
+            "dana",
+            "gopay",
+            "ovo",
+            "linkaja",
+            "ewallet",
+            "e wallet",
+            "dana + tiktok shop balance",
+            "ovo + tiktok shop balance",
+            "gopay + tiktok shop balance",
+            "tiktok shop balance + qris",
+        ],
+        "LIQUID",
+    ],
+    "BANK_TRANSFER": [
+        [
+            "seabank",
+            "jago",
+            "transfer bank",
+            "online payment",
+            "qris",
+            "bank transfer",
+            "bank",
+            "seabank bayar instan",
+        ],
+        "LIQUID",
+    ],
+    "CREDIT_CARD": [
+        ["kartu kredit/debit", "credit card", "debit", "cicilan kartu kredit"],
+        "LEVERAGE",
+    ],
+    "STORE_BALANCE": [
+        ["saldo penjual", "tiktok shop balance", "balance", "saldo shopeepay"],
+        "LIQUID",
+    ],
+    "OFFLIBE_AGENT": [["mitra shopee"], "MANUAL"],
+    "RETAIL_OUTLET": [["alfamart/alfamidi/dan+dan", "indomaret/i.saku"], "MANUAL"],
 }
 
 COLOR_MAPPING = {
@@ -126,7 +177,7 @@ COLOR_MAPPING = {
     "SILVER": "SILVER",
     "SILVER DK": "SILVER",
     "TERRACOTTA": "TERRACOTTA",
-    "TOSCA": "TOSCA"
+    "TOSCA": "TOSCA",
 }
 
 SKU_MAPPING = {
@@ -173,7 +224,7 @@ SKU_MAPPING = {
     "TL POLKADOT": "TL DOT",
     "BBV": "VIVI",
     "VIVI": "VIVI",
-    "ZZ": "ZZ"
+    "ZZ": "ZZ",
 }
 
 MUSLIM = [
@@ -183,235 +234,367 @@ MUSLIM = [
     "M UNICORN",
     "AMEERA",
     "AERA LONG DRESS",
-    "M ADHEYYA"
+    "M ADHEYYA",
 ]
 
+
 def map_columns(df):
-  mapping_flat = {
-      opt.lower(): standard
-      for standard, options in COLUMN_MAPPING.items()
-      for opt in options
-  }
+    mapping_flat = {
+        opt.lower(): standard
+        for standard, options in COLUMN_MAPPING.items()
+        for opt in options
+    }
 
-  new_columns = {
-      col:mapping_flat[col.lower()]
-      for col in df.columns
-      if col.lower() in mapping_flat
-  }
+    new_columns = {
+        col: mapping_flat[col.lower()]
+        for col in df.columns
+        if col.lower() in mapping_flat
+    }
 
-  return df.rename(columns=new_columns)
+    return df.rename(columns=new_columns)
+
 
 def map_data_payment(df):
-  df['payment_method'] = df['payment_method'].str.lower().str.strip()
+    df["payment_method"] = df["payment_method"].str.lower().str.strip()
 
-  mapping_flat = {
-      opt: standard
-      for standard, data in PAYMENT_METHOD.items()
-      for opt in data[0]
-  }
+    mapping_flat = {
+        opt: standard for standard, data in PAYMENT_METHOD.items() for opt in data[0]
+    }
 
-  mapping_category = {
-      standard: data[1]
-      for standard, data in PAYMENT_METHOD.items()
-  }
+    mapping_category = {standard: data[1] for standard, data in PAYMENT_METHOD.items()}
 
-  df['payment_method'] = df['payment_method'].map(mapping_flat)
-  df['payment_category'] = df['payment_method'].map(mapping_category)
+    df["payment_method"] = df["payment_method"].map(mapping_flat)
+    df["payment_category"] = df["payment_method"].map(mapping_category)
 
-  return df
+    return df
+
 
 def extract_size(val):
     if pd.isna(val) or not isinstance(val, str):
         return None
 
-    match = re.search(r'\d+', val)
-    
+    match = re.search(r"\d+", val)
+
     if match:
         num = int(match.group(0))
-            
+
         if num % 2 != 0:
-            return f"{num}-{num+1} Tahun"
+            return f"{num}-{num + 1} Tahun"
         else:
-            return f"{num-1}-{num} Tahun"
-            
+            return f"{num - 1}-{num} Tahun"
+
     return None
+
 
 def fix_indonesian_price(val):
     if pd.isna(val):
         return 0
-        
+
     if isinstance(val, str):
-        val = val.replace('Rp', '').replace(' ', '').replace('.', '')
+        val = val.replace("Rp", "").replace(" ", "").replace(".", "")
         try:
             return float(val)
         except:  # noqa: E722
             return 0
-            
+
     elif isinstance(val, (int, float)):
         if 0 < val < 1000:
             return val * 1000
         return float(val)
-        
+
     return 0
+
 
 def transform_shopee(df):
     df_standard = map_columns(df)
     df_standard = df_standard[REQUIRED_COLUMNS_SHOPEE]
-    
-    original_status = df_standard['status'].astype(str).str.upper().str.strip()
-    
-    df_standard['cancel_reason'] = df_standard['cancel_reason'].where(
-        original_status.isin(['BATAL', 'DIBATALKAN']), None
+
+    original_status = df_standard["status"].astype(str).str.upper().str.strip()
+
+    df_standard["cancel_reason"] = df_standard["cancel_reason"].where(
+        original_status.isin(["BATAL", "DIBATALKAN"]), None
     )
-    
-    df_standard['status'] = original_status
-    
-    df_standard.loc[df_standard['status'] != 'SELESAI', 'status'] = 'BATAL'
-    
-    df_standard['total_amount'] = pd.to_numeric(df_standard['total_amount'], errors='coerce').fillna(0)
-    kondisi_simpan = (df_standard['status'] == 'BATAL') | (df_standard['total_amount'] > 0)
+
+    df_standard["status"] = original_status
+
+    df_standard.loc[df_standard["status"] != "SELESAI", "status"] = "BATAL"
+
+    df_standard["total_amount"] = pd.to_numeric(
+        df_standard["total_amount"], errors="coerce"
+    ).fillna(0)
+    kondisi_simpan = (df_standard["status"] == "BATAL") | (
+        df_standard["total_amount"] > 0
+    )
     df_standard = df_standard[kondisi_simpan]
 
-    df_standard['date'] = pd.to_datetime(df_standard['date']).dt.date
-    
+    df_standard["date"] = pd.to_datetime(df_standard["date"]).dt.date
+
     df_standard = map_data_payment(df_standard)
-    
-    df_standard['SKU'] = df_standard['SKU'].astype(str).str.upper()
-    df_standard['SKU'] = df_standard['SKU'].map(SKU_MAPPING)
+
+    df_standard["SKU"] = df_standard["SKU"].astype(str).str.upper()
+    df_standard["SKU"] = df_standard["SKU"].map(SKU_MAPPING)
 
     sorted_keys = sorted(SKU_MAPPING.keys(), key=len, reverse=True)
-    pattern = '|'.join(map(re.escape, sorted_keys))
-    missing_sku_mask = df_standard['SKU'].isna()
+    pattern = "|".join(map(re.escape, sorted_keys))
+    missing_sku_mask = df_standard["SKU"].isna()
 
-    extracted_variant_sku = df_standard.loc[missing_sku_mask, 'variant'].str.upper().str.extract(f'({pattern})', expand=False)
-    extracted_product_sku = df_standard.loc[missing_sku_mask, 'product_name'].str.upper().str.extract(f'({pattern})', expand=False)
+    extracted_variant_sku = (
+        df_standard.loc[missing_sku_mask, "variant"]
+        .str.upper()
+        .str.extract(f"({pattern})", expand=False)
+    )
+    extracted_product_sku = (
+        df_standard.loc[missing_sku_mask, "product_name"]
+        .str.upper()
+        .str.extract(f"({pattern})", expand=False)
+    )
     extracted_keys = extracted_variant_sku.fillna(extracted_product_sku)
-    
-    df_standard.loc[missing_sku_mask, 'SKU'] = extracted_keys.map(SKU_MAPPING)
-    df_standard['SKU'] = df_standard['SKU'].str.upper()
-    
+
+    df_standard.loc[missing_sku_mask, "SKU"] = extracted_keys.map(SKU_MAPPING)
+    df_standard["SKU"] = df_standard["SKU"].str.upper()
+
     color_keys = sorted(COLOR_MAPPING.keys(), key=len, reverse=True)
-    regex_pattern = '|'.join(map(re.escape, color_keys))
-    
-    extracted_variant_color = df_standard['variant'].str.upper().str.extract(f'({regex_pattern})', expand=False)
-    extracted_product_color = df_standard['product_name'].str.upper().str.extract(f'({regex_pattern})', expand=False)
+    regex_pattern = "|".join(map(re.escape, color_keys))
+
+    extracted_variant_color = (
+        df_standard["variant"]
+        .str.upper()
+        .str.extract(f"({regex_pattern})", expand=False)
+    )
+    extracted_product_color = (
+        df_standard["product_name"]
+        .str.upper()
+        .str.extract(f"({regex_pattern})", expand=False)
+    )
     extracted_color_raw = extracted_variant_color.fillna(extracted_product_color)
 
-    ambiguous_mask = extracted_color_raw.str.contains(r'/|NOTE', na=False, regex=True)
+    ambiguous_mask = extracted_color_raw.str.contains(r"/|NOTE", na=False, regex=True)
 
-    extracted_notes = df_standard.loc[ambiguous_mask, 'notes'].fillna('').astype(str).str.upper().str.extract(f'({regex_pattern})', expand=False)
+    extracted_notes = (
+        df_standard.loc[ambiguous_mask, "notes"]
+        .fillna("")
+        .astype(str)
+        .str.upper()
+        .str.extract(f"({regex_pattern})", expand=False)
+    )
 
     final_extracted_color = extracted_color_raw.copy()
-    final_extracted_color.loc[ambiguous_mask] = extracted_notes.fillna(extracted_color_raw.loc[ambiguous_mask])
+    final_extracted_color.loc[ambiguous_mask] = extracted_notes.fillna(
+        extracted_color_raw.loc[ambiguous_mask]
+    )
 
-    df_standard['color'] = final_extracted_color.map(COLOR_MAPPING)
-    
-    df_standard['size'] = df_standard['variant'].str.upper().apply(extract_size)
-    
-    curr_columns = ['price', 'price_after_discount', 'total_amount']
+    df_standard["color"] = final_extracted_color.map(COLOR_MAPPING)
+
+    df_standard["size"] = df_standard["variant"].str.upper().apply(extract_size)
+
+    curr_columns = ["price", "price_after_discount", "total_amount"]
     for col in curr_columns:
         df_standard[col] = df_standard[col].apply(fix_indonesian_price)
-    
-    df_standard['discount'] = df_standard['price'] - df_standard['price_after_discount']
-    
-    df_standard['line_total'] = df_standard['price_after_discount'] * df_standard['quantity']
-    order_totals = df_standard.groupby('order_key')['line_total'].transform('sum')
-    
-    df_standard['weight'] = df_standard["line_total"] / order_totals
-    df_standard['total_amount'] = df_standard['total_amount'] * df_standard['weight']
-    df_standard['total_amount'] = df_standard['total_amount'].round(0)
-    
-    df_standard['platform'] = "Shopee"
-    
-    df_standard['is_muslim_fashion'] = df_standard['SKU'].isin(MUSLIM)
-    
-    df_standard = df_standard.drop(columns=['variant','weight', 'line_total', 'price_after_discount', 'product_name', 'notes'])
-    
-    variant = ['SKU', 'color', 'size']
-    df_standard.loc[df_standard[variant].isna().any(axis=1), 'is_muslim_fashion'] = False
-    df_standard.loc[df_standard[variant].isna().any(axis=1), variant] = 'UNKNOWN'
-    
-    df_standard = df_standard[['order_key', 'status', 'cancel_reason', 'date', 'SKU', 'color', 'size', 'is_muslim_fashion', 'payment_method', 'payment_category', 'province', 'city', 'platform', 'price', 'discount', 'quantity', 'total_amount']]
-    
+
+    df_standard["discount"] = df_standard["price"] - df_standard["price_after_discount"]
+
+    df_standard["line_total"] = (
+        df_standard["price_after_discount"] * df_standard["quantity"]
+    )
+    order_totals = df_standard.groupby("order_key")["line_total"].transform("sum")
+
+    df_standard["weight"] = df_standard["line_total"] / order_totals
+    df_standard["total_amount"] = df_standard["total_amount"] * df_standard["weight"]
+    df_standard["total_amount"] = df_standard["total_amount"].round(0)
+
+    df_standard["platform"] = "Shopee"
+
+    df_standard["is_muslim_fashion"] = df_standard["SKU"].isin(MUSLIM)
+
+    df_standard = df_standard.drop(
+        columns=[
+            "variant",
+            "weight",
+            "line_total",
+            "price_after_discount",
+            "product_name",
+            "notes",
+        ]
+    )
+
+    variant = ["SKU", "color", "size"]
+    df_standard.loc[df_standard[variant].isna().any(axis=1), "is_muslim_fashion"] = (
+        False
+    )
+    df_standard.loc[df_standard[variant].isna().any(axis=1), variant] = "UNKNOWN"
+
+    df_standard = df_standard[
+        [
+            "order_key",
+            "status",
+            "cancel_reason",
+            "date",
+            "SKU",
+            "color",
+            "size",
+            "is_muslim_fashion",
+            "payment_method",
+            "payment_category",
+            "province",
+            "city",
+            "platform",
+            "price",
+            "discount",
+            "quantity",
+            "total_amount",
+        ]
+    ]
+
     return df_standard
+
 
 def transform_tokopedia(df):
     df_standard = map_columns(df)
     df_standard = df_standard[REQUIRED_COLUMNS_TOKOPEDIA]
-    
-    original_status = df_standard['status'].astype(str).str.upper().str.strip()
-    
-    df_standard['cancel_reason'] = df_standard['cancel_reason'].where(
-        original_status.isin(['BATAL', 'DIBATALKAN']), None
+
+    original_status = df_standard["status"].astype(str).str.upper().str.strip()
+
+    df_standard["cancel_reason"] = df_standard["cancel_reason"].where(
+        original_status.isin(["BATAL", "DIBATALKAN"]), None
     )
-    
-    df_standard['status'] = original_status
-    
-    df_standard.loc[df_standard['status'] != 'SELESAI', 'status'] = 'BATAL'
-        
-    df_standard['total_amount'] = pd.to_numeric(df_standard['total_amount'], errors='coerce').fillna(0)
-    kondisi_simpan = (df_standard['status'] == 'BATAL') | (df_standard['total_amount'] > 0)
+
+    df_standard["status"] = original_status
+
+    df_standard.loc[df_standard["status"] != "SELESAI", "status"] = "BATAL"
+
+    df_standard["total_amount"] = pd.to_numeric(
+        df_standard["total_amount"], errors="coerce"
+    ).fillna(0)
+    kondisi_simpan = (df_standard["status"] == "BATAL") | (
+        df_standard["total_amount"] > 0
+    )
     df_standard = df_standard[kondisi_simpan]
-    
-    df_standard['date'] = pd.to_datetime(df_standard['date']).dt.date
-    
+
+    df_standard["date"] = pd.to_datetime(df_standard["date"]).dt.date
+
     df_standard = map_data_payment(df_standard)
-    
-    df_standard['SKU'] = df_standard['SKU'].astype(str).str.upper()
-    df_standard['SKU'] = df_standard['SKU'].map(SKU_MAPPING)
+
+    df_standard["SKU"] = df_standard["SKU"].astype(str).str.upper()
+    df_standard["SKU"] = df_standard["SKU"].map(SKU_MAPPING)
 
     sorted_keys = sorted(SKU_MAPPING.keys(), key=len, reverse=True)
-    pattern = '|'.join(map(re.escape, sorted_keys))
-    missing_sku_mask = df_standard['SKU'].isna()
+    pattern = "|".join(map(re.escape, sorted_keys))
+    missing_sku_mask = df_standard["SKU"].isna()
 
-    extracted_variant = df_standard.loc[missing_sku_mask, 'variant'].str.upper().str.extract(f'({pattern})', expand=False)
-    extracted_product = df_standard.loc[missing_sku_mask, 'product_name'].str.upper().str.extract(f'({pattern})', expand=False)
+    extracted_variant = (
+        df_standard.loc[missing_sku_mask, "variant"]
+        .str.upper()
+        .str.extract(f"({pattern})", expand=False)
+    )
+    extracted_product = (
+        df_standard.loc[missing_sku_mask, "product_name"]
+        .str.upper()
+        .str.extract(f"({pattern})", expand=False)
+    )
     extracted_keys = extracted_variant.fillna(extracted_product)
 
-    df_standard.loc[missing_sku_mask, 'SKU'] = extracted_keys.map(SKU_MAPPING)
-    df_standard['SKU'] = df_standard['SKU'].str.upper()
-    
+    df_standard.loc[missing_sku_mask, "SKU"] = extracted_keys.map(SKU_MAPPING)
+    df_standard["SKU"] = df_standard["SKU"].str.upper()
+
     color_keys = sorted(COLOR_MAPPING.keys(), key=len, reverse=True)
-    regex_pattern = '|'.join(map(re.escape, color_keys))
-    
-    extracted_variant_color = df_standard['variant'].str.upper().str.extract(f'({regex_pattern})', expand=False)
-    extracted_product_color = df_standard['product_name'].str.upper().str.extract(f'({regex_pattern})', expand=False)
+    regex_pattern = "|".join(map(re.escape, color_keys))
+
+    extracted_variant_color = (
+        df_standard["variant"]
+        .str.upper()
+        .str.extract(f"({regex_pattern})", expand=False)
+    )
+    extracted_product_color = (
+        df_standard["product_name"]
+        .str.upper()
+        .str.extract(f"({regex_pattern})", expand=False)
+    )
     extracted_color_raw = extracted_variant_color.fillna(extracted_product_color)
 
-    ambiguous_mask = extracted_color_raw.str.contains(r'/|NOTE', na=False, regex=True)
-    extracted_notes = df_standard.loc[ambiguous_mask, 'notes'].fillna('').astype(str).str.upper().str.extract(f'({regex_pattern})', expand=False)
+    ambiguous_mask = extracted_color_raw.str.contains(r"/|NOTE", na=False, regex=True)
+    extracted_notes = (
+        df_standard.loc[ambiguous_mask, "notes"]
+        .fillna("")
+        .astype(str)
+        .str.upper()
+        .str.extract(f"({regex_pattern})", expand=False)
+    )
 
     final_extracted_color = extracted_color_raw.copy()
-    final_extracted_color.loc[ambiguous_mask] = extracted_notes.fillna(extracted_color_raw.loc[ambiguous_mask])
+    final_extracted_color.loc[ambiguous_mask] = extracted_notes.fillna(
+        extracted_color_raw.loc[ambiguous_mask]
+    )
 
-    df_standard['color'] = final_extracted_color.map(COLOR_MAPPING)
-    
-    df_standard['size'] = df_standard['variant'].str.upper().apply(extract_size)
-    
-    num_cols = ['price', 'SKU_platform_disc', 'SKU_seller_disc', 'total_amount', 'quantity']
+    df_standard["color"] = final_extracted_color.map(COLOR_MAPPING)
+
+    df_standard["size"] = df_standard["variant"].str.upper().apply(extract_size)
+
+    num_cols = [
+        "price",
+        "SKU_platform_disc",
+        "SKU_seller_disc",
+        "total_amount",
+        "quantity",
+    ]
     for col in num_cols:
         df_standard[col] = pd.to_numeric(df_standard[col])
-    df_standard['discount'] = df_standard['SKU_platform_disc'] + df_standard['SKU_seller_disc']
-    
-    df_standard['line_total'] = (df_standard['price'] - df_standard['discount']) * df_standard['quantity']
-    order_totals = df_standard.groupby('order_key')['line_total'].transform('sum')
-    df_standard['weight'] = df_standard["line_total"] / order_totals
-    df_standard['total_amount'] = df_standard['total_amount'] * df_standard['weight']
-    df_standard['total_amount'] = df_standard['total_amount'].round(0)
-    
-    df_standard = df_standard.rename(columns={'channel' : 'platform'})
-    
-    df_standard['is_muslim_fashion'] = df_standard['SKU'].isin(MUSLIM)
-    
-    df_standard['province'] = df_standard['province'].str.upper()
-    df_standard['city'] = df_standard['city'].str.upper()
-    
-    df_standard = df_standard.drop(columns=['variant','weight', 'line_total', 'product_name','SKU_platform_disc', 'SKU_seller_disc', 'notes'])
-    
-    variant = ['SKU', 'color', 'size']
+    df_standard["discount"] = (
+        df_standard["SKU_platform_disc"] + df_standard["SKU_seller_disc"]
+    )
 
-    df_standard.loc[df_standard[variant].isna().any(axis=1), 'is_muslim_fashion'] = False
-    df_standard.loc[df_standard[variant].isna().any(axis=1), variant] = 'UNKNOWN'
-    
-    df_standard = df_standard[['order_key', 'status', 'cancel_reason', 'date', 'SKU', 'color', 'size', 'is_muslim_fashion', 'payment_method', 'payment_category', 'province', 'city', 'platform', 'price', 'discount', 'quantity', 'total_amount']]
+    df_standard["line_total"] = (
+        df_standard["price"] - df_standard["discount"]
+    ) * df_standard["quantity"]
+    order_totals = df_standard.groupby("order_key")["line_total"].transform("sum")
+    df_standard["weight"] = df_standard["line_total"] / order_totals
+    df_standard["total_amount"] = df_standard["total_amount"] * df_standard["weight"]
+    df_standard["total_amount"] = df_standard["total_amount"].round(0)
+
+    df_standard = df_standard.rename(columns={"channel": "platform"})
+
+    df_standard["is_muslim_fashion"] = df_standard["SKU"].isin(MUSLIM)
+
+    df_standard["province"] = df_standard["province"].str.upper()
+    df_standard["city"] = df_standard["city"].str.upper()
+
+    df_standard = df_standard.drop(
+        columns=[
+            "variant",
+            "weight",
+            "line_total",
+            "product_name",
+            "SKU_platform_disc",
+            "SKU_seller_disc",
+            "notes",
+        ]
+    )
+
+    variant = ["SKU", "color", "size"]
+
+    df_standard.loc[df_standard[variant].isna().any(axis=1), "is_muslim_fashion"] = (
+        False
+    )
+    df_standard.loc[df_standard[variant].isna().any(axis=1), variant] = "UNKNOWN"
+
+    df_standard = df_standard[
+        [
+            "order_key",
+            "status",
+            "cancel_reason",
+            "date",
+            "SKU",
+            "color",
+            "size",
+            "is_muslim_fashion",
+            "payment_method",
+            "payment_category",
+            "province",
+            "city",
+            "platform",
+            "price",
+            "discount",
+            "quantity",
+            "total_amount",
+        ]
+    ]
     return df_standard
