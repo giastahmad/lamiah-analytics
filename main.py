@@ -15,6 +15,7 @@ from sqlalchemy import func, text
 
 from config import SessionLocal, engine
 from etl import extract, load, transform
+from ml_models.forecast_v2 import MODEL_PATH_V2, generate_forecast_v2
 from models import (
     DateDimension,
     ForecastCache,
@@ -144,7 +145,6 @@ def upload_view():
 
 @app.route("/api/upload", methods=["POST"])
 def upload_data():
-
     if "files" not in request.files:
         return (
             jsonify(
@@ -831,46 +831,51 @@ def update_forecast_cache_background():
 @app.route("/forecast")
 @login_required
 def forecast_view():
-    if not os.path.exists(MODEL_PATH):
+    if not os.path.exists(MODEL_PATH_V2):
         return render_template(
             "forecast.html",
-            error="Model prediksi belum siap. Silakan jalankan pipeline retraining.",
+            error="Model prediksi v2 belum siap. Silakan jalankan ml_models/retrainv2.py.",
         )
 
     try:
-        session = SessionLocal()
-        cache = (
-            session.query(ForecastCache)
-            .order_by(ForecastCache.created_at.desc())
-            .first()
+        payload = generate_forecast_v2(
+            engine,
+            models=request.args.getlist("model"),
+            colors=request.args.getlist("color"),
+            sizes=request.args.getlist("size"),
         )
-        db_state = get_db_state()
-
-        if not cache or cache.db_state != db_state:
-            update_forecast_cache_background()
-            cache = (
-                session.query(ForecastCache)
-                .order_by(ForecastCache.created_at.desc())
-                .first()
-            )
-
-        session.close()
-
-        if not cache:
-            return render_template("forecast.html", error="Gagal memuat data prediksi.")
-
         return render_template(
             "forecast.html",
-            total_forecast=cache.total_forecast_qty,
-            forecast_daily=cache.forecast_daily,
-            top_models=cache.top_models,
-            top_colors=cache.top_colors,
+            total_forecast=payload["total_forecast"],
+            forecast_daily=payload["forecast_daily"],
+            forecast_products=payload["products"],
+            filter_options=payload["options"],
+            selected_filters=payload["selected"],
         )
-
     except Exception as e:  # noqa: BLE001
         return render_template(
             "forecast.html", error=f"Terjadi kesalahan teknis: {str(e)}"  # noqa: RUF010
         )
+
+
+@app.route("/api/forecast/v2")
+@login_required
+def forecast_api_v2():
+    """Return per-SKU forecasts from the latest model artifact."""
+    try:
+        payload = generate_forecast_v2(
+            engine,
+            models=request.args.getlist("model"),
+            colors=request.args.getlist("color"),
+            sizes=request.args.getlist("size"),
+        )
+        return jsonify(payload)
+    except FileNotFoundError as exc:
+        return jsonify({"code": "MODEL_NOT_FOUND", "message": str(exc)}), 503
+    except ValueError as exc:
+        return jsonify({"code": "VALIDATION_ERROR", "message": str(exc)}), 400
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"code": "SERVER_ERROR", "message": str(exc)}), 500
 
 
 if __name__ == "__main__":

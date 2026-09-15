@@ -372,6 +372,53 @@
         position: relative;
     }
 
+    .forecast-filter-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+        gap: 12px;
+        align-items: end;
+        margin-bottom: 20px;
+    }
+
+    .forecast-filter label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+    }
+
+    .forecast-filter select {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #fff;
+        color: #111827;
+        padding: 8px 10px;
+        font: inherit;
+    }
+
+    .forecast-filter button {
+        min-height: 42px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--t-c1);
+        color: #fff;
+        padding: 0 18px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .forecast-product-table td:nth-child(2),
+    .forecast-product-table td:nth-child(3),
+    .forecast-product-table td:nth-child(4) {
+        color: #4b5563;
+    }
+
 
     /* ════════════════════
      RESPONSIVE
@@ -454,6 +501,10 @@
 
         .chart-row-2 .chart-card {
             height: 100%;
+        }
+
+        .forecast-filter-grid {
+            grid-template-columns: 1fr;
         }
 
         thead th {
@@ -568,78 +619,61 @@
         </div>
     </div>
 
-    <div class="chart-row-2">
+    <div class="chart-row-1">
         <div class="chart-card">
-            <div class="chart-title">Distribusi 5 Model Terlaris</div>
-            <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Dibobot berdasarkan performa 3 bulan
-                terakhir</div>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 40px;">#</th>
-                            <th>Nama Model</th>
-                            <th style="text-align: right;">Estimasi Qty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for model in top_models %}
-                        <tr>
-                            <td>
-                                <span
-                                    class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
-                                    {{ loop.index }}
-                                </span>
-                            </td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <img src="/static/images/{{ model.name|replace(' ', '%20') }}.jpg"
-                                        onerror="this.onerror=null; this.src='/static/images/UNKNOWN.jpg';"
-                                        alt="{{ model.name }}" class="zoomable-img"
-                                        onclick="openLightbox(this.src, this.alt)"
-                                        style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #f3f4f6;">
-                                    <span style="font-weight: 500; color: #111827;">{{ model.name }}</span>
-                                </div>
-                            </td>
-                            <td style="text-align: right; font-weight: 600; color: #374151;">
-                                {{ "{:,}".format(model.forecast_qty) }} <span
-                                    style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
-                            </td>
-                        </tr>
+            <div class="chart-title">Forecast Per SKU</div>
+            <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Filter berdasarkan fitur kategori model terbaru.</div>
+            <form class="forecast-filter-grid" method="get" action="{{ url_for('forecast_view') }}">
+                <div class="forecast-filter">
+                    <label for="forecast-model">SKU baju</label>
+                    <select id="forecast-model" name="model" multiple>
+                        {% for option in filter_options.models %}
+                        <option value="{{ option }}" {% if option in selected_filters.models %}selected{% endif %}>{{ option }}</option>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="chart-card color-card">
-            <div class="chart-title">Distribusi 5 Warna Terlaris</div>
-            <div class="kpi-sub" style="margin-top: -16px; margin-bottom: 16px;">Dibobot berdasarkan performa 3 bulan
-                terakhir</div>
+                    </select>
+                </div>
+                <div class="forecast-filter">
+                    <label for="forecast-color">Warna</label>
+                    <select id="forecast-color" name="color" multiple>
+                        {% for option in filter_options.colors %}
+                        <option value="{{ option }}" {% if option in selected_filters.colors %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="forecast-filter">
+                    <label for="forecast-size">Ukuran</label>
+                    <select id="forecast-size" name="size" multiple>
+                        {% for option in filter_options.sizes %}
+                        <option value="{{ option }}" {% if option in selected_filters.sizes %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit">Terapkan</button>
+            </form>
             <div style="overflow-x: auto;">
-                <table>
+                <table class="forecast-product-table">
                     <thead>
                         <tr>
                             <th style="width: 40px;">#</th>
+                            <th>SKU Baju</th>
                             <th>Warna</th>
-                            <th style="text-align: right;">Estimasi Qty</th>
+                            <th>Ukuran</th>
+                            <th style="text-align: right;">Forecast 14 Hari</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for color in top_colors %}
+                        {% for product in forecast_products %}
                         <tr>
-                            <td>
-                                <span
-                                    class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
-                                    {{ loop.index }}
-                                </span>
-                            </td>
-                            <td style="font-weight: 500; text-align:left; color: #111827;">{{ color.name }}</td>
-                            <td style="text-align: right; font-weight: 600; color: #374151;">{{
-                                "{:,}".format(color.forecast_qty) }} <span
-                                    style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
+                            <td><span class="rank-badge">{{ loop.index }}</span></td>
+                            <td style="font-weight: 600; color: #111827;">{{ product.product_model }}</td>
+                            <td>{{ product.product_color }}</td>
+                            <td>{{ product.product_size }}</td>
+                            <td style="text-align: right; font-weight: 600; color: #374151;">
+                                {{ "{:,}".format(product.forecast_qty) }} <span style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span>
                             </td>
                         </tr>
+                        {% else %}
+                        <tr><td colspan="5" style="text-align: center; color: #6b7280;">Tidak ada SKU yang cocok.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
